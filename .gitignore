@@ -5,3 +5,5 @@
 *.mat
 *.txt
 *.RData
+.Rproj.user
+*.csv
