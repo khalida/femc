@@ -1,0 +1,17 @@
+{
+    "contents" : "importDemandData <- function() {\n  \n  dirPath = '../../../18_DataSets/ISSDA/data/CER_both/CER Electricity Revised March 2012/'\n  fileNameList <- list.files(pattern = \"*.txt\", path = dirPath, full.names = TRUE)\n  demandTable <- do.call(\"rbind\", lapply(fileNameList, FUN=read.table, header=FALSE))\n  uniqueMeters <- unique(demandTable$V1)\n  nUniqueMeters <- length(uniqueMeters)\n  nMeterReads <- vector(\"list\", nUniqueMeters)\n  \n  # Find the number of meter reads for each unique meter\n  for (meterIdx in 1:nUniqueMeters) {\n    meter <- uniqueMeters[meterIdx]\n    nMeterReads[meterIdx] <- length(demandTable[demandTable$V1==meter, 1])\n  }\n  \n  # Find the most common no. of reads:\n  commonReads <- as.numeric(names(table(as.numeric(nMeterReads))[table(as.numeric(nMeterReads)) == max(table(as.numeric(nMeterReads)))]))\n\n  # Select only those meters with common no. of reads:\n  metersWithCommonReads <- uniqueMeters[nMeterReads == commonReads]\n  \n  return(demandTable)\n}",
+    "created" : 1445054973303.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4080616321",
+    "id" : "7ADB6D38",
+    "lastKnownWriteTime" : 1445146327,
+    "path" : "C:/LocalData/Documents/Documents/PhD/21_Projects/2015_10_17_Forecast_Error_Metric_Customisation_MATLAB/R_forecasting/utilityFunctions.R",
+    "project_path" : "utilityFunctions.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

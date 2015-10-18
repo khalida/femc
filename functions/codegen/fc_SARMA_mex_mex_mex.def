@@ -1,0 +1,8 @@
+LIBRARY fc_SARMA_mex_mex.mexw64
+EXPORTS
+mexFunction
+emlrtMexFcnProperties
+fc_SARMA_mex
+fc_SARMA_mex_initialize
+fc_SARMA_mex_terminate
+fc_SARMA_mex_atexit

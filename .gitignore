@@ -1,0 +1,7 @@
+# Ignore the following data-files for commits etc.
+# source data can be found from ISSDA website, on request:
+# http://www.ucd.ie/issda/data/commissionforenergyregulationcer/
+
+*.mat
+*.txt
+*.RData
