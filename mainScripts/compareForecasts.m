@@ -1,18 +1,19 @@
 % file: compareFreocasts.m
 % auth: Khalid Abdulla
-% date: 19/06/2015
+% date: 20/10/2015
 % brief: Evaluate various forecast models trained on various
 %           error metrics (over a number of aggregation levels)
 
+%% Load Config
+Config
+
 %% Add path to the common functions (& any subfolders therein)
 [parentFold, ~, ~] = fileparts(pwd);
-commonFcnFold = [parentFold filesep 'commonFunctions'];
+commonFcnFold = [parentFold filesep 'functions'];
 addpath(commonFcnFold, '-BEGIN');
-doCompile = false;
 
-if doCompile
-    
-    % Remove any compiled versions of EMD in this directory:
+if updateMex
+    % Remove any compiled mex files
     mexFileNames = dir([commonFcnFold filesep '*.mex*']);
     for item = 1:length(mexFileNames);
         delete([commonFcnFold filesep mexFileNames(item).name]);
@@ -20,6 +21,7 @@ if doCompile
     % Re-compile EMD mex files
     compile_FastEMD;
     
+    % Re-compile SARMA mex files
     codegen('fc_SARMA_mex.m', '-report', '-args',...
         {coder.typeof(double(0), [Inf Inf]),...
         coder.typeof(double(0), [1 3]), ...
@@ -31,44 +33,23 @@ end
 %% Tidy Up
 clear variables; close all; clc;
 
+%% Load Config (Again)
+Config
+
 %% Set-up // workers
-% myCluster = parcluster('local');
-% delete(myCluster.Jobs);
-% poolObj = parpool('local', 12);
+myCluster = parcluster('local');
+delete(myCluster.Jobs);
+poolObj = parpool('local', Sim.nProc);
 
 %% Read in DATA
-load(['..' filesep 'data' filesep 'demand_3639.mat']);       % demandData is [nTimestamp x nMeters] array
+load(dataFileWithPath); % demandData is [nTimestamp x nMeters] array
 
 %% Forecast parameters
-trainLength = 200*48;   % number of t-steps over which to train
-k = 48;                 % fcast horizon & seasonality
-testLength = 48;        % number of t-steps for test forecasts
-n_tests = 25;           % number of test forecasts to make
+trainLength = Sim.num_days_train*Sim.steps_per_hour*...
+    Sim.hours_per_day;                  % number of t-steps over which to train
+testLength = k;                         % number of t-steps for test forecasts
 
-%% Aggregation parameters
-% numCustomers = [1 5 10 35 50 100 200 size(demandData, 2)];
-numCustomers = [1 10 100 1000]; %min(3.^(0:6), size(demandData, 2));
-
-numAggregates = 3;
-
-%% Forecast Training Settings
-trControl.supp = true;
-trControl.numHidden = 50;
-trControl.numStarts = 3;
-trControl.includeTime = false;
-trControl.mseEpochs = 1000;                 % No. of MSE epochs for pre-training
-trControl.modelPerStep = false;             % If true train 1 model for each t-step of the seasonal period
-trControl.minimiseOverFirst = testLength;   % No. of steps of fcast to minimise penalty over
-if trControl.modelPerStep > trControl.includeTime
-    error('To use forecast per step need to include time as an input');
-end
-trControl.batchSize = 1000;
-
-% Optimal parameters found from 20-customer analysis:
-% trControl.validFail = 9;
-% trControl.sigmaValue = 5e-5;    % Even larger may be better
-% trControl.lambdaValue = 5e-8;   % Appeared to be a sweet spot
-
+%% Forecast Models & Error Metrics
 loss_pars_unit = @(t, y) loss_par(t, y, [2, 2, 2, 1]);
 loss_emd_pars_unit = @(t, y) loss_emd_par(t, y, [10, 0.5, 0.5, 4]);
 
@@ -76,15 +57,9 @@ lossTypes = {@loss_mse, @loss_mape, loss_pars_unit, ...
     loss_emd_pars_unit, @loss_mse, @loss_mape, loss_pars_unit, ...
     loss_emd_pars_unit};
 
-% lossTypes = {@loss_mse, loss_emd_pars_unit, @loss_mse, loss_emd_pars_unit};
-
-%% Forecast methods and error metrics
-fcTypeStrings = {'MSE_SARMA', 'MAPE_SARMA', 'PFEM_SARMA', 'PEMD_SARMA', ...
-    'MSE_FFNN', 'MAPE_FFNN', 'PFEM_FFNN', 'PEMD_FFNN', 'naivePeriodic'};
+fcTypeStrings = {'MSE SARMA', 'MAPE SARMA', 'PFEM SARMA', 'PEMD SARMA', ...
+    'MSE FFNN', 'MAPE FFNN', 'PFEM FFNN', 'PEMD FFNN', 'NP'};
 fcMetrics = {'MSE', 'MAPE', 'PFEM', 'PEMD'};
-
-% fcTypeStrings = {'MSE_SARMA', 'PEMD_SARMA', 'MSE_FFNN', 'PEMD_FFNN', 'naivePeriodic'};
-% fcMetrics = {'MSE', 'PEMD'};
 
 if length(lossTypes) ~= 2*length(fcMetrics)
     warning('No. of metrics seems wrong');
@@ -100,38 +75,39 @@ fcHandles = [repmat({@fc_SARMA}, [1, length(fcMetrics)]), ...
 nMethods = length(fcTypeStrings);
 
 % Set up 'instances matrix'
-numInstances = length(numCustomers)*numAggregates;
-all_demand_vals = zeros(numInstances, size(demandData, 1));
-all_kWhs = zeros(numInstances, 1);
-pars = cell(numInstances, 1);
-fcVals = cell(numInstances, 1);         % To store the fcasts for tests
-allMetrics = cell(numInstances, 1);
+Sim.numInstances = length(Sim.numCustomers)*Sim.numAggregates;
+all_demand_vals = zeros(Sim.numInstances, size(demandData, 1));
+all_kWhs = zeros(Sim.numInstances, 1);
+pars = cell(Sim.numInstances, 1);
+fcVals = cell(Sim.numInstances, 1);         % To store the fcasts for tests
+allMetrics = cell(Sim.numInstances, 1);
 
-for ii = 1:numInstances
+for ii = 1:Sim.numInstances
     pars{ii} = cell(length(trHandles), 1);
-    fcVals{ii} = zeros(nMethods, n_tests, testLength);
+    fcVals{ii} = zeros(nMethods, Sim.num_days_test, testLength);
     allMetrics{ii} = zeros(nMethods, length(fcMetrics));
 end
 
 hour_numbers = mod((1:size(demandData, 1))', k);
 hour_numbers_tr = hour_numbers(1:trainLength);
 trControl.hour_numbers_tr = hour_numbers_tr;
-hour_numbers_ts = zeros(testLength, n_tests);
+hour_numbers_ts = zeros(testLength, Sim.num_days_test);
 
 % Test Data
-y_test_all = zeros(numInstances, testLength, n_tests);
+y_test_all = zeros(Sim.numInstances, testLength, Sim.num_days_test);
 
+% Prepare data for all of the instance runs
 instance = 0;
-for nCustIndex = 1:length(numCustomers)
-    for trial = 1:numAggregates
+for nCustIndex = 1:length(Sim.numCustomers)
+    for trial = 1:Sim.numAggregates
         instance = instance + 1;
-        customers = numCustomers(nCustIndex);
+        customers = Sim.numCustomers(nCustIndex);
         customer_indices = ...
             randsample(size(demandData, 2), customers);
         all_demand_vals(instance, :) = ...
             sum(demandData(:, customer_indices), 2);
         all_kWhs(instance) = mean(all_demand_vals(instance, :));
-        for ii = 1:n_tests
+        for ii = 1:Sim.num_days_test
             ts_idx = (trainLength+1+(ii-1)*testLength):...
                 (trainLength+ii*testLength);
             y_test_all(instance, :, ii) = all_demand_vals(instance, ts_idx)';
@@ -140,15 +116,14 @@ for nCustIndex = 1:length(numCustomers)
     end
 end
 
+% Produce the forecasts
 tic;
-parfor instance = 1:numInstances
+parfor instance = 1:Sim.numInstances
     
     y = all_demand_vals(instance, :)';
     
     % Training Data
     y_train = y(1:trainLength);
-    
-    % TODO: I'm sure there is a better vectorised way to do this!
     
     %% Train fcast parameters
     for ii = 1:length(lossTypes)
@@ -158,9 +133,9 @@ parfor instance = 1:numInstances
     
     %% Make forecasts, for the n tests (and every fcast type)
     histData = y_train; % To accumulate historic data
-    temp_metrics = zeros(nMethods, n_tests, length(fcMetrics));
+    temp_metrics = zeros(nMethods, Sim.num_days_test, length(fcMetrics));
     
-    for ii = 1:n_tests
+    for ii = 1:Sim.num_days_test
         actual = y_test_all(instance, :, ii)';
         for jj = 1:length(lossTypes)
             temp_fc = fcHandles{jj}( pars{instance}{jj}, histData, true); %#ok<*PFBNS>
@@ -200,9 +175,12 @@ toc;
 
 %% Convert back from instances to old-style of labels
 allMetrics = reshape(cell2mat(allMetrics), ...
-    [nMethods, numAggregates, length(numCustomers), length(fcMetrics)]);
-all_kWhs = reshape(all_kWhs, [numAggregates, length(numCustomers)]);
+    [nMethods, Sim.numAggregates, length(Sim.numCustomers), length(fcMetrics)]);
+all_kWhs = reshape(all_kWhs, [Sim.numAggregates, length(Sim.numCustomers)]);
 
-save('compareForecast_results_2015_06_26_FULL.mat');
+save('compareFcast_results_2015_10_20.mat');
+delete(poolObj);
 
-% delete(poolObj);
+%% Produce Plots
+compareForecastsPlotting(allMetrics, all_kWhs, fcTypeStrings,...
+    fcMetrics, false, {});
