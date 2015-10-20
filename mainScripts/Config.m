@@ -1,10 +1,10 @@
 %% Running Parameters for Error Metric Selection
 
 %% Instances
-Sim.numCustomers = [1, 5, 25, 125];
+Sim.numCustomers = [5, 125];
 Sim.numAggregates = 2;
 Sim.numInstances = length(Sim.numCustomers) * Sim.numAggregates;
-Sim.nProc = min(Sim.numInstances, 4);
+Sim.nProc = min(Sim.numInstances, 2);
 Sim.numStochFcasts = 10;% 100;
 Sim.relSizeError = 0.5;
 
