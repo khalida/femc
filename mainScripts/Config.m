@@ -31,6 +31,7 @@ trControl.minimiseOverFirst = 48;   % # of fcast steps to minimise over
 if trControl.modelPerStep > trControl.includeTime
     error('To use forecast per step need to include time as an input');
 end
+trControl.batchSize = 1000;
 
 % Forecast-free parameters
 Sim.num_train_shuffles = 5; %5;         % # of shuffles to consider
@@ -38,16 +39,16 @@ Sim.num_days_swap = 25;             % pairs of days to swap per shuffle
 Sim.nHidden = 250; %250;                  % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
-PFEM.alphas = [1, 4];% 2, 4
-PFEM.betas = [1];%, 2, 4
-PFEM.gammas = [1];%, 4, 10
+PFEM.alphas = [2];% 2, 4
+PFEM.betas = [2];%, 2, 4
+PFEM.gammas = [2];%, 4, 10
 PFEM.deltas = [1];%, 2, 3
 
 % EMD Parameter Gridsearch points
-EMD.as = [50, 100];%, 200
+EMD.as = [10];%#ok<*NBRAK> %, 200
 EMD.bs = [0.5];%, 0.75, 1
 EMD.cs = [0.5];%, 0.75, 1
-EMD.ds = [5];%, 10, 20 a*b must be >= d
+EMD.ds = [4];%, 10, 20 a*b must be >= d
 
 %% MPC options
 MPC.secondWeight = 1e-4; 		% Weight of degeneracy preventing Objective
@@ -63,7 +64,7 @@ MPC.chargeWhenCan = false;
 
 %% Data filenames
 dataFileWithPath = ...
-    ['..' filesep '..' filesep 'data' filesep 'demand_3639.mat'];
+    ['..' filesep 'data' filesep 'demand_3639.mat'];
 
 numCustString = '';
 for ii = 1:length(Sim.numCustomers);
