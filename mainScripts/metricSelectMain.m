@@ -7,7 +7,7 @@ Config;
 
 %% Source files for Common Functions
 [parentFold, ~, ~] = fileparts(pwd);
-commonFcnFold = [parentFold filesep 'commonFunctions'];
+commonFcnFold = [parentFold filesep 'functions'];
 addpath(commonFcnFold, '-BEGIN');
 
 %% Update compiled MEX Files (generally not required)

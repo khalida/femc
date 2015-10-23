@@ -1,7 +1,7 @@
 /*
  * rtwtypes.h
  *
- * Code generation for function 'fc_SARMA_mex'
+ * Code generation for function 'forecastSarmaHyndmanMex'
  *
  */
 

@@ -1,4 +1,4 @@
-%% Running Parameters for Error Metric Selection
+%% Global Configuration File
 
 %% Instances
 Sim.numCustomers = [5, 125];
@@ -9,29 +9,33 @@ Sim.numStochFcasts = 10;% 100;
 Sim.relSizeError = 0.5;
 
 %% Battery Properties
-Sim.battCapRatio = 0.05;       % batt_cap as fraction of daily avg demand
+Sim.battCapRatio = 0.05;        % batt_cap as fraction of daily avg demand
 Sim.batt_charge_factor = 1;     % ratio of charge rate to batt_cap
 
 %% Simulation Duration and properties
-Sim.num_days_train = 200; %200;       % days of historic demand data
-Sim.num_days_sel = 56; %56;          % days over which to test forecast parameters
-Sim.num_days_test = 56; %56;         % days to run simulation for
+Sim.num_days_train = 2; %200;   % days of historic demand data
+Sim.num_days_sel = 1; %56;      % days over which to test forecast parameters
+Sim.num_days_test = 1; %56;     % days to run simulation for
 Sim.steps_per_hour = 2;         % Half-hourly data
 Sim.hours_per_day = 24;
-k = 48;                     % horizon & seasonality (assumed same)
+k = 48;                         % horizon & seasonality (assumed same)
 
 %% Forecast training options
-trControl.numHidden = 50; %50;
-trControl.supp = true;
-trControl.numStarts = 3;% 3;
-trControl.mseEpochs = 1000;         % No. of MSE epochs for pre-training
-trControl.includeTime = false;
-trControl.modelPerStep = false;     % Train 1 model for each t-step?
-trControl.minimiseOverFirst = 48;   % # of fcast steps to minimise over
-if trControl.modelPerStep > trControl.includeTime
-    error('To use forecast per step need to include time as an input');
-end
-trControl.batchSize = 1000;
+trainControl.nHidden = 5; %50;
+trainControl.suppressOutput = true;
+trainControl.nStart = 2;% 3;
+trainControl.mseEpochs = 10; % 1000;   % No. of MSE epochs for pre-training
+trainControl.minimiseOverFirst = 48;   % # of fcast steps to minimise over
+trainControl.batchSize = 1000;              
+trainControl.maxTime = 60;                  % maximum training time in mins
+trainControl.maxEpochs = 1000;              % maximum No. of epochs
+trainControl.trainRatio = 0.9;              % to train each net on
+trainControl.nLags = k;
+trainControl.horizon = k;
+trainControl.performanceDifferenceThreshold = 0.02;
+trainControl.nBestToCompare = 3;
+trainControl.nDaysPreviousTrainSarma = 20;
+trainControl.useHyndmandModel = false;
 
 % Forecast-free parameters
 Sim.num_train_shuffles = 5; %5;         % # of shuffles to consider
@@ -54,7 +58,7 @@ EMD.ds = [4];%, 10, 20 a*b must be >= d
 MPC.secondWeight = 1e-4; 		% Weight of degeneracy preventing Objective
 MPC.knowCurrentDemand = false;  % Is current demand known to controller?
 MPC.clipNegativeFcast = true;
-MPC.iterFactor = 1.0;			% Factor to apply to default max # of iter
+MPC.iterationFactor = 1.0;		% To apply to default maximum iterations
 MPC.rewardMargin = false;		% Reward margin from creating a new peak?
 MPC.SPrecourse = true;			% whether or not to allow setPoint recourse
 MPC.billingPeriodDays = 1;
@@ -89,3 +93,4 @@ Sim.visiblePlots = 'on';
 %% Misc.
 updateMex = false;
 makeForecast = true;
+rng(42)

@@ -4,50 +4,21 @@
 % brief: Evaluate various forecast models trained on various
 %           error metrics (over a number of aggregation levels)
 
-%% Load Config
+%% Load Config (includes seeding rng)
 Config
-
-%% Add path to the common functions (& any subfolders therein)
-[parentFold, ~, ~] = fileparts(pwd);
-commonFcnFold = [parentFold filesep 'functions'];
-addpath(commonFcnFold, '-BEGIN');
-
-if updateMex
-    % Remove any compiled mex files
-    mexFileNames = dir([commonFcnFold filesep '*.mex*']);
-    for item = 1:length(mexFileNames);
-        delete([commonFcnFold filesep mexFileNames(item).name]);
-    end
-    % Re-compile EMD mex files
-    compile_FastEMD;
-    
-    % Re-compile SARMA mex files
-    codegen('fc_SARMA_mex.m', '-report', '-args',...
-        {coder.typeof(double(0), [Inf Inf]),...
-        coder.typeof(double(0), [1 3]), ...
-        coder.typeof(double(0), [1 1]), ...
-        coder.typeof(double(0), [1 1])}, '-d', ...
-        [commonFcnFold filesep 'codegen'], '-o', [commonFcnFold filesep 'fc_SARMA_mex_mex']);
-end
-
-%% Tidy Up
-clear variables; close all; clc;
-
-%% Load Config (Again)
-Config
+if updateMex, compileMexes; end;
+saveFileName = 'compareFcast_results_2015_10_20.mat';
 
 %% Set-up // workers
-myCluster = parcluster('local');
-delete(myCluster.Jobs);
 poolObj = parpool('local', Sim.nProc);
 
 %% Read in DATA
 load(dataFileWithPath); % demandData is [nTimestamp x nMeters] array
 
 %% Forecast parameters
-trainLength = Sim.num_days_train*Sim.steps_per_hour*...
-    Sim.hours_per_day;                  % number of t-steps over which to train
-testLength = k;                         % number of t-steps for test forecasts
+trainLength = Sim.num_days_train*Sim.steps_per_hour*Sim.hours_per_day;
+testLength = k;
+nTests = (Sim.num_days_test-1)*testLength + 1;
 
 %% Forecast Models & Error Metrics
 loss_pars_unit = @(t, y) loss_par(t, y, [2, 2, 2, 1]);
@@ -75,28 +46,23 @@ fcHandles = [repmat({@fc_SARMA}, [1, length(fcMetrics)]), ...
 nMethods = length(fcTypeStrings);
 
 % Set up 'instances matrix'
-Sim.numInstances = length(Sim.numCustomers)*Sim.numAggregates;
 all_demand_vals = zeros(Sim.numInstances, size(demandData, 1));
 all_kWhs = zeros(Sim.numInstances, 1);
-pars = cell(Sim.numInstances, 1);
-fcVals = cell(Sim.numInstances, 1);         % To store the fcasts for tests
-allMetrics = cell(Sim.numInstances, 1);
+pars = cell(Sim.numInstances, length(trHandles));       % Fcast parameters
+fcVals = zeros(Sim.numInstances, nMethods, nTests,...
+    testLength);                                        % Fcasts from tests
+allMetrics = zeros(Sim.numInstances, nMethods, length(fcMetrics));
 
-for ii = 1:Sim.numInstances
-    pars{ii} = cell(length(trHandles), 1);
-    fcVals{ii} = zeros(nMethods, Sim.num_days_test, testLength);
-    allMetrics{ii} = zeros(nMethods, length(fcMetrics));
-end
-
+% Allocate half-hour-of-day indexes
 hour_numbers = mod((1:size(demandData, 1))', k);
 hour_numbers_tr = hour_numbers(1:trainLength);
 trControl.hour_numbers_tr = hour_numbers_tr;
-hour_numbers_ts = zeros(testLength, Sim.num_days_test);
+hour_numbers_ts = zeros(testLength, nTests);
 
 % Test Data
-y_test_all = zeros(Sim.numInstances, testLength, Sim.num_days_test);
+y_test_all = zeros(Sim.numInstances, testLength, nTests);
 
-% Prepare data for all of the instance runs
+% Prepare data for all instances
 instance = 0;
 for nCustIndex = 1:length(Sim.numCustomers)
     for trial = 1:Sim.numAggregates
@@ -107,9 +73,8 @@ for nCustIndex = 1:length(Sim.numCustomers)
         all_demand_vals(instance, :) = ...
             sum(demandData(:, customer_indices), 2);
         all_kWhs(instance) = mean(all_demand_vals(instance, :));
-        for ii = 1:Sim.num_days_test
-            ts_idx = (trainLength+1+(ii-1)*testLength):...
-                (trainLength+ii*testLength);
+        for ii = 1:nTests
+            ts_idx = (trainLength+ii):(trainLength+ii+testLength-1);
             y_test_all(instance, :, ii) = all_demand_vals(instance, ts_idx)';
             hour_numbers_ts(:, ii) = hour_numbers(ts_idx);
         end
@@ -118,7 +83,7 @@ end
 
 % Produce the forecasts
 tic;
-parfor instance = 1:Sim.numInstances
+for instance = 1:Sim.numInstances
     
     y = all_demand_vals(instance, :)';
     
@@ -128,41 +93,42 @@ parfor instance = 1:Sim.numInstances
     %% Train fcast parameters
     for ii = 1:length(lossTypes)
         disp(fcTypeStrings{ii});
-        pars{instance}{ii} = trHandles{ii}(y_train, k, lossTypes{ii}, trControl);
+        pars{instance, ii} = trHandles{ii}(y_train, k, ...
+            lossTypes{ii}, trControl);
     end
     
-    %% Make forecasts, for the n tests (and every fcast type)
+    %% Make forecasts, for the nTests (and every fcast type)
     histData = y_train; % To accumulate historic data
-    temp_metrics = zeros(nMethods, Sim.num_days_test, length(fcMetrics));
+    temp_metrics = zeros(nMethods, nTests, length(fcMetrics));
     
-    for ii = 1:Sim.num_days_test
+    for ii = 1:nTests
         actual = y_test_all(instance, :, ii)';
         for jj = 1:length(lossTypes)
-            temp_fc = fcHandles{jj}( pars{instance}{jj}, histData, true); %#ok<*PFBNS>
-            fcVals{instance}(jj, ii, :) = temp_fc(1:testLength);
+            temp_fc = fcHandles{jj}(pars{instance, jj}, histData, true);
+            fcVals(instance, jj, ii, :) = temp_fc(1:testLength);
             
             for eachError = 1:(length(lossTypes)/2)
                 temp_metrics(jj, ii, eachError) = ...
                     lossTypes{eachError}(actual,...
-                    squeeze(fcVals{instance}(jj, ii, :)));
+                    squeeze(fcVals(instance, jj, ii, :)));
             end
         end
         % Naive periodic forecast
         temp_fc = histData((end-k+1):end);
-        fcVals{instance}(nMethods, ii, :) = temp_fc(1:testLength);
+        fcVals(instance, nMethods, ii, :) = temp_fc(1:testLength); 
         
         for eachError = 1:(length(lossTypes)/2)
             temp_metrics(nMethods, ii, eachError) = ...
                 lossTypes{eachError}(actual,...
                 squeeze(fcVals{instance}(nMethods, ii, :)));
         end
-        histData = [histData; actual];
+        histData = [histData; actual(1)]; %#ok<AGROW>
     end
     
     % Calculate overall summary values
     for jj = 1:(length(lossTypes)+1)
         for kk = 1:length(fcMetrics)
-            allMetrics{instance}(jj, kk) = mean(temp_metrics(jj, :, kk), 2);
+            allMetrics(instance, jj, kk) = mean(temp_metrics(jj, :, kk), 2);
         end
     end
     disp('==========');
@@ -173,14 +139,17 @@ end
 
 toc;
 
-%% Convert back from instances to old-style of labels
-allMetrics = reshape(cell2mat(allMetrics), ...
-    [nMethods, Sim.numAggregates, length(Sim.numCustomers), length(fcMetrics)]);
+% allMetrics = zeros(Sim.numInstances, nMethods, length(fcMetrics));
+% all_kWhs = zeros(Sim.numInstances, 1);
+
+%% Reshape data to be divided by  nCusteromers
+allMetrics = reshape(allMetrics, ...
+    [Sim.numAggregates, length(Sim.numCustomers), nMethods, length(fcMetrics)]);
 all_kWhs = reshape(all_kWhs, [Sim.numAggregates, length(Sim.numCustomers)]);
 
-save('compareFcast_results_2015_10_20.mat');
-delete(poolObj);
+clearvars poolObj;
+save(saveFileName);
 
 %% Produce Plots
 compareForecastsPlotting(allMetrics, all_kWhs, fcTypeStrings,...
-    fcMetrics, false, {});
+    fcMetrics, Sim.numCustomers, false, {});

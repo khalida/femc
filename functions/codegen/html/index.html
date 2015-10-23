@@ -6,7 +6,7 @@
 <title>Code Generation Report</title>
 <link rel="stylesheet" type="text/css" href="file:///C:\\Program Files\\MATLAB\\R2014b\\toolbox\\coder\\coder\\resources\\eml_report.css" />
 <link rel="stylesheet" type="text/css" href="file:///C:\\Program Files\\MATLAB\\R2014b\\toolbox\\coder\\coder\\resources\\jQuery\\ui.resizable.css" />
-<link rel="stylesheet" type="text/css" href="file:///C:\\LocalData\\Documents\\Documents\\PhD\\13_Software\\05_Simulink\\microGrid_MPC\\minimise_max_power_drawn\\models\\commonFunctions\\codegen\\html\\index.css" />
+<link rel="stylesheet" type="text/css" href="file:///C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\codegen\\html\\index.css" />
 
 <script type="text/javascript" src="file:///C:\\Program Files\\MATLAB\\R2014b\\toolbox\\coder\\coder\\resources\\jQuery\\jquery-1.3.2.min.js"></script>
 <script type="text/javascript" src="file:///C:\\Program Files\\MATLAB\\R2014b\\toolbox\\coder\\coder\\resources\\jQuery\\jquery-ui-1.7.custom.min.js"></script>
@@ -39,19 +39,19 @@ var keyBindings = {
      selectBuildLogTab: "Ctrl+t"
 };
 var functionInfoTable = {
- MATLABcode1: "fc_SARMA_mex1_mcode.html",
- fpath1: "C:/LocalData/Documents/Documents/PhD/13_Software/05_Simulink/microGrid_MPC/minimise_max_power_drawn/models/commonFunctions/fc_SARMA_mex.m",
- lines1: [1, 1, 32],
- watch1: "fc_SARMA_mex1_watch.html",
- title1: "Function: <span class='functionname'><a title='C:&nbsp;\\LocalData\\Documents\\Documents\\PhD\\13_Software\\05_Simulink\\microGrid_MPC\\minimise_max_power_drawn\\models\\commonFunctions\\fc_SARMA_mex.m' class='functionlink' href=\"matlab: open('C:\\LocalData\\Documents\\Documents\\PhD\\13_Software\\05_Simulink\\microGrid_MPC\\minimise_max_power_drawn\\models\\commonFunctions\\fc_SARMA_mex.m')\">fc_SARMA_mex</a></span>",
+ MATLABcode1: "forecastSarmaHyndmanMex1_mcode.html",
+ fpath1: "C:/Users/Khalid Abdulla/Documents/PhD/femc/functions/forecastingSARMA/forecastSarmaHyndmanMex.m",
+ lines1: [1, 4, 79],
+ watch1: "forecastSarmaHyndmanMex1_watch.html",
+ title1: "Function: <span class='functionname'><a title='C:&nbsp;\\Users\\Khalid&nbsp;Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m' class='functionlink' href=\"matlab: open('C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m')\">forecastSarmaHyndmanMex</a></span>",
  tcall1: [  ],
  scall1: [  ],
  rootFcnID: "1",
  firstPage: "1",
- htmlRoot: "C:/LocalData/Documents/Documents/PhD/13_Software/05_Simulink/microGrid_MPC/minimise_max_power_drawn/models/commonFunctions/codegen/html/"
+ htmlRoot: "C:/Users/Khalid%20Abdulla/Documents/PhD/femc/functions/codegen/html/"
 };
 var scriptInfoTable = {
- fpath1: "C:/LocalData/Documents/Documents/PhD/13_Software/05_Simulink/microGrid_MPC/minimise_max_power_drawn/models/commonFunctions/fc_SARMA_mex.m",
+ fpath1: "C:/Users/Khalid Abdulla/Documents/PhD/femc/functions/forecastingSARMA/forecastSarmaHyndmanMex.m",
  fpath2: "C:/Program Files/MATLAB/R2014b/toolbox/shared/coder/coder/+coder/+internal/assert.m",
  fpath3: "C:/Program Files/MATLAB/R2014b/toolbox/shared/coder/coder/+coder/+internal/isBuiltInNumeric.m",
  fpath4: "C:/Program Files/MATLAB/R2014b/toolbox/eml/lib/matlab/eml/eml_isequal_core.m",
@@ -101,6 +101,7 @@ var scriptInfoTable = {
 <select class="myfunc-filter size">
 <option value="1">1 x 1</option>
 <option value="1">1 x 3</option>
+<option value="1"><b>:</b>? x 1</option>
 <option value="1"><b>:</b>? x <b>:</b>?</option>
 </select>
 </div>
@@ -133,7 +134,7 @@ var scriptInfoTable = {
 <div class="functionwrapper" onmouseover="callTreeMouseOver(event);" onmouseout="callTreeMouseOut(event);" onclick="functionTreeClick(event);">
 <ol class="tree">
 <!-- Begin Function Tree Roots -->
-<li class="leaf  passed"><a href="#" class="fcn " id="F1N3:F1">fc_SARMA_mex</a></li>
+<li class="leaf  passed"><a href="#" class="fcn " id="F1N3:F1">forecastSarmaHyndmanMex</a></li>
 <!-- End Function Tree Roots -->
 </ol>
 <!-- Function Tree Nodes -->
@@ -149,14 +150,14 @@ var scriptInfoTable = {
 <div class="treewrapper" onmouseover="callTreeMouseOver(event);" onmouseout="callTreeMouseOut(event);" onclick="callTreeClick(event);">
 <ol class="tree">
 <!-- Call Tree Root -->
-<li class="leaf passed"><a href="#" class="fcn " id="F1N3:L1">fc_SARMA_mex</a>
+<li class="leaf passed"><a href="#" class="fcn " id="F1N3:L1">forecastSarmaHyndmanMex</a>
 </li>
 </ol>
 <!-- Call Tree Nodes -->
 <div class="callstacknodes hidden">
 <ol class="callstacknode" id="callstacknode1">
 
-<li class="leaf passed"><a href="#" class="fcn " id="F1N3:l1">fc_SARMA_mex</a>
+<li class="leaf passed"><a href="#" class="fcn " id="F1N3:l1">forecastSarmaHyndmanMex</a>
 </li>
 </ol>
 
@@ -173,17 +174,17 @@ var scriptInfoTable = {
 <div id="ccodelistbody1" class="visible">
 <table class="myfunc-list" cellspacing="0" cellpadding="0" onclick="cFileClickWithMexWarning(event);">
 <tbody>
-<tr class="ccode" id="fc_SARMA_mex_c.html"><td class="ccode"><a href="#">fc_SARMA_mex.c</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_h.html"><td class="ccode"><a href="#">fc_SARMA_mex.h</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_data_c.html"><td class="ccode"><a href="#">fc_SARMA_mex_data.c</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_data_h.html"><td class="ccode"><a href="#">fc_SARMA_mex_data.h</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_emxutil_c.html"><td class="ccode"><a href="#">fc_SARMA_mex_emxutil.c</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_emxutil_h.html"><td class="ccode"><a href="#">fc_SARMA_mex_emxutil.h</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_initialize_c.html"><td class="ccode"><a href="#">fc_SARMA_mex_initialize.c</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_initialize_h.html"><td class="ccode"><a href="#">fc_SARMA_mex_initialize.h</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_terminate_c.html"><td class="ccode"><a href="#">fc_SARMA_mex_terminate.c</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_terminate_h.html"><td class="ccode"><a href="#">fc_SARMA_mex_terminate.h</a></td></tr>
-<tr class="ccode" id="fc_SARMA_mex_types_h.html"><td class="ccode"><a href="#">fc_SARMA_mex_types.h</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_c.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex.c</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_h.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex.h</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_data_c.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_data.c</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_data_h.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_data.h</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_emxutil_c.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_emxutil.c</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_emxutil_h.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_emxutil.h</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_initialize_c.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_initialize.c</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_initialize_h.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_initialize.h</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_terminate_c.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_terminate.c</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_terminate_h.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_terminate.h</a></td></tr>
+<tr class="ccode" id="forecastSarmaHyndmanMex_types_h.html"><td class="ccode"><a href="#">forecastSarmaHyndmanMex_types.h</a></td></tr>
 <tr class="ccode" id="rt_nonfinite_h.html"><td class="ccode"><a href="#">rt_nonfinite.h</a></td></tr>
 <tr class="ccode" id="rtwtypes_h.html"><td class="ccode"><a href="#">rtwtypes.h</a></td></tr>
 </tbody>
@@ -197,11 +198,11 @@ var scriptInfoTable = {
 <div id="ccodelistbody3" class="hidden">
 <table class="myfunc-list" cellspacing="0" cellpadding="0" onclick="cFileClickWithMexWarning(event);">
 <tbody>
-<tr class="ccode" id="_coder_fc_SARMA_mex_api_c.html"><td class="ccode"><a href="#">_coder_fc_SARMA_mex_api.c</a></td></tr>
-<tr class="ccode" id="_coder_fc_SARMA_mex_api_h.html"><td class="ccode"><a href="#">_coder_fc_SARMA_mex_api.h</a></td></tr>
-<tr class="ccode" id="_coder_fc_SARMA_mex_info_c.html"><td class="ccode"><a href="#">_coder_fc_SARMA_mex_info.c</a></td></tr>
-<tr class="ccode" id="_coder_fc_SARMA_mex_info_h.html"><td class="ccode"><a href="#">_coder_fc_SARMA_mex_info.h</a></td></tr>
-<tr class="ccode" id="_coder_fc_SARMA_mex_mex_c.html"><td class="ccode"><a href="#">_coder_fc_SARMA_mex_mex.c</a></td></tr>
+<tr class="ccode" id="_coder_forecastSarmaHyndmanMex_api_c.html"><td class="ccode"><a href="#">_coder_forecastSarmaHyndmanMex_api.c</a></td></tr>
+<tr class="ccode" id="_coder_forecastSarmaHyndmanMex_api_h.html"><td class="ccode"><a href="#">_coder_forecastSarmaHyndmanMex_api.h</a></td></tr>
+<tr class="ccode" id="_coder_forecastSarmaHyndmanMex_info_c.html"><td class="ccode"><a href="#">_coder_forecastSarmaHyndmanMex_info.c</a></td></tr>
+<tr class="ccode" id="_coder_forecastSarmaHyndmanMex_info_h.html"><td class="ccode"><a href="#">_coder_forecastSarmaHyndmanMex_info.h</a></td></tr>
+<tr class="ccode" id="_coder_forecastSarmaHyndmanMex_mex_c.html"><td class="ccode"><a href="#">_coder_forecastSarmaHyndmanMex_mex.c</a></td></tr>
 </tbody>
 </table>
 </div>
@@ -228,8 +229,9 @@ var scriptInfoTable = {
 <div class="tooltip" id="TT14"><table class="tooltip"><tr><th>Size</th><td>1 x 51</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
 <div class="tooltip" id="TT15"><table class="tooltip"><tr><th>Size</th><td>1 x 2</td></tr><tr><th>Class</th><td>double</td></tr><tr><th>Complex</th><td>No</td></tr></table></div>
 <div class="tooltip" id="TT16"><table class="tooltip"><tr><th>Size</th><td>1 x 3</td></tr><tr><th>Class</th><td>double</td></tr><tr><th>Complex</th><td>No</td></tr></table></div>
-<div class="tooltip" id="TT17"><table class="tooltip"><tr><th>Size</th><td>1 x 1</td></tr><tr><th>Class</th><td>mxArray</td></tr></table></div>
-<div class="tooltip" id="TT18"><table class="tooltip"><tr><th>Size</th><td>1 x 10</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
+<div class="tooltip" id="TT17"><table class="tooltip"><tr><th>Size</th><td><b>:</b>? x 1</td></tr><tr><th>Class</th><td>double</td></tr><tr><th>Complex</th><td>No</td></tr></table></div>
+<div class="tooltip" id="TT18"><table class="tooltip"><tr><th>Size</th><td>1 x 1</td></tr><tr><th>Class</th><td>mxArray</td></tr></table></div>
+<div class="tooltip" id="TT19"><table class="tooltip"><tr><th>Size</th><td>1 x 10</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
 </div>
 </div>
 <!-- End Tooltips -->
@@ -246,7 +248,7 @@ var scriptInfoTable = {
 <!-- Compilation Summary -->
 <div id="summarybody" class="ui-tabs-panel">
 <table cellpadding="1" cellspacing="4">
-<tr><td>C source code generated on:</td><td>22-Jun-2015 17:14:14</td></tr>
+<tr><td>C source code generated on:</td><td>22-Oct-2015 18:44:09</td></tr>
 <tr><td>Coding target:</td><td>C MEX Function</td></tr>
 <tr><td>Number of errors:</td><td><a href="javascript:selectMessagesTab();">0</a></td></tr>
 <tr><td>Number of warnings:</td><td><a href="javascript:selectMessagesTab();">0</a></td></tr>
@@ -279,35 +281,35 @@ Loading Variables table ...
 <td align="left" class="td-linebottomrt-gray" colspan="2">Build Parameters</td>
 </tr>
 <tr><td align="left" valign="top" class="td-linebottomrt">Build directory</td>
-<td align="left" valign="top" class="td-linebottomrt-link"><a href="matlab: cd('C:\LocalData\Documents\Documents\PhD\13_Software\05_Simulink\microGrid_MPC\minimise_max_power_drawn\models\commonFunctions\codegen')">C:\LocalData\Documents\Documents\PhD\13_Software\05_Simulink\microGrid_MPC\minimise_max_power_drawn\models\commonFunctions\codegen</a></td></tr>
+<td align="left" valign="top" class="td-linebottomrt-link"><a href="matlab: cd('C:\Users\Khalid Abdulla\Documents\PhD\femc\functions\codegen')">C:\Users\Khalid Abdulla\Documents\PhD\femc\functions\codegen</a></td></tr>
 <tr><td align="left" valign="top" class="td-linebottomrt">Make wrapper</td>
-<td align="left" valign="top" class="td-linebottomrt-link">fc_SARMA_mex_mex.bat</td></tr>
+<td align="left" valign="top" class="td-linebottomrt-link">forecastSarmaHyndmanMex_mex.bat</td></tr>
 </table>
 <br/>
 <table border="1" cellpadding="4" cellspacing="1" width="100%">
 <tr><td align="left" class="td-linebottomrt-gray">Build Log</td></tr>
 <tr><td valign="top" class="td-script">
 <pre>
-<span class="td-line-number">    1   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen\interface" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "fc_SARMA_mex_data.c"</span>
-<span class="td-line-number">    2   </span><span class="td-line-normal">fc_SARMA_mex_data.c</span>
-<span class="td-line-number">    3   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen\interface" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "fc_SARMA_mex_initialize.c"</span>
-<span class="td-line-number">    4   </span><span class="td-line-normal">fc_SARMA_mex_initialize.c</span>
-<span class="td-line-number">    5   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen\interface" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "fc_SARMA_mex_terminate.c"</span>
-<span class="td-line-number">    6   </span><span class="td-line-normal">fc_SARMA_mex_terminate.c</span>
-<span class="td-line-number">    7   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen\interface" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "fc_SARMA_mex.c"</span>
-<span class="td-line-number">    8   </span><span class="td-line-normal">fc_SARMA_mex.c</span>
-<span class="td-line-number">    9   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen\interface" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "interface/_coder_fc_SARMA_mex_api.c"</span>
-<span class="td-line-number">   10   </span><span class="td-line-normal">_coder_fc_SARMA_mex_api.c</span>
-<span class="td-line-number">   11   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen\interface" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "fc_SARMA_mex_emxutil.c"</span>
-<span class="td-line-number">   12   </span><span class="td-line-normal">fc_SARMA_mex_emxutil.c</span>
-<span class="td-line-number">   13   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen\interface" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "interface/_coder_fc_SARMA_mex_mex.c"</span>
-<span class="td-line-number">   14   </span><span class="td-line-normal">_coder_fc_SARMA_mex_mex.c</span>
-<span class="td-line-number">   15   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen" /I "C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\13_SOF~1\05_SIM~1\MICROG~1\MINIMI~1\models\COMMON~1\codegen\interface" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "interface/_coder_fc_SARMA_mex_info.c"</span>
-<span class="td-line-number">   16   </span><span class="td-line-normal">_coder_fc_SARMA_mex_info.c</span>
-<span class="td-line-number">   17   </span><span class="td-line-normal">link  /nologo /manifest /DLL /LIBPATH:"C:\Program Files\MATLAB\R2014b\extern\lib\win64\microsoft" libmx.lib libmex.lib libmat.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /EXPORT:mexFunction /NODEFAULTLIB:LIBCMT   /OUT:fc_SARMA_mex_mex.mexw64  fc_SARMA_mex_data.obj fc_SARMA_mex_initialize.obj fc_SARMA_mex_terminate.obj fc_SARMA_mex.obj _coder_fc_SARMA_mex_api.obj fc_SARMA_mex_emxutil.obj _coder_fc_SARMA_mex_mex.obj _coder_fc_SARMA_mex_info.obj   @fc_SARMA_mex_mex_mex.arf</span>
-<span class="td-line-number">   18   </span><span class="td-line-normal">   Creating library fc_SARMA_mex_mex.lib and object fc_SARMA_mex_mex.exp</span>
+<span class="td-line-number">    1   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "forecastSarmaHyndmanMex_data.c"</span>
+<span class="td-line-number">    2   </span><span class="td-line-normal">forecastSarmaHyndmanMex_data.c</span>
+<span class="td-line-number">    3   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "forecastSarmaHyndmanMex_initialize.c"</span>
+<span class="td-line-number">    4   </span><span class="td-line-normal">forecastSarmaHyndmanMex_initialize.c</span>
+<span class="td-line-number">    5   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "forecastSarmaHyndmanMex_terminate.c"</span>
+<span class="td-line-number">    6   </span><span class="td-line-normal">forecastSarmaHyndmanMex_terminate.c</span>
+<span class="td-line-number">    7   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "forecastSarmaHyndmanMex.c"</span>
+<span class="td-line-number">    8   </span><span class="td-line-normal">forecastSarmaHyndmanMex.c</span>
+<span class="td-line-number">    9   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "interface/_coder_forecastSarmaHyndmanMex_api.c"</span>
+<span class="td-line-number">   10   </span><span class="td-line-normal">_coder_forecastSarmaHyndmanMex_api.c</span>
+<span class="td-line-number">   11   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "forecastSarmaHyndmanMex_emxutil.c"</span>
+<span class="td-line-number">   12   </span><span class="td-line-normal">forecastSarmaHyndmanMex_emxutil.c</span>
+<span class="td-line-number">   13   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "interface/_coder_forecastSarmaHyndmanMex_mex.c"</span>
+<span class="td-line-number">   14   </span><span class="td-line-normal">_coder_forecastSarmaHyndmanMex_mex.c</span>
+<span class="td-line-number">   15   </span><span class="td-line-normal">cl  /c /GR /W3 /EHs /nologo /MD -I"C:\Program Files\MATLAB\R2014b\extern\include" -I"C:\Program Files\MATLAB\R2014b\simulink\include"  /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE /D_CRT_SECURE_NO_DEPRECATE /D_SCL_SECURE_NO_DEPRECATE /D_SECURE_SCL=0  /DMATLAB_MEX_FILE  /DMATLAB_MEX_FILE   -DMX_COMPAT_32 /O2 /Oy- /DNDEBUG  /fp:strict  /I "C:\PROGRA~1\MATLAB\R2014b\simulink\include" /I "C:\PROGRA~1\MATLAB\R2014b\toolbox\shared\simtargets" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen" /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1" /I "C:\PROGRA~1\MATLAB\R2014b\extern\include" /I "." "interface/_coder_forecastSarmaHyndmanMex_info.c"</span>
+<span class="td-line-number">   16   </span><span class="td-line-normal">_coder_forecastSarmaHyndmanMex_info.c</span>
+<span class="td-line-number">   17   </span><span class="td-line-normal">link  /nologo /manifest /DLL /LIBPATH:"C:\Program Files\MATLAB\R2014b\extern\lib\win64\microsoft" libmx.lib libmex.lib libmat.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /EXPORT:mexFunction /NODEFAULTLIB:LIBCMT   /OUT:forecastSarmaHyndmanMex_mex.mexw64  forecastSarmaHyndmanMex_data.obj forecastSarmaHyndmanMex_initialize.obj forecastSarmaHyndmanMex_terminate.obj forecastSarmaHyndmanMex.obj _coder_forecastSarmaHyndmanMex_api.obj forecastSarmaHyndmanMex_emxutil.obj _coder_forecastSarmaHyndmanMex_mex.obj _coder_forecastSarmaHyndmanMex_info.obj   @forecastSarmaHyndmanMex_mex_mex.arf</span>
+<span class="td-line-number">   18   </span><span class="td-line-normal">   Creating library forecastSarmaHyndmanMex_mex.lib and object forecastSarmaHyndmanMex_mex.exp</span>
 <span class="td-line-number">   19   </span><span class="td-line-normal">Build completed using compiler msvcsdk</span>
-<span class="td-line-number">   20   </span><span class="td-line-normal">mt -outputresource:"fc_SARMA_mex_mex.mexw64;2" -manifest "fc_SARMA_mex_mex.mexw64.manifest"</span>
+<span class="td-line-number">   20   </span><span class="td-line-normal">mt -outputresource:"forecastSarmaHyndmanMex_mex.mexw64;2" -manifest "forecastSarmaHyndmanMex_mex.mexw64.manifest"</span>
 <span class="td-line-number">   21   </span><span class="td-line-normal">Microsoft (R) Manifest Tool version 6.1.7716.0</span>
 <span class="td-line-number">   22   </span><span class="td-line-normal">Copyright (c) Microsoft Corporation 2009. </span>
 <span class="td-line-number">   23   </span><span class="td-line-normal">All rights reserved.</span>

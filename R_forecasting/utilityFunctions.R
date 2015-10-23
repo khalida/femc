@@ -14,7 +14,8 @@ importDemandData <- function() {
   }
   
   # Find the most common no. of reads:
-  commonReads <- as.numeric(names(table(as.numeric(nMeterReads))[table(as.numeric(nMeterReads)) == max(table(as.numeric(nMeterReads)))]))
+  commonReads <- as.numeric(names(table(as.numeric(nMeterReads))[
+    table(as.numeric(nMeterReads)) == max(table(as.numeric(nMeterReads)))]))
   
   # Select only those meters with common no. of reads:
   metersWithCommonReads <- uniqueMeters[nMeterReads == commonReads]
