@@ -1,0 +1,23 @@
+function [ permutations ] = steinhausJohnsonTrotter( n )
+% steinhausJohnsonTrotter Produce permutations using SJT algorithm:
+
+partialList = {1};
+
+for ii = 1:n
+    nRows = length(partialList);
+
+    for iRow = 1:nRows
+        for insertAfter = length(partialList{iRow}):-1:0
+           partialList{iRow} = [partialList{iRow}(1:insertAfter), ...
+               ii] 
+        end
+    end
+end
+
+nPermutations = factorial(n);
+permutations = zeros(nPermutations, n);
+
+
+
+end
+

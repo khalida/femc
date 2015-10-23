@@ -1,0 +1,41 @@
+function [ permutations ] = steinhausJohnsonTrotterLimited( n, delta )
+% steinhausJohnsonTrotter Produce permutations using SJT algorithm:
+
+partialList = {1};
+
+for ii = 2:n
+    nRows = length(partialList);
+    newRowIdx = 1;
+    newPartialList = cell(ii*nRows, 1);
+    
+    for iRow = 1:nRows
+        firstInsertAfter = length(partialList{1});
+        if mod(iRow, 2) == 0
+            insertAfterRange = max(0, firstInsertAfter-delta):...
+                1:firstInsertAfter;
+        else
+            insertAfterRange = firstInsertAfter:-1:...
+                max(0, firstInsertAfter-delta);
+        end
+        
+        for insertAfter = insertAfterRange
+            [~, idxShifts] = ismemember(partialList{iRow}, ...
+                partialList{iRow});
+            
+            before = partialList{iRow}(1:insertAfter);
+            after = partialList{iRow}((insertAfter+1):end);
+            
+            newPartialList{newRowIdx, 1} = [before, ii, after];
+            newRowIdx = newRowIdx + 1;
+        end
+    end
+    
+    partialList = newPartialList;
+end
+
+permutations = cell2mat(partialList);
+
+% Remove any which have indexes further permuted than allowed:
+
+
+end

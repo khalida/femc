@@ -1,6 +1,6 @@
 function [ loss ] = lossPfem( t, y, parameters)  %#codegen
 % lossPfem: Compute loss metric for [k x nObservations] matrices of
-% target, t, and forecast values, y.
+            % target, t, and forecast values, y.
 
 % INPUTS:
 % t:            matrix of target (actual) values; [horizon x nObservations]
@@ -34,35 +34,46 @@ if delta < 0 || ~isWholeNumber(delta)
 end
 if delta > horizon, error('delta must be smaller than (or equal) k'); end
 
-limitedPermutations = makeAllLimitedPermutations(horizon, delta);
-nLimitedPermutations = size(limitedPermutations, 2);
-
-% DEBUG:
-disp(nLimitedPermutations);
-allLosses = zeros(nLimitedPermutations, nObservations);
-
-for iPermutation = 1:nLimitedPermutations;
-    yPermuted = y(limitedPermutations(:, iPermutation), :);
+if delta == 0 % No permutation radius; just have original order
     
     % Apply additional penalty for underforcasts
-    temporaryLoss = (abs(t - yPermuted).*((t - yPermuted)<=0) + ...
-        abs(t - yPermuted).*((t - yPermuted)>0).*alpha)./(1+alpha);
+    loss = (abs(t - y).*((t - y)<=0) + ...
+        abs(t - y).*((t - y)>0).*alpha)./(1+alpha);
     
     % Apply additional weight to earlier time-steps
     weights = linspace(gamma, 1, horizon)';
     weights = weights./(sum(weights)/horizon);    % So weights sum up to k
     weights = repmat(weights, [1, nObservations]);
-    temporaryLoss = temporaryLoss.*weights;
+    loss = loss.*weights;
     
     % Take mean using appropriate exponent for errors
-    allLosses(iPermutation, :) = ...
-        mean(temporaryLoss.^beta, 1).^(1/beta);
+    loss = mean(loss.^beta, 1).^(1/beta);
+else
+    limitedPermutations = makeAllLimitedPermutations(horizon, delta);
+    nLimitedPermutations = size(limitedPermutations, 2);
+    allLosses = zeros(nLimitedPermutations, nObservations);
+    
+    for iPermutation = 1:nLimitedPermutations;
+        yPermuted = y(limitedPermutations(:, iPermutation), :);
+        
+        % Apply additional penalty for underforcasts
+        loss_temp = (abs(t - yPermuted).*((t - yPermuted)<=0) + ...
+            abs(tPermuted - yPermuted).*((tPermuted - yPermuted)>0).*alpha)./(1+alpha);
+        
+        % Apply additional weight to earlier time-steps
+        weights = linspace(gamma, 1, horizon)';
+        weights = weights./(sum(weights)/horizon);    % So weights sum up to k
+        weights = repmat(weights, [1, nObservations]);
+        loss_temp = loss_temp.*weights;
+        
+        % Take mean using appropriate exponent for errors
+        allLosses(iPermutation, :) = mean(loss_temp.^beta, 1).^(1/beta);
+    end
+    
+    % Find mean losses over all observations
+    allMeanLosses = mean(allLosses, 2);
+    [~, minIdx] = min(allMeanLosses);
+    loss = allLosses(minIdx, :);
 end
-
-% Find minimum losses (lowest-loss permutation) over all observations
-allMinimumLosses = min(allLosses, 1);
-
-% And return these losses
-loss = allMinimumLosses;
 
 end
