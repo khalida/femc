@@ -1,89 +1,88 @@
 function [ runningPeak ] = ...
-    onlineMPC_controller_fcastFree( simRange, net, demand, batt_cap, ...
-    max_charge_rate, load_pattern, hourNum, steps_per_hour, runControl)
+    mpcControllerForecastFree( simRange, net, demand, batteryCapacity, ...
+    maximumChargeRate, loadPattern, hourNum, stepsPerHour, MPC)
 
-%ONLINEMPC_CONTROLLER_FCASTFREE Time series simulation of a forecast free
-%                           controller
+% mpcControllerForecastFree: Time series simulation of a forecast free
+                                % controller
 
 %% Initialisations
-demand_delays = load_pattern;
-SoC = 0.5*batt_cap;
-ts = simRange(1):(1/steps_per_hour):simRange(2); % time in hours
+demandDelays = loadPattern;
+stateOfCharge = 0.5*batteryCapacity;
+timeInHours = simRange(1):(1/stepsPerHour):simRange(2);
 
 %% Pre-Allocations
-runningPeak = zeros(1, length(ts));
+runningPeak = zeros(1, length(timeInHours));
 
-if ~isfield(runControl.MPC, 'knowCurrentDemand'); runControl.MPC.knowCurrentDemand = true;
-    warning('Using default MPC.knowCurrentDemand');  end;
-if ~isfield(runControl.MPC, 'SPrecourse'); runControl.MPC.SPrecourse = false;
-    warning('Using default MPC.SPrecourse');  end;
-if ~isfield(runControl.MPC, 'resetPeakToMean'); runControl.MPC.resetPeakToMean = false;
-    warning('Using default MPC.resetPeakToMean');  end;
-if ~isfield(runControl.MPC, 'billingPeriodDays'); runControl.MPC.billingPeriodDays = 1;
-    warning('Using default MPC.billingPeriodDays');  end;
+%% Set Default Values:
+MPC = setDefaultValues(MPC, {'knowCurrentDemand', false, ...
+    'SPrecourse', false, 'resetPeakToMean', false, ...
+    'billingPeriodDays', 1});
 
-if runControl.MPC.resetPeakToMean
-    peak_so_far = mean(load_pattern);
+if MPC.resetPeakToMean
+    peakSoFar = mean(loadPattern);
 else
-    peak_so_far = 0;
+    peakSoFar = 0;
 end
 daysPassed = 0;
 
 %% Run through time series
 idx = 1;
-for t = ts
-    demand_now = demand(idx);
-    hour_now = hourNum(idx);
+for t = timeInHours
+    demandNow = demand(idx);
+    hourNow = hourNum(idx);
     
-    if runControl.MPC.knowCurrentDemand
-        featVec = [demand_delays; demand_now; SoC; peak_so_far; hour_now];
+    if MPC.knowCurrentDemand
+        featureVector = [demandDelays; demandNow; stateOfCharge;...
+            peakSoFar; hourNow];
     else
-        featVec = [demand_delays; SoC; peak_so_far; hour_now];
+        featureVector = [demandDelays; stateOfCharge; peakSoFar; hourNow];
     end
     
-    fcastControllerOutput = net( featVec );
+    forecastFreeControllerOutput = net( featureVector );
     
-    if runControl.MPC.SPrecourse
-        pwr2batt_now = fcastControllerOutput(1);
-        % peakForecastPower = fcastControllerOutput(2);
-        peakForecastPower = max([fcastControllerOutput(2); peak_so_far]);
+    % Apply set point recourse if selected
+    if MPC.SPrecourse
+        powerToBatteryNow = forecastFreeControllerOutput(1);
+        peakForecastPower = max([forecastFreeControllerOutput(2); peakSoFar]);
         
-        if (demand_now + pwr2batt_now) > peakForecastPower
-            pwr2batt_now = peakForecastPower - demand_now;
+        if (demandNow + powerToBatteryNow) > peakForecastPower
+            powerToBatteryNow = peakForecastPower - demandNow;
         end
     else
-        pwr2batt_now = fcastControllerOutput;
+        powerToBatteryNow = forecastFreeControllerOutput;
     end
     
-    % Apply control decision
-    pwr2batt_now = max([pwr2batt_now, -SoC*steps_per_hour, -demand_now, ...
-        -max_charge_rate]);
-    pwr2batt_now = min([pwr2batt_now, (batt_cap-SoC)*steps_per_hour, ...
-        max_charge_rate]);
-    SoC = SoC + pwr2batt_now*(1/steps_per_hour);
+    % Apply control decision, subject to rate and state of charge
+    % constriants
+    powerToBatteryNow = max([powerToBatteryNow, ...
+        -stateOfCharge*stepsPerHour, -demandNow, -maximumChargeRate]);
+    powerToBatteryNow = min([powerToBatteryNow, (batteryCapacity-stateOfCharge)*stepsPerHour, ...
+        maximumChargeRate]);
+    stateOfCharge = stateOfCharge + powerToBatteryNow*(1/stepsPerHour);
     
     % Update current peak power
-    if hour_now == 1 &&  idx ~= 1 % Reset if we are at start of day (and NOT first time-step!)
+    % Reset if we are at start of day (and NOT first interval)
+    if hourNow == 1 &&  idx ~= 1
         daysPassed = daysPassed + 1;
     end
     
-    if daysPassed == runControl.MPC.billingPeriodDays
+    if daysPassed == MPC.billingPeriodDays
         daysPassed = 0;
         
-        if runControl.MPC.resetPeakToMean
-            peak_so_far = mean(load_pattern);
+        if MPC.resetPeakToMean
+            peakSoFar = mean(loadPattern);
         else
-            peak_so_far = 0;
+            peakSoFar = 0;
         end
     else
-        peak_so_far = max(peak_so_far, demand_now + pwr2batt_now);
+        peakSoFar = max(peakSoFar, demandNow + powerToBatteryNow);
     end
     
     % Compute outputs for saving
-    runningPeak(idx) = peak_so_far;
+    runningPeak(idx) = peakSoFar;
     
-    % Shift demand delays one by one (and add current demand)
-    demand_delays = [demand_delays(2:end); demand(idx)];
+    % Shift demand delays (and add current demand)
+    demandDelays = [demandDelays(2:end); demand(idx)];
     idx = idx + 1;
 end
 

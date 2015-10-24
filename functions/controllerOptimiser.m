@@ -1,18 +1,18 @@
 function [powerToBattery, exitFlag] = controllerOptimiser(forecast, ...
-    stateOfCharge, demand, batteryCapacity, maximumChargeRate, ...
+    stateOfCharge, demandNow, batteryCapacity, maximumChargeRate, ...
     stepsPerHour, peakSoFar, MPC)
 
-% controllerOptimiser: Optimise the control given a forecast of demand
+% controllerOptimiser: Optimise the control given a forecast of demandNow
 %                       using linear programming
 
 % INPUTS:
-% forecast:          demand forecast for next k steps [kW]
+% forecast:          demandNow forecast for next k steps [kW]
 % stateOfCharge:     kWh currently in the battery
-% demand:            actual demand for current time-step [kW]
+% demandNow:            actual demandNow for current time-step [kW]
 % batteryCapacity:   kWh capacity of the battery
 % maximumChargeRate: maximum kW in/out of battery
 % stepsPerHour:      No. of intervals per hour
-% peakSoFar:         running peak demand in billing period [kW]
+% peakSoFar:         running peak demandNow in billing period [kW]
 % MPC:               structure containing details of MPC set-up
 
 % OUTPUTS:
@@ -20,7 +20,7 @@ function [powerToBattery, exitFlag] = controllerOptimiser(forecast, ...
 % exitFlag:          status flag of the linear program solver
 
 % Set Defaults for MPC if not specified in MPC structure
-MPC = setDefaultValues(MPC, {'secondWeight', 1e-4, 'knowCurrentDemand', ...
+MPC = setDefaultValues(MPC, {'secondWeight', 1e-4, 'knowCurrentdemandNow', ...
     false, 'clipNegativeFcast', true, 'iterFactor', 1.0,...
     'rewardMargin', false, 'setPoint', false, 'chargeWhenCan', false, ...
     'suppressOutput', true});
@@ -31,8 +31,8 @@ end
 
 k = length(forecast);
 
-if MPC.knowCurrentDemand
-    forecast(1) = demand;
+if MPC.knowCurrentdemandNow
+    forecast(1) = demandNow;
 end
 
 %% Make simple setPoint decision; otherwise solve linear program
@@ -124,7 +124,7 @@ else
     ub = [ones([k 1]).*maximumChargeRate; Inf; Inf.*ones([k 1])];
     
     % 2. Power withdrawn from battery is bounded below by
-    %       -maximumChargeRate and forecast demand (no export allowed)
+    %       -maximumChargeRate and forecast demandNow (no export allowed)
     %       leave x_(k+1) unbounded below if we want to reward margin; i.e.
     %       keep solutions as far from establishing a new peak as possible.
     if MPC.rewardMargin

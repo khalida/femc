@@ -1,90 +1,87 @@
-function [ runningPeak, exitFlag, fcUsed ] = ...
-    onlineMPC_controller( simRange, net, godCast, demand, ...
-    batt_cap, max_charge_rate, load_pattern, hourNum, steps_per_hour, ...
-    k, runControl)
+function [ runningPeak, exitFlag, forecastUsed ] = ...
+    mpcController( simRange, net, godCast, demand, ...
+    batteryCapacity, maximumChargeRate, loadPattern, hourNum,...
+    stepsPerHour, k, runControl)
 
-%ONLINEMPC_CONTROLLER Simulate t-series behaviour of MPC controller with
-%given forecast
-%   Replaces the original 'MG_MPC_fc' simulink model
+% mpcController: Simulate time series behaviour of MPC controller with
+        % given forecast
 
-% Default MPC values if not given:
-if ~isfield(runControl, 'MPC'); runControl.MPC.values = 'default';
-warning('Using default MPC values');  end;
-if ~isfield(runControl.MPC, 'SPrecourse'); runControl.MPC.SPrecourse = false;
-warning('Using default MPC.SPrecourse');  end;
-if ~isfield(runControl.MPC, 'resetPeakToMean'); runControl.MPC.resetPeakToMean = false;
-warning('Using default MPC.resetPeakToMean');  end;
-if ~isfield(runControl.MPC, 'billingPeriodDays'); runControl.MPC.billingPeriodDays = 1;
-warning('Using default MPC.billingPeriodDays');  end;
+% Set default MPC values if not given:
+runControl = setDefaultValues(runControl, {'MPC', 'default'});
+runControl.MPC = setDefaultValues(runControl.MPC,...
+    {'SPrecourse', false, 'resetPeakToMean', false,...
+    'billingPeriodDays', 1});
 
-%% Initialisations
-demand_delays = load_pattern;
-SoC = 0.5*batt_cap;
+%% Initializations
+demandDelays = loadPattern;
+stateOfCharge = 0.5*batteryCapacity;
 
 if runControl.MPC.resetPeakToMean
-    peak_so_far = mean(load_pattern);
+    peakSoFar = mean(loadPattern);
 else
-    peak_so_far = 0;
+    peakSoFar = 0;
 end
 daysPassed = 0;
 
-ts = simRange(1):(1/steps_per_hour):simRange(2); % time in hours
+timeInHours = simRange(1):(1/stepsPerHour):simRange(2);
 
 %% Pre-Allocations
-runningPeak = zeros(1, length(ts));
-exitFlag = zeros(1, length(ts));
-fcUsed = zeros(k, length(ts));
+runningPeak = zeros(1, length(timeInHours));
+exitFlag = zeros(1, length(timeInHours));
+forecastUsed = zeros(k, length(timeInHours));
 
 %% Run through time series
 idx = 1;
-for t = ts
-    demand_now = demand(idx);
-    hour_now = hourNum(idx);
+for t = timeInHours
+    demandNow = demand(idx);
+    hourNow = hourNum(idx);
     
     if runControl.godCast
-        fcast = godCast(idx, :)';
-    elseif runControl.naiveP
-        fcast = demand_delays;
+        forecast = godCast(idx, :)';
+    elseif runControl.naivePeriodic
+        forecast = demandDelays;
     elseif runControl.MPC.setPoint
-        fcast = ones(size(demand_delays)).*demand_now;
+        forecast = ones(size(demandDelays)).*demandNow;
     else
         % Produce forecast from input net
-        fcast = fc_FFNN( net, demand_delays, true );
+        forecast = fc_FFNN( net, demandDelays, true );
     end
     
-    fcUsed(:, idx) = fcast;
+    forecastUsed(:, idx) = forecast;
     
-    [pwr2batt, exitFlag(idx)] = controller_optimiser_Matlab(fcast, SoC, ...
-        demand_now, batt_cap, max_charge_rate, steps_per_hour, peak_so_far, ...
-        runControl.MPC);
+    [powerToBattery, exitFlag(idx)] = controllerOptimiser(forecast, ...
+        stateOfCharge, demandNow, batteryCapacity, maximumChargeRate, ...
+        stepsPerHour, peakSoFar, runControl.MPC);
     
+    % Implement set point recourse, if selected
     if runControl.MPC.SPrecourse
-        % Peak power drawn over horizon (and existing peak)
         
-        % peakForecastPower = max(pwr2batt(:) + fcast(:));
-        peakForecastPower = max([pwr2batt(:) + fcast(:); peak_so_far]);
+        % Peak power based on current forecast and decisions
+        peakForecastPower = max([powerToBattery(:) + forecast(:); peakSoFar]);
         
-        % Check if optimal control action combined with actual current demand
-        % will exceed this peak - and if so rectify charging action
-        if (demand_now + pwr2batt(1)) > peakForecastPower
-            pwr2batt_now = peakForecastPower - demand_now;
+        % Check if optimal control action combined with actual demand
+        % will exceed this peak; rectify charging action if so:
+        if (demandNow + powerToBattery(1)) > peakForecastPower
+            powerToBatteryNow = peakForecastPower - demandNow;
         else
-            pwr2batt_now = pwr2batt(1);
+            powerToBatteryNow = powerToBattery(1);
         end
         
     else
-        pwr2batt_now = pwr2batt(1);
+        powerToBatteryNow = powerToBattery(1);
     end
     
-    % Apply control action to plant
-    pwr2batt_now = max([pwr2batt_now, -SoC*steps_per_hour, -demand_now, ...
-        -max_charge_rate]);
-    pwr2batt_now = min([pwr2batt_now, (batt_cap-SoC)*steps_per_hour, ...
-        max_charge_rate]);
-    SoC = SoC + pwr2batt_now*(1/steps_per_hour);
+    % Apply control action to plant (subject to rate and state of charnge
+    % constraints)
+    powerToBatteryNow = max([powerToBatteryNow, ...
+        -stateOfCharge*stepsPerHour, -demandNow, -maximumChargeRate]);
+    powerToBatteryNow = min([powerToBatteryNow, ...
+        (batteryCapacity-stateOfCharge)*stepsPerHour, maximumChargeRate]);
+    stateOfCharge = stateOfCharge + powerToBatteryNow*(1/stepsPerHour);
     
     % Update current peak power
-    if hour_now == 1 &&  idx ~= 1 % Reset if we are at start of day (and NOT first time-step!)
+    % Reset if we are at start of day(and NOT first time-step!)
+    if hourNow == 1 &&  idx ~= 1
         daysPassed = daysPassed + 1;
     end
     
@@ -92,19 +89,19 @@ for t = ts
         daysPassed = 0;
         
         if runControl.MPC.resetPeakToMean
-            peak_so_far = mean(load_pattern);
+            peakSoFar = mean(loadPattern);
         else
-            peak_so_far = 0;
+            peakSoFar = 0;
         end
     else
-        peak_so_far = max(peak_so_far, demand_now + pwr2batt_now);
+        peakSoFar = max(peakSoFar, demandNow + powerToBatteryNow);
     end
     
     % Compute outputs for saving
-    runningPeak(idx) = peak_so_far;
+    runningPeak(idx) = peakSoFar;
     
-    % Shift demand delays one by one (and add current demand)
-    demand_delays = [demand_delays(2:end); demand(idx)];
+    % Shift demandDelays (and add current demand)
+    demandDelays = [demandDelays(2:end); demand(idx)];
     idx = idx + 1;
 end
 

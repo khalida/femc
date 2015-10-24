@@ -1,22 +1,22 @@
-function [ Sim, results ] = testBestFcasts( pars, all_demand_vals, Sim, ...
-    MPC, k)
+function [ Sim, results ] = testBestForecasts( pars, allDemandValues,...
+    Sim, MPC, k)
 
-%TESTBESTFCASTS Test the performance of best forecasts selected via
-%                   stochstic selection
+% testBestForecasts: Test the performance of best parameterized forecasts
+% selected using stochstic selection.
 
 %% Pre-Allocation
-Sim.hour_numbers_ts = Sim.hour_numbers(Sim.ts_idxs, :);
+Sim.hourNumbersTest = Sim.hourNumbers(Sim.testIdxs, :);
 
-% Sim time (& range) for fcast testing
-simRange_test = [0 Sim.num_hours_test - 1/Sim.steps_per_hour];
+% Sim time (& range) for forecast testing
+simRangeTest = [0 Sim.nHoursTest - 1/Sim.stepsPerHour];
 
-peakReductions = cell(Sim.numInstances, 1);
-peakPowers = cell(Sim.numInstances, 1);
-smallestExitFlag = cell(Sim.numInstances, 1);
-all_kWhs = zeros(Sim.numInstances, 1);
-lossTestResults = cell(Sim.numInstances, 1);
+peakReductions = cell(Sim.nInstances, 1);
+peakPowers = cell(Sim.nInstances, 1);
+smallestExitFlag = cell(Sim.nInstances, 1);
+allKWhs = zeros(Sim.nInstances, 1);
+lossTestResults = cell(Sim.nInstances, 1);
 
-for instance = 1:Sim.numInstances
+for instance = 1:Sim.nInstances
     peakReductions{instance} = zeros(Sim.nMethods,1);
     peakPowers{instance} = zeros(Sim.nMethods,1);
     smallestExitFlag{instance} = zeros(Sim.nMethods,1);
@@ -25,163 +25,164 @@ for instance = 1:Sim.numInstances
 end
 
 % Extract data from Sim for efficiency (parfor comms overhead)
-battCapRatio = Sim.battCapRatio;
-batt_charge_factor = Sim.batt_charge_factor;
-tr_idxs = Sim.tr_idxs;
-ts_idxs = Sim.ts_idxs;
+batteryCapacityRatio = Sim.batteryCapacityRatio;
+batteryChargingFactor = Sim.batteryChargingFactor;
+trainIdxs = Sim.trainIdxs;
+testIdxs = Sim.testIdxs;
 lossTypes = Sim.lossTypes;
 
-steps_per_day = Sim.steps_per_day;
-numInstances = Sim.numInstances;
+stepsPerDay = Sim.stepsPerDay;
+nInstances = Sim.nInstances;
 
 nMethods = Sim.nMethods;
 nTrainMethods = Sim.nTrainMethods;
 lossTypesStrings = Sim.lossTypesStrings;
-hour_numbers_ts = Sim.hour_numbers_ts;
-steps_per_hour = Sim.steps_per_hour;
+hourNumbersTest = Sim.hourNumbersTest;
+stepsPerHour = Sim.stepsPerHour;
 
-Evaltic = tic;
+testingTic = tic;
 
-if ~isfield(MPC, 'billingPeriodDays'); MPC.billingPeriodDays = 1;
-warning('Using default MPC.billingPeriodDays');  end;
+% Set any missing default values in MPC structure
+MPC = setDefaultValues(MPC, 'billingPeriodDays', 1});
+
 
 %% Run Models for performance evaluation
-disp('==== Fcast Evaluation ===')
+disp('==== Forecast Testing ===')
 
-parfor instance = 1:numInstances
-% for instance = 1:numInstances
-
-    all_kWhs(instance) = mean(all_demand_vals{instance});
-
+parfor instance = 1:nInstances
+    
+    allKWhs(instance) = mean(allDemandValues{instance});
+    
     % Battery properties
-    batt_cap = all_kWhs(instance)*battCapRatio*steps_per_day;
-    max_charge_rate = batt_charge_factor*batt_cap;
+    batteryCapacity = allKWhs(instance)*batteryCapacityRatio*stepsPerDay;
+    maximumChargeRate = batteryChargingFactor*batteryCapacity;
     
     % Separate Data into training and testing
-    demand_vals_tr = all_demand_vals{instance}(tr_idxs);
-    demand_vals_ts = all_demand_vals{instance}(ts_idxs);
-    peakLocalPower = max(demand_vals_ts);
+    demandValuesTrain = allDemandValues{instance}(trainIdxs);
+    demandValuesTest = allDemandValues{instance}(testIdxs);
+    peakLocalPower = max(demandValuesTest);
     
     % Create 'historical load pattern' used for initialisation etc.
-    load_pattern = mean(reshape(demand_vals_tr, ...
-        [k, length(demand_vals_tr)/k]), 2);
+    loadPattern = mean(reshape(demandValuesTrain, ...
+        [k, length(demandValuesTrain)/k]), 2);
     
-    godCast_val = zeros(length(ts_idxs), k);
+    godCastValues = zeros(length(testIdxs), k);
     for jj = 1:k
-        godCast_val(:, jj) = circshift(demand_vals_ts, -[jj-1, 0]);
+        godCastValues(:, jj) = circshift(demandValuesTest, -[jj-1, 0]);
     end
     
     %% For each method (except non-opt parameterised ones)
-    for fcType = 1:nMethods
-
+    for forecastType = 1:nMethods
+        
         runControl = [];
         runControl.MPC = MPC;
         
-        % DEBUG: print lossTypesString to scree:
-        disp('lossTypesStrings{fcType}:');
-        disp(lossTypesStrings{fcType});
-        
-        if strcmp(lossTypesStrings{fcType}, 'fcastFree')
+        if strcmp(lossTypesStrings{forecastType}, 'fcastFree') %#ok<PFBNS>
             % Implement fcastFree controller
-
+            
             % Evaluate performance of controller
-            [ runningPeak ] = onlineMPC_controller_fcastFree(...
-                simRange_test, pars{instance, fcType}, demand_vals_ts,...
-                batt_cap, max_charge_rate, load_pattern,...
-                hour_numbers_ts, steps_per_hour, runControl);
+            [ runningPeak ] = mpcControllerForecastFree( simRangeTest,...
+                pars{instance, forecastType}, demandValuesTest,...
+                batteryCapacity, maximumChargeRate, loadPattern,...
+                hourNumbersTest, stepsPerHour, MPC);
             
             exitFlag = 1;
         else
-            % Implement a normal fcast-driven or set-point controller
-
+            % Implement a normal forecast-driven or set-point controller
+            
             % Check if we are on godCast or naivePeriodic
-            runControl.naiveP = ...
-                strcmp(lossTypesStrings{fcType}, 'naivePeriodic');
+            runControl.naivePeriodic = ...
+                strcmp(lossTypesStrings{forecastType}, 'naivePeriodic');
             
             runControl.godCast = ...
-                strcmp(lossTypesStrings{fcType}, 'godCast');
+                strcmp(lossTypesStrings{forecastType}, 'godCast');
             
             runControl.MPC.setPoint = ...
-                strcmp(lossTypesStrings{fcType}, 'setPoint');
+                strcmp(lossTypesStrings{forecastType}, 'setPoint');
             
             % If method is set-point then show it current demand
             if(runControl.MPC.setPoint)
                 runControl.MPC.knowCurrentDemand = true;
             end
             
-            [runningPeak, exitFlag, fcUsed] = onlineMPC_controller( ...
-                simRange_test, pars{instance, fcType}, ...
-                godCast_val, demand_vals_ts, batt_cap, max_charge_rate, ...
-                load_pattern, hour_numbers_ts, steps_per_hour, k,...
-                runControl);
+            [runningPeak, exitFlag, fcUsed] = mpcController( ...
+                simRangeTest, pars{instance, forecastType}, ...
+                godCastValues, demandValuesTest, batteryCapacity, ...
+                maximumChargeRate, loadPattern, hourNumbersTest, ...
+                stepsPerHour, k, runControl);
             
-            % Compute the performance of the fcast by all train metrics
-            if ~strcmp(lossTypesStrings{fcType}, 'setPoint');
+            % Compute the performance of the forecast by all metrics
+            if ~strcmp(lossTypesStrings{forecastType}, 'setPoint');
                 for eachError = 1:length(lossTypes)
-                    lossTestResults{instance}(fcType, eachError)...
-                        = mean(lossTypes{eachError}(godCast_val', fcUsed));
+                    lossTestResults{instance}(forecastType, eachError)...
+                        = mean(lossTypes{eachError}(godCastValues', fcUsed));
                 end
             end
         end
         
         % Extract simulation results
-        grid_power_ts = runningPeak';
-        grid_daily_cols = reshape(grid_power_ts, [k*MPC.billingPeriodDays,...
-            length(grid_power_ts)/(k*MPC.billingPeriodDays)]);
+        gridPowerTimsSeries = runningPeak';
+        gridBillingPeriodColumns = reshape(gridPowerTimsSeries,...
+            [k*MPC.billingPeriodDays,...
+            length(gridPowerTimsSeries)/(k*MPC.billingPeriodDays)]);
         
-        grid_daily_peaks = max(grid_daily_cols);
+        gridBillingPeriodPeaks = max(gridBillingPeriodColumns);
         
-        demand_daily_cols = reshape(demand_vals_ts, [k*MPC.billingPeriodDays, ...
-            length(demand_vals_ts)/(k*MPC.billingPeriodDays)]);
+        demandBillingPeriodColumns = reshape(demandValuesTest,...
+            [k*MPC.billingPeriodDays, ...
+            length(demandValuesTest)/(k*MPC.billingPeriodDays)]);
         
-        demand_daily_peaks = max(demand_daily_cols);
+        demandBillingPeriodPeaks = max(demandBillingPeriodColumns);
         
-        daily_ratios = grid_daily_peaks./demand_daily_peaks;
+        billingPeriodRatios = ...
+            gridBillingPeriodPeaks./demandBillingPeriodPeaks;
         
-        peakReductions{instance}(fcType) = 1 - mean(daily_ratios);
-        peakPowers{instance}(fcType) = peakLocalPower;
-        smallestExitFlag{instance}(fcType) = min(exitFlag);
+        peakReductions{instance}(forecastType) = ...
+            1 - mean(billingPeriodRatios);
+        peakPowers{instance}(forecastType) = peakLocalPower;
+        smallestExitFlag{instance}(forecastType) = min(exitFlag);
         
     end
-    disp(instance/numInstances);
+    disp('Instance Completed: ');
+    disp(instance);
 end
 
-timeEval = toc(Evaltic);
-disp('Time to Evaluate Fcasts:'); disp(timeEval);
+timeTesting = toc(testingTic);
+disp('Time to Test Forecasts:'); disp(timeTesting);
 
 
 %% Convert from cellArrays to arrays
 peakReductions = reshape(cell2mat(peakReductions), ...
-    [nMethods, Sim.numAggregates, length(Sim.numCustomers)]);
+    [nMethods, Sim.nAggregates, length(Sim.nCustomers)]);
 
 peakPowers = reshape(cell2mat(peakPowers), ...
-    [nMethods, Sim.numAggregates, length(Sim.numCustomers)]);
+    [nMethods, Sim.nAggregates, length(Sim.nCustomers)]);
 
 smallestExitFlag = reshape(cell2mat(smallestExitFlag), ...
-    [nMethods, Sim.numAggregates, length(Sim.numCustomers)]);
+    [nMethods, Sim.nAggregates, length(Sim.nCustomers)]);
 
-all_kWhs = reshape(all_kWhs, ...
-    [Sim.numAggregates, length(Sim.numCustomers)]);
+allKWhs = reshape(allKWhs, ...
+    [Sim.nAggregates, length(Sim.nCustomers)]);
 
 lossTestResults = reshape(cell2mat(lossTestResults), ...
-    [nMethods, Sim.numAggregates, length(Sim.numCustomers), nTrainMethods]);
+    [nMethods, Sim.nAggregates, length(Sim.nCustomers), nTrainMethods]);
 
 
 %% Fromatting
 % Collapse Trial Dimension
-peakReductions_ = reshape(peakReductions, ...
-    [nMethods, length(Sim.numCustomers)*Sim.numAggregates]);
+peakReductionsTrialFlattened = reshape(peakReductions, ...
+    [nMethods, length(Sim.nCustomers)*Sim.nAggregates]);
 
-peakPowers_ = reshape(peakPowers, ...
-    [nMethods, length(Sim.numCustomers)*Sim.numAggregates]);
+peakPowersTrialFlattened = reshape(peakPowers, ...
+    [nMethods, length(Sim.nCustomers)*Sim.nAggregates]);
 
 %% Put results together in structure for passing out
 results.peakReductions = peakReductions;
-results.peakReductions_ = peakReductions_;
+results.peakReductionsTrialFlattened = peakReductionsTrialFlattened;
 results.peakPowers = peakPowers;
-results.peakPowers_ = peakPowers_;
+results.peakPowersTrialFlattened = peakPowersTrialFlattened;
 results.smallestExitFlag = smallestExitFlag;
-results.all_kWhs = all_kWhs;
+results.allKWhs = allKWhs;
 results.lossTestResults = lossTestResults;
 
 end

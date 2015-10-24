@@ -1,10 +1,9 @@
-function [ Pfem, Pemd, Sim, pars ] = ...
-    trainAllForecasts( Pfem, Pemd, MPC, Sim, allDemandValues, ...
-    trainControl, k)
+function [ Pfem, Pemd, Sim, pars ] = trainAllForecastsParallel( Pfem, ...
+    Pemd, MPC, Sim, allDemandValues, trainControl, k)
 
-% trainAllForecasts: Train parameters for all trained fcasts. Run through
-    %   each instance and each error metric and output parameters of trained
-    %   NN forecasts.
+% trainAllForecastsParallel: Train parameters for all trained fcasts
+%   Run through each instance and each error metric and output
+%   parameters of trained NN forecasts.
 
 tic;
 
@@ -13,9 +12,8 @@ Sim.nHoursTrain = Sim.hoursPerDay*Sim.nDaysTrain;
 Sim.nHoursTest = Sim.hoursPerDay*Sim.nDaysTest;
 Sim.nHoursSelect = Sim.hoursPerDay*Sim.nDaysSelect;
 
-%% Generate PFEM grid-serach rows
-Pfem.num = length(Pfem.alphas)*length(Pfem.betas)*...
-    length(Pfem.gammas)*length(Pfem.deltas);
+%% Generate PFEM grid-search rows
+
 Pfem.loss = cell(Pfem.num, 1);
 Pfem.allValues = zeros(Pfem.num, 4);
 thisParameterization = 1;
@@ -23,7 +21,7 @@ for alpha = Pfem.alphas
     for beta = Pfem.betas
         for gamma = Pfem.gammas
             for delta = Pfem.deltas
-                Pfem.loss{thisParameterization} = @(t, y) lossPfem(t, y, ...
+                Pfem.loss{thisParameterization} = @(t, y) lossPfem(t, y,...
                     [alpha, beta, gamma, delta]);
                 Pfem.allValues(thisParameterization, :) = ...
                     [alpha, beta, gamma, delta];
@@ -34,7 +32,6 @@ for alpha = Pfem.alphas
 end
 
 %% Generate PEMD grid-serach rows
-Pemd.num = length(Pemd.as)*length(Pemd.bs)*length(Pemd.cs)*length(Pemd.ds);
 Pemd.loss = cell(Pemd.num, 1);
 Pemd.allValues = zeros(Pemd.num, 4);
 thisParameterization = 1;
@@ -42,8 +39,8 @@ for a = Pemd.as
     for b = Pemd.bs
         for c = Pemd.cs
             for d = Pemd.ds
-                Pemd.loss{thisParameterization} = ...
-                    @(t, y) lossPemd(t, y, [a, b, c, d]);
+                Pemd.loss{thisParameterization} = @(t, y) lossPemd(t, y,...
+                    [a, b, c, d]);
                 Pemd.allValues(thisParameterization, :) = [a, b, c, d];
                 thisParameterization = thisParameterization + 1;
             end
@@ -51,7 +48,7 @@ for a = Pemd.as
     end
 end
 
-%% Generate list of loss function handles and labels
+%% Generate list of loss fcn handles and labels
 Sim.lossTypes = [{@loss_mse, @loss_mape}, Pfem.loss', Pemd.loss'];
 Sim.lossTypesStrings = cell(1, length(Sim.lossTypes)+4);
 Pfem.range = (1:Pfem.num) + (length(Sim.lossTypes)-Pemd.num-Pfem.num);
@@ -84,17 +81,13 @@ Sim.nMethods = length(Sim.lossTypesStrings);
 timeTaken = cell(Sim.nInstances, 1);
 pars = cell(Sim.nInstances, Sim.nTrainMethods+1);
 
-for instance = 1:Sim.nInstances
-    timeTaken{instance} = zeros(Sim.nTrainMethods+1,1);
-end
-
 Sim.trainIdxs = 1:(Sim.stepsPerHour*Sim.nHoursTrain);
 Sim.hourNumbers = mod((1:size(allDemandValues{1}, 1))', k);
 Sim.hourNumbersTrain = Sim.hourNumbers(Sim.trainIdxs, :);
 
 trainControl.hourNumbersTrain = Sim.hourNumbersTrain;
 
-% Extract local data from structures for efficiency:
+% Extract data to local variables for efficiency:
 nInstances = Sim.nInstances;
 nTrainMethods = Sim.nTrainMethods;
 lossTypes = Sim.lossTypes;
@@ -103,7 +96,7 @@ hoursPerDay = Sim.hoursPerDay;
 stepsPerHour = Sim.stepsPerHour;
 batteryCapacityRatio = Sim.batteryCapacityRatio;
 nHoursTrain = Sim.nHoursTrain;
-batteryChargingFactor = Sim.batteryChargingFactor;
+batteryChargingFactor = Sim.batteryChargingFactor;  % ratio of charge rate to batt_cap
 hourNumbersTrain = Sim.hourNumbersTrain;
 nTrainShuffles = Sim.nTrainShuffles;
 nDaysSwap = Sim.nDaysSwap;
@@ -115,24 +108,27 @@ stepsPerDay = Sim.stepsPerDay;
 poolobj = gcp('nocreate');
 delete(poolobj);
 
-parfor instance = 1:nInstances
-    % Avoid parfor errors
-    tempTic = [];
+for instance = 1:nInstances
     % Extract aggregated demand
     demandValuesTrain = allDemandValues{instance}(trainIdxs);
-    for fcType = 1:(nTrainMethods+1)
-        if ~strcmp(lossTypesStrings{fcType}, 'forecastFree') %#ok<PFBNS>
-            tempTic = tic;
-            pars{instance, fcType} = ...
-                trainFfnnMultipleStarts( demandValuesTrain, ...
-                lossTypes{fcType}, trainControl); %#ok<PFBNS>
-            timeTaken{instance}(fcType) = toc(tempTic);
+    thisInstanceTimeTaken = zeros(nTrainMethods+1, 1);
+    tempTic = tic;
+    
+    % Create new pars cellArray for each instance (avoid parfor bugs)
+    thisInstancePars = cell(1, Sim.nTrainMethods+1);
+    
+    parfor forecastType = 1:(nTrainMethods+1)
+        if ~strcmp(lossTypesStrings{forecastType}, 'forecastFree')
+            thisInstancePars{forecastType} = trainFfnnMultipleStarts( ...
+                demandValuesTrain, lossTypes{min(forecastType,...
+                nTrainMethods)}, trainControl); %#ok<PFBNS>
+            thisInstanceTimeTaken(forecastType) = toc(tempTic);
         else
             
             % Train forecastFree model
             meanKWh = mean(demandValuesTrain);
             
-            % Seperate training data into initialization (1-day) 
+            % Seperate training data into initialisation (1-day)
             % and training (rest)
             nDaysInitialization = 1;
             initializationIdxs = 1:(nDaysInitialization*stepsPerDay);
@@ -146,7 +142,7 @@ parfor instance = 1:nInstances
                 demandValuesInitialization, ...
                 [k, length(demandValuesInitialization)/k]), 2);
             
-            % Create the godCast for training data
+            % Create the 'godCast' for training data
             godCast = zeros(size(demandValuesTrainOnly, 1), k);
             for ii = 1:k
                 godCast(:, ii) = circshift(demandValuesTrainOnly, -[ii-1, 0]);
@@ -154,7 +150,7 @@ parfor instance = 1:nInstances
             
             % Set-up parameters for on-line simulation
             batteryCapacity = meanKWh*batteryCapacityRatio*stepsPerDay;
-            maximumChargingRate = batteryChargingFactor*batteryCapacity;
+            maxChargingRate = batteryChargingFactor*batteryCapacity;
             simRangeTrain = [0 nHoursTrain - ...
                 hoursPerDay*nDaysInitialization - 1/stepsPerHour];
             
@@ -167,9 +163,9 @@ parfor instance = 1:nInstances
             % Run On-line Model to create training examples
             [ featureVectors, decisionVectors] = ...
                 mpcGenerateForecastFreeExamples( simRangeTrain, godCast,...
-                demandValuesTrainOnly, batteryCapacity, ...
-                maximumChargingRate, loadPatternInitialization, ...
-                hourNumbersTrainOnly, stepsPerHour, k, MPC);
+                demandValuesTrainOnly, batteryCapacity, maxChargingRate,...
+                loadPatternInitialization, hourNumbersTrainOnly, ...
+                stepsPerHour, k, MPC);
             
             allFeatureVectors = zeros(size(featureVectors, 1), length(...
                 demandValuesTrainOnly)*(nTrainShuffles + 1));
@@ -177,10 +173,12 @@ parfor instance = 1:nInstances
             allDecisionVectors = zeros(size(decisionVectors, 1), length(...
                 demandValuesTrainOnly)*(nTrainShuffles + 1));
             
-            allFeatureVectors(:, 1:length(demandValuesTrainOnly)) =...
+            allFeatureVectors(:, 1:length(demandValuesTrainOnly)) = ...
                 featureVectors;
-            allDecisionVectors(:, 1:length(demandValuesTrainOnly)) =...
+            
+            allDecisionVectors(:, 1:length(demandValuesTrainOnly)) = ...
                 decisionVectors;
+            
             offset = length(demandValuesTrainOnly);
             
             % Continue generating examples with suffled versions of
@@ -188,7 +186,8 @@ parfor instance = 1:nInstances
             for eachShuffle = 1:nTrainShuffles
                 newDemandValuesTrain = demandValuesTrainOnly;
                 for eachSwap = 1:nDaysSwap
-                    thisSwapStart = randi(length(demandValuesTrainOnly) - 2*k);
+                    thisSwapStart = randi(length(demandValuesTrainOnly)-...
+                        2*k);
                     tmp = newDemandValuesTrain(thisSwapStart + (1:k));
                     newDemandValuesTrain(thisSwapStart + (1:k)) = ...
                         newDemandValuesTrain(thisSwapStart + (1:k) + k);
@@ -197,7 +196,7 @@ parfor instance = 1:nInstances
                 [ featureVectors, decisionVectors] = ...
                     mpcGenerateForecastFreeExamples( simRangeTrain, ...
                     godCast, newDemandValuesTrain, batteryCapacity, ...
-                    maximumChargingRate, loadPatternInitialization, ...
+                    maxChargingRate, loadPatternInitialization, ...
                     hourNumbersTrainOnly, stepsPerHour, k, MPC);
                 
                 allFeatureVectors(:, offset + ...
@@ -209,14 +208,22 @@ parfor instance = 1:nInstances
                 offset = offset + length(demandValuesTrainOnly);
             end
             
-            % Train forecast free NN model based on examples generated
-            pars{instance, fcType} = generateForecastFreeController(...
-                allFeatureVectors, allDecisionVectors, nHidden, ...
-                trainControl.nStart);
+            % Train forecast-free NN model based on these examples
+            thisInstancePars{forecastType} = ...
+                generateForecastFreeController(allFeatureVectors,...
+                allDecisionVectors, nHidden, trainControl.nStart);
             
-            timeTaken{instance}(fcType) = toc(tempTic);
+            thisInstanceTimeTaken(forecastType) = toc(tempTic);
         end
+        disp('Forecast Types:');
+        disp(forecastType);
+        disp('Time Taken [s]:');
+        disp(toc(tempTic));
     end
+    timeTaken{instance} = thisInstanceTimeTaken;
+    pars(instance, :) = thisInstancePars;
+    disp(' ====== Instance completed ===== ');
+    disp(instance);
 end
 
 poolobj = gcp('nocreate');
@@ -225,6 +232,6 @@ delete(poolobj);
 Sim.timeTaken = timeTaken;
 Sim.timeForecastTrain = toc;
 
-disp('Time to end forecast training:'); disp(Sim.timeFcastTrain);
+disp('Time to train Forecasts [s]: '); disp(Sim.timeFcastTrain);
 
 end

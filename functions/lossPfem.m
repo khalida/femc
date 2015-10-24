@@ -34,11 +34,9 @@ if delta < 0 || ~isWholeNumber(delta)
 end
 if delta > horizon, error('delta must be smaller than (or equal) k'); end
 
-limitedPermutations = makeAllLimitedPermutations(horizon, delta);
+limitedPermutations = adjacentPairSwapLimitedPermutations(horizon, delta);
 nLimitedPermutations = size(limitedPermutations, 2);
 
-% DEBUG:
-disp(nLimitedPermutations);
 allLosses = zeros(nLimitedPermutations, nObservations);
 
 for iPermutation = 1:nLimitedPermutations;
@@ -46,9 +44,9 @@ for iPermutation = 1:nLimitedPermutations;
     
     % Apply additional penalty for underforcasts
     temporaryLoss = (abs(t - yPermuted).*((t - yPermuted)<=0) + ...
-        abs(t - yPermuted).*((t - yPermuted)>0).*alpha)./(1+alpha);
+        abs(t - yPermuted).*((t - yPermuted)>0).*alpha)./((1+alpha)/2);
     
-    % Apply additional weight to earlier time-steps
+    % Apply additional weight to earlier intervals
     weights = linspace(gamma, 1, horizon)';
     weights = weights./(sum(weights)/horizon);    % So weights sum up to k
     weights = repmat(weights, [1, nObservations]);
@@ -60,7 +58,7 @@ for iPermutation = 1:nLimitedPermutations;
 end
 
 % Find minimum losses (lowest-loss permutation) over all observations
-allMinimumLosses = min(allLosses, 1);
+allMinimumLosses = min(allLosses,[], 1);
 
 % And return these losses
 loss = allMinimumLosses;

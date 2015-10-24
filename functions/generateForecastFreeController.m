@@ -1,5 +1,5 @@
 function bestNet = generateForecastFreeController(featureVector, ...
-                        decisionVector, nHidden, nStart, trainControl)
+                        decisionVector, nHidden, nStart)
 
 % INPUTS:
 %   featureVector:  Input data [nFeatures x nObservations]
@@ -20,16 +20,6 @@ end;
 
 % Training Function
 trainingFunction = 'trainscg';  % Scaled Conjugate Gradient
-
-nObservationsTrain = floor(nObservations*trainControl.trainRatio);
-nObservationTest = nObservations - nObservationsTrain;
-idxs = randperm(nObservations);
-idxsTrain = idxs(1:nObservationsTrain);
-idxsTest = idxs(nObservationsTrain+(1:nObservationTest));
-featureVectorTrain = featureVector(:,idxsTrain);
-decisionVectorTrain = decisionVector(:,idxsTrain);
-featureVectorTest = featureVector(:,idxsTest);
-decisionVectorTest = decisionVector(:,idxsTest);
     
 performances = zeros(1, nStart);
 allNets = cell(1, nStart);
@@ -64,8 +54,8 @@ for iStart = 1:nStart
     thisNet.trainParam.showCommandLine = false;
 
    % Train the Network
-   [allNets{1, iStart}, tr] = train(thisNet,featureVectorTrain,...
-       decisionVectorTrain);
+   [allNets{1, iStart}, tr] = train(thisNet,featureVector,...
+       decisionVector);
    performances(1, iStart) = tr.best_tperf;
 end
 

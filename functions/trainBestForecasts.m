@@ -1,160 +1,174 @@
-function [ PFEM, EMD, Sim, pars ] = ...
-    trainBestFcasts( PFEM, EMD, MPC, Sim, all_demand_vals, trControl,...
-    k, bestPFEMidx, bestEMDidx)
+function [ Pfem, Pemd, Sim, pars ] = trainBestForecasts( Pfem, Pemd, ...
+    MPC, Sim, allDemandValues, trainControl, k, bestPfemIdx, bestPemdIdx)
+
+% trainBestForecasts: Train forecasts to minimise stochastically
+% selected parameters
 
 tic;
 
-%TRAINBESTFCASTS Train fcasts to mimise stoch selected parameters
-
 %% Pre-Allocation
-pars = cell(Sim.numInstances, Sim.nMethods);
-timeTaken = zeros(Sim.numInstances, Sim.nMethods);
+pars = cell(Sim.nInstances, Sim.nMethods);
+timeTaken = zeros(Sim.nInstances, Sim.nMethods);
 
-Sim.hour_numbers = mod((1:size(all_demand_vals{1}, 1))', k);
-Sim.hour_numbers_tr = Sim.hour_numbers(Sim.tr_idxs, :);
-trControl.hour_numbers_tr = Sim.hour_numbers_tr;
+Sim.hourNumber = mod((1:size(allDemandValues{1}, 1))', k);
+Sim.hourNumberTrain = Sim.hourNumber(Sim.trainIdxs, :);
+trainControl.hourNumberTrain = Sim.hourNumberTrain;
 
 %% Extract local variables for efficiency (parfor comms overhead)
-numInstances = Sim.numInstances;
+nInstances = Sim.nInstances;
 nMethods = Sim.nMethods;
 
 lossTypes = Sim.lossTypes;
-tr_idxs = Sim.tr_idxs;
-hours_per_day = Sim.hours_per_day;
-steps_per_hour = Sim.steps_per_hour;
-battCapRatio = Sim.battCapRatio;
-num_hours_train = Sim.num_hours_train;
-batt_charge_factor = Sim.batt_charge_factor;
-hour_numbers = Sim.hour_numbers;
-num_train_shuffles = Sim.num_train_shuffles;
-num_days_swap = Sim.num_days_swap;
+trainIdxs = Sim.trainIdxs;
+hoursPerDay = Sim.hoursPerDay;
+stepsPerHour = Sim.stepsPerHour;
+batteryCapacityRatio = Sim.batteryCapacityRatio;
+nHoursTrain = Sim.nHoursTrain;
+batteryChargingFactor = Sim.batteryChargingFactor;
+hourNumber = Sim.hourNumber;
+nTrainShuffles = Sim.nTrainShuffles;
+nDaysSwap = Sim.nDaysSwap;
 nHidden = Sim.nHidden;
 lossTypesStrings = Sim.lossTypesStrings;
-steps_per_day = Sim.steps_per_day;
-days_init = 1;
-in_idxs = (0:(days_init*steps_per_day-1)) + min(tr_idxs);
-tr_FF_idxs = setdiff(tr_idxs, in_idxs);
+stepsPerDay = Sim.stepsPerDay;
+nDaysInitialization = 1;
+initializationIdxs = (0:(nDaysInitialization*stepsPerDay-1)) +...
+    min(trainIdxs);
+trainForecastFreeIdxs = setdiff(trainIdxs, initializationIdxs);
 
-hour_numbers_tr_FF = hour_numbers(tr_FF_idxs);
-simRange_tr_FF = [0 num_hours_train - hours_per_day*days_init ...
-    - 1/steps_per_hour];
+hourNumbersTrainForecastFree = hourNumber(trainForecastFreeIdxs);
+simRangeTrainForecastFree = [0 nHoursTrain - ...
+    hoursPerDay*nDaysInitialization - 1/stepsPerHour];
 
 %% Train Models
-parfor instance = 1:numInstances
-% for instance = 1:numInstances
+parfor instance = 1:nInstances
     
     % Extract aggregated demand
-    demand_vals_tr = all_demand_vals{instance}(tr_idxs);
-
+    demandValuesTrain = allDemandValues{instance}(trainIdxs);
+    
     % Fore fcastfree controller seperate train data into init and training
-    demand_vals_tr_FF = all_demand_vals{instance}(tr_FF_idxs);
-    demand_vals_in_FF = all_demand_vals{instance}(in_idxs, :);
+    demandValuesTrainForecastFree = ...
+        allDemandValues{instance}(trainForecastFreeIdxs);
+    demandValuesInitializationForecastFree = ...
+        allDemandValues{instance}(initializationIdxs, :);
     
     thisTimeTaken = zeros(1, nMethods);
-
-    for fcType = 1:nMethods
+    
+    for forecastType = 1:nMethods
         
-        thisFcTypeString = lossTypesStrings{fcType}; %#ok<PFBNS>
+        thisForecastTypeString = lossTypesStrings{forecastType};%#ok<PFBNS>
         
-        % No need to produce fcasts for non-trained types:
-        if strcmp(thisFcTypeString, 'naivePeriodic'); continue; end;
-        if strcmp(thisFcTypeString, 'godCast'); continue; end;
-        if strcmp(thisFcTypeString, 'setPoint'); continue; end;
+        % No need to produce forecasts for non-trained types:
+        if strcmp(thisForecastTypeString, 'naivePeriodic'); continue; end;
+        if strcmp(thisForecastTypeString, 'godCast'); continue; end;
+        if strcmp(thisForecastTypeString, 'setPoint'); continue; end;
         
         tempTic = tic;
         
-        if ~strcmp(thisFcTypeString, 'fcastFree')
-            if strcmp(thisFcTypeString, 'bestPFEM')
-                thisLossType = lossTypes{bestPFEMidx(instance)};                %#ok<PFBNS>
-            elseif strcmp(thisFcTypeString, 'bestEMD')
-                thisLossType = lossTypes{bestEMDidx(instance)};               
+        if ~strcmp(thisForecastTypeString, 'fcastFree')
+            
+            % Train conventional forecast
+            if strcmp(thisForecastTypeString, 'bestPFEM')
+                thisLossType = lossTypes{bestPfemIdx(instance)};                %#ok<PFBNS>
+            elseif strcmp(thisForecastTypeString, 'bestEMD')
+                thisLossType = lossTypes{bestPemdIdx(instance)};
             else
-                thisLossType = lossTypes{fcType};
+                thisLossType = lossTypes{forecastType};
             end
             
-            pars{instance, fcType} = ...
-                train_FFNN_multStart( demand_vals_tr, k,  ...
-                thisLossType, trControl);
+            pars{instance, forecastType} = trainFfnnMultipleStarts( ...
+                demandValuesTrain, thisLossType, trainControl);
             
-            thisTimeTaken(1, fcType) = toc(tempTic);
-
+            thisTimeTaken(1, forecastType) = toc(tempTic);
+            
         else
+            % Train forecast free model
+            meanKWh = mean(demandValuesTrain);
             
-            % Train fcastFree model
-            meankWh = mean(demand_vals_tr);
-            
-            % Create 'historical load pattern' for initialisation etc.
-            load_pattern_in = mean(reshape(demand_vals_in_FF, ...
-                [k, length(demand_vals_in_FF)/k]), 2);
+            % Create 'historical load pattern' for initialization etc.
+            loadPatternInitialization = mean(reshape(...
+                demandValuesInitializationForecastFree, ...
+                [k, length(demandValuesInitializationForecastFree)/k]), 2);
             
             % Create the 'god forecast' for training data
-            godCast = zeros(size(demand_vals_tr_FF, 1), k);
+            godCast = zeros(size(demandValuesTrainForecastFree, 1), k);
             for ii = 1:k
-                godCast(:, ii) = circshift(demand_vals_tr_FF, -[ii-1, 0]);
+                godCast(:, ii) = circshift(demandValuesTrainForecastFree, -[ii-1, 0]);
             end
             
             % Set-up parameters for on-line simulation
-            batt_cap = meankWh*battCapRatio*steps_per_day;
-            max_charge_rate = batt_charge_factor*batt_cap;
+            batteryCapacity = meanKWh*batteryCapacityRatio*stepsPerDay;
+            maximumChargingRate = batteryChargingFactor*batteryCapacity;
             
             runControl = [];
             runControl.MPC = MPC;
             
             % Run On-line Model to create training examples
-            [ featVec, decVec] = ...
-                onlineMPC_genFcastFreeExamples( simRange_tr_FF, godCast, ...
-                demand_vals_tr_FF, batt_cap, max_charge_rate, load_pattern_in, ...
-                hour_numbers_tr_FF, steps_per_hour, k, runControl);
+            [ featureVectors, decisionVectors] = ...
+                mpcGenerateForecastFreeExamples( ...
+                simRangeTrainForecastFree, godCast, ...
+                demandValuesTrainForecastFree, batteryCapacity, ...
+                maximumChargingRate, loadPatternInitialization, ...
+                hourNumbersTrainForecastFree, stepsPerHour, k, MPC);
             
-            allFeatVec = zeros(size(featVec, 1), length(...
-                demand_vals_tr_FF)*(num_train_shuffles + 1));
+            allFeatureVectors = zeros(size(featureVectors, 1), length(...
+                demandValuesTrainForecastFree)*(nTrainShuffles + 1));
             
-            allDecVec = zeros(size(decVec, 1), length(...
-                demand_vals_tr_FF)*(num_train_shuffles + 1));
+            allDecisionVectors = zeros(size(decisionVectors, 1), length(...
+                demandValuesTrainForecastFree)*(nTrainShuffles + 1));
             
-            allFeatVec(:, 1:length(demand_vals_tr_FF)) = featVec;
-            allDecVec(:, 1:length(demand_vals_tr_FF)) = decVec;
-            offset = length(demand_vals_tr_FF);
+            allFeatureVectors(:, ...
+                1:length(demandValuesTrainForecastFree)) = featureVectors;
+            allDecisionVectors(:, ...
+                1:length(demandValuesTrainForecastFree)) = decisionVectors;
+            offset = length(demandValuesTrainForecastFree);
             
             % Continue generating examples with suffled versions of
             % training data:
-            for eachShuffle = 1:num_train_shuffles
-                new_demand_vals_tr = demand_vals_tr_FF;
-                for eachSwap = 1:num_days_swap
-                    thisSwapStart = randi(length(demand_vals_tr_FF) - 2*k);
-                    tmp = new_demand_vals_tr(thisSwapStart + (1:k));
-                    new_demand_vals_tr(thisSwapStart + (1:k)) = ...
-                        new_demand_vals_tr(thisSwapStart + (1:k) + k);
-                    new_demand_vals_tr(thisSwapStart + (1:k) + k) = tmp;
+            for eachShuffle = 1:nTrainShuffles
+                newDemandValuesTrain = demandValuesTrainForecastFree;
+                for eachSwap = 1:nDaysSwap
+                    thisSwapStart = randi(length(demandValuesTrainForecastFree) - 2*k);
+                    tmp = newDemandValuesTrain(thisSwapStart + (1:k));
+                    newDemandValuesTrain(thisSwapStart + (1:k)) = ...
+                        newDemandValuesTrain(thisSwapStart + (1:k) + k);
+                    newDemandValuesTrain(thisSwapStart + (1:k) + k) = tmp;
                 end
-                [ featVec, decVec] = ...
-                    onlineMPC_genFcastFreeExamples( simRange_tr_FF, godCast,...
-                    new_demand_vals_tr, batt_cap, max_charge_rate, ...
-                    load_pattern_in, hour_numbers_tr_FF, steps_per_hour, k, runControl);
+                [ featureVectors, decisionVectors] = ...
+                    mpcGenerateForecastFreeExamples( ...
+                    simRangeTrainForecastFree, godCast, ...
+                    newDemandValuesTrain, batteryCapacity, ...
+                    maximumChargingRate, loadPatternInitialization, ...
+                    hourNumbersTrainForecastFree, stepsPerHour, k, MPC);
                 
-                allFeatVec(:, offset + (1:length(demand_vals_tr_FF))) = ...
-                    featVec;
-                allDecVec(:, offset + (1:length(demand_vals_tr_FF))) = ...
-                    decVec;
-                offset = offset + length(demand_vals_tr_FF);
+                allFeatureVectors(:, offset + ...
+                    (1:length(demandValuesTrainForecastFree))) = ...
+                    featureVectors;
+                allDecisionVectors(:, offset + ...
+                    (1:length(demandValuesTrainForecastFree))) = ...
+                    decisionVectors;
+                offset = offset + length(demandValuesTrainForecastFree);
             end
             
-            % Train fcast-free NN model based on these examples
-            pars{instance, fcType} = genFcastFreeController(allFeatVec,...
-                allDecVec, nHidden, trControl.nStart);
+            % Train forecast-free NN model based on these examples
+            pars{instance, forecastType} = ...
+                generateForecastFreeController(allFeatureVectors,...
+                allDecisionVectors, nHidden, trainControl.nStart);
             
-            thisTimeTaken(1, fcType) = toc(tempTic);
+            thisTimeTaken(1, forecastType) = toc(tempTic);
             
         end
-        disp('fcType complete: ');
-        disp(lossTypesStrings{fcType});
+        disp('Forecast Type complete: ');
+        disp(lossTypesStrings{forecastType});
     end
     timeTaken(instance, :) = thisTimeTaken;
+    disp(' ====== Instance completed ===== ');
+    disp(instance);
 end
 
 Sim.timeTaken = timeTaken;
-Sim.timeFcastTrain = toc;
+Sim.timeForecastTrain = toc;
 
-disp('Time to end fcast train:'); disp(Sim.timeFcastTrain);
+disp('Time to end forecast training:'); disp(Sim.timeFcastTrain);
 
 end
