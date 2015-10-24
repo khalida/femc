@@ -1,3 +1,0 @@
-%% Test lossPfem by doing some simple numerical examples:
-
-t_test = [1, 2, 3, 
