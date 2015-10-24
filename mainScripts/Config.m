@@ -1,30 +1,30 @@
 %% Global Configuration File
 
 %% Instances
-Sim.numCustomers = [5, 125];
-Sim.numAggregates = 2;
-Sim.numInstances = length(Sim.numCustomers) * Sim.numAggregates;
-Sim.nProc = min(Sim.numInstances, 2);
+Sim.nCustomers = [1, 5, 25, 125];
+Sim.nAggregates = 4;
+Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
+Sim.nProc = min(Sim.nInstances, 4);
 Sim.numStochFcasts = 10;% 100;
-Sim.relSizeError = 0.5;
+Sim.relativeSizeError = 0.5;
 
 %% Battery Properties
-Sim.battCapRatio = 0.05;        % batt_cap as fraction of daily avg demand
-Sim.batt_charge_factor = 1;     % ratio of charge rate to batt_cap
+Sim.batteryCapacityRatio = 0.05; % as fraction of daily average demand
+Sim.batteryChargingFactor = 1;   % ratio of charge rate to capacity
 
 %% Simulation Duration and properties
-Sim.num_days_train = 2; %200;   % days of historic demand data
-Sim.num_days_sel = 1; %56;      % days over which to test forecast parameters
-Sim.num_days_test = 1; %56;     % days to run simulation for
-Sim.steps_per_hour = 2;         % Half-hourly data
-Sim.hours_per_day = 24;
-k = 48;                         % horizon & seasonality (assumed same)
+Sim.nDaysTrain = 200;     %200;   % days of historic demand data
+Sim.nDaysSelect = 56;    %56;      % days over which to test forecast parameters
+Sim.nDaysTest = 56;      %56;     % days to run simulation for
+Sim.stepsPerHour = 2;   % Half-hourly data
+Sim.hoursPerDay = 24;
+k = 48;                 % horizon & seasonality (assumed same)
 
 %% Forecast training options
-trainControl.nHidden = 5; %50;
+trainControl.nHidden = 50; %50;
 trainControl.suppressOutput = true;
-trainControl.nStart = 2;% 3;
-trainControl.mseEpochs = 10; % 1000;   % No. of MSE epochs for pre-training
+trainControl.nStart = 3;% 3;
+trainControl.mseEpochs = 1000; % 1000;   % No. of MSE epochs for pre-training
 trainControl.minimiseOverFirst = 48;   % # of fcast steps to minimise over
 trainControl.batchSize = 1000;              
 trainControl.maxTime = 60;                  % maximum training time in mins
@@ -38,8 +38,8 @@ trainControl.nDaysPreviousTrainSarma = 20;
 trainControl.useHyndmandModel = false;
 
 % Forecast-free parameters
-Sim.num_train_shuffles = 5; %5;         % # of shuffles to consider
-Sim.num_days_swap = 25;             % pairs of days to swap per shuffle
+Sim.nTrainShuffles = 5; %5;         % # of shuffles to consider
+Sim.nDaysSwap = 25;             % pairs of days to swap per shuffle
 Sim.nHidden = 250; %250;                  % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
@@ -70,9 +70,9 @@ MPC.chargeWhenCan = false;
 dataFileWithPath = ...
     ['..' filesep 'data' filesep 'demand_3639.mat'];
 
-numCustString = '';
-for ii = 1:length(Sim.numCustomers);
-    numCustString = [numCustString num2str(Sim.numCustomers(ii)) '_']; 
+nCustString = '';
+for ii = 1:length(Sim.nCustomers);
+    nCustString = [nCustString num2str(Sim.nCustomers(ii)) '_']; 
     %#ok<*AGROW>
 end
 
@@ -82,15 +82,17 @@ else
     CDstring = '_noCD';
 end
 
-Sim.intermediateFileName = ['nCust_' numCustString '_batt_'...
-    num2str(100*Sim.battCapRatio) 'pc__nAgg_' num2str(Sim.numAggregates) CDstring '_intermediate.mat'];
+Sim.intermediateFileName = ['nCust_' nCustString '_batt_'...
+    num2str(100*Sim.batteryCapacityRatio) 'pc__nAgg_' ...
+    num2str(Sim.nAggregates) CDstring '_intermediate.mat'];
 
-Sim.finalFileName = ['nCust_' numCustString '_batt_'...
-    num2str(100*Sim.battCapRatio) 'pc__nAgg_' num2str(Sim.numAggregates) CDstring '.mat'];
+Sim.finalFileName = ['nCust_' nCustString '_batt_'...
+    num2str(100*Sim.batteryCapacityRatio) 'pc__nAgg_' ...
+    num2str(Sim.nAggregates) CDstring '.mat'];
 
 Sim.visiblePlots = 'on';
 
 %% Misc.
-updateMex = false;
+updateMex = true;
 makeForecast = true;
 rng(42)

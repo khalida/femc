@@ -1,4 +1,4 @@
-% file: compareFreocasts.m
+% file: compareForecasts.m
 % auth: Khalid Abdulla
 % date: 20/10/2015
 % brief: Evaluate various forecast models trained on various
