@@ -20,8 +20,9 @@ if horizon > 200
 end
 
 nObservations = size(t, 2);
-if size(y,1) ~= nObservations
-    error('Target and forecast must have same nObservations')
+if size(y,2) ~= nObservations
+    error(['Target and forecast must have same size(t), t: ' ...
+        num2str(size(t)) ', y:' num2str(size(y))]);
 end
 
 loss = emd_hat_gd_metric_mex_vec_par(t, y, parameters);

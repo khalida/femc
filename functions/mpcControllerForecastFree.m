@@ -14,7 +14,7 @@ timeInHours = simRange(1):(1/stepsPerHour):simRange(2);
 runningPeak = zeros(1, length(timeInHours));
 
 %% Set Default Values:
-MPC = setDefaultValues(MPC, {'knowCurrentDemand', false, ...
+MPC = setDefaultValues(MPC, {'knowCurrentDemandNow', false, ...
     'SPrecourse', false, 'resetPeakToMean', false, ...
     'billingPeriodDays', 1});
 
@@ -31,7 +31,7 @@ for t = timeInHours
     demandNow = demand(idx);
     hourNow = hourNum(idx);
     
-    if MPC.knowCurrentDemand
+    if MPC.knowCurrentDemandNow
         featureVector = [demandDelays; demandNow; stateOfCharge;...
             peakSoFar; hourNow];
     else

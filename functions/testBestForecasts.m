@@ -43,7 +43,7 @@ stepsPerHour = Sim.stepsPerHour;
 testingTic = tic;
 
 % Set any missing default values in MPC structure
-MPC = setDefaultValues(MPC, 'billingPeriodDays', 1});
+MPC = setDefaultValues(MPC, {'billingPeriodDays', 1});
 
 
 %% Run Models for performance evaluation
@@ -102,7 +102,7 @@ parfor instance = 1:nInstances
             
             % If method is set-point then show it current demand
             if(runControl.MPC.setPoint)
-                runControl.MPC.knowCurrentDemand = true;
+                runControl.MPC.knowCurrentDemandNow = true;
             end
             
             [runningPeak, exitFlag, fcUsed] = mpcController( ...

@@ -225,6 +225,6 @@ delete(poolobj);
 Sim.timeTaken = timeTaken;
 Sim.timeForecastTrain = toc;
 
-disp('Time to end forecast training:'); disp(Sim.timeFcastTrain);
+disp('Time to end forecast training:'); disp(Sim.timeForecastTrain);
 
 end

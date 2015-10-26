@@ -20,10 +20,10 @@ function [powerToBattery, exitFlag] = controllerOptimiser(forecast, ...
 % exitFlag:          status flag of the linear program solver
 
 % Set Defaults for MPC if not specified in MPC structure
-MPC = setDefaultValues(MPC, {'secondWeight', 1e-4, 'knowCurrentdemandNow', ...
-    false, 'clipNegativeFcast', true, 'iterFactor', 1.0,...
-    'rewardMargin', false, 'setPoint', false, 'chargeWhenCan', false, ...
-    'suppressOutput', true});
+MPC = setDefaultValues(MPC, {'secondWeight', 1e-4, ...
+    'knowCurrentDemandNow', false, 'clipNegativeFcast', true, ...
+    'iterationFactor', 1.0, 'rewardMargin', false, 'setPoint', false, ...
+    'chargeWhenCan', false, 'suppressOutput', true});
 
 if MPC.clipNegativeFcast
     forecast = max(forecast, 0);
@@ -31,7 +31,7 @@ end
 
 k = length(forecast);
 
-if MPC.knowCurrentdemandNow
+if MPC.knowCurrentDemandNow
     forecast(1) = demandNow;
 end
 

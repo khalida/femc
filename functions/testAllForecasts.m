@@ -114,7 +114,7 @@ for iRun = 1:nRuns
             
             % If method is set-point then show it current demand
             if(runControl.MPC.setPoint)
-                runControl.MPC.knowCurrentDemand = true
+                runControl.MPC.knowCurrentDemandNow = true
             end
             
             runControl.naivePeriodic = false;
@@ -291,7 +291,7 @@ parfor instance = 1:nInstances
             
             % If method is set-point then show it current demand
             if(runControl.MPC.setPoint)
-                runControl.MPC.knowCurrentDemand = true
+                runControl.MPC.knowCurrentDemandNow = true
             end
             
             [runningPeak, exitFlag, forecastUsed] = mpcController( ...

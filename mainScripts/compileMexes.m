@@ -1,11 +1,5 @@
 %% TODO: look at options of doing this with a function rather than script
 
-%% Add path to the common functions (& any subfolders therein)
-[parentFold, ~, ~] = fileparts(pwd);
-commonFcnFold = [parentFold filesep 'functions'];
-addpath(genpath(commonFcnFold), '-BEGIN');
-
-
 %% Remove any compiled mex files
 mexFileNames = dir([commonFcnFold filesep '*.mex*']);
 for item = 1:length(mexFileNames);

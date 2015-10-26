@@ -14,7 +14,7 @@ timeInHours = simRange(1):(1/stepsPerHour):simRange(2); % time in hours
 
 % Set default values of MPC structure
 MPC = setDefaultValues(MPC, {'SPrecourse', false, ...
-    'resetPeakToMean', false, 'knowCurrentDemand', false, ...
+    'resetPeakToMean', false, 'knowCurrentDemandNow', false, ...
     'billingPeriodDays', 1});
 
 if MPC.resetPeakToMean
@@ -27,7 +27,7 @@ daysPassed = 0;
 
 %% Pre-Allocations
 % Features <k previous demands, (demandNow), SoC, peakSoFar, hourNum>
-if MPC.knowCurrentDemand
+if MPC.knowCurrentDemandNow
     featureVectors = zeros(k + 4, length(timeInHours));
 else
     featureVectors = zeros(k + 3, length(timeInHours));
@@ -60,7 +60,7 @@ for t = timeInHours
         peakSoFar, MPC);
     
     % Save feature and response vectors:
-    if MPC.knowCurrentDemand
+    if MPC.knowCurrentDemandNow
         featureVectors(:, idx) = [demandDelays; demandNow; ...
             stateOfCharge; peakSoFar; hourNow];
     else

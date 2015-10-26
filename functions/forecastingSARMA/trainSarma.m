@@ -5,11 +5,10 @@
 %               minimise that loss function.
 
 %% Train SARMA model
-function parametersOut = trainSarma( demand, k,  lossType, trainControl)
+function parametersOut = trainSarma( demand, lossType, trainControl)
 
 % INPUTS
 % demand:       time history of demands on which to train the model [T x 1]
-% k:            number of steps for which fc is to be optimised over (1:k)
 % lossType:     is a handle to the loss function
 % trainControl: is a structure with various train control parameters
 
@@ -28,6 +27,7 @@ upperBound = 1 - eps;
 % No. of random initializations to try, increased if results differ
 nInitializations = 3;
 maxInitializations = 20;
+k = trainControl.nLags;
 
 % Set some default values in trainControl (if not already set)
 trainControl = setDefaultValues(trainControl, ...

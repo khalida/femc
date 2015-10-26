@@ -4,9 +4,9 @@
 print(ptm <- proc.time())
 
 # ==== RUNNING OPTIONS ==== #
-nCustomers = c(1, 5, 25, 125)
-nAggregates = 2
-dataFile = "../data/demand_250.csv"
+nCustomers = c(1, 10, 100, 1000)
+nAggregates = 3
+dataFile = "../data/demand_3639.csv"
 S = 48*1    # seasonality
 h = 48      # forecast horizon
 nIndTrain = 48*100
@@ -39,13 +39,19 @@ if(max(testInd) > nReads) {
 # Pre-allocate data-frames of results
 # results_df <- data.frame(matrix(ncol = nAggregates, nrow = length(nCustomers)))
 results_NP_df <- data.frame(matrix(ncol = nAggregates, nrow = length(nCustomers)))
-results_man_df <- data.frame(matrix(ncol = nAggregates, nrow = length(nCustomers)))
+# results_man_df <- data.frame(matrix(ncol = nAggregates, nrow = length(nCustomers)))
 results_automated_df <- data.frame(matrix(ncol = nAggregates, nrow = length(nCustomers)))
+
+NP_MAPE <- data.frame(matrix(ncol = nAggregates, nrow = length(nCustomers)))
+auto_MAPE <- data.frame(matrix(ncol = nAggregates, nrow = length(nCustomers)))
 
 # rownames(results_df) <- nCustomers
 rownames(results_NP_df) <- nCustomers
-rownames(results_man_df) <- nCustomers
+# rownames(results_man_df) <- nCustomers
 rownames(results_automated_df) <- nCustomers
+
+rownames(NP_MAPE) <- nCustomers
+rownames(auto_MAPE) <- nCustomers
 
 # Loop through each aggregate, in each number of customers of interest:
 for(ii in 1:length(nCustomers)) {
@@ -85,6 +91,9 @@ for(ii in 1:length(nCustomers)) {
     #fcManRMSEs <- vector(length=(nFcasts))
     NP_RMSEs <- vector(length=(nFcasts))
     automated_RMSEs <- vector(length=(nFcasts))
+
+    NP_MAPEs <- vector(length=(nFcasts))
+    automated_MAPEs <- vector(length=(nFcasts))
     
     origin <- max(trainInd)
     dataSoFarTS <- trainTS
@@ -100,6 +109,9 @@ for(ii in 1:length(nCustomers)) {
       NP_RMSEs[eachHorizon] <- accuracy(NP, actual)[1, "RMSE"]
       #fcManRMSEs[eachHorizon] <- accuracy(fcastMan, actual)[2, "RMSE"]
       automated_RMSEs[eachHorizon] <- accuracy(fcastAutomated, actual)[2, "RMSE"]
+      
+      NP_MAPEs[eachHorizon] <- accuracy(NP, actual)[1, "MAPE"]
+      automated_MAPEs[eachHorizon] <- accuracy(fcastAutomated, actual)[2, "MAPE"]
       
       if (eachHorizon==1) {
         # plot(fcast)
@@ -133,6 +145,9 @@ for(ii in 1:length(nCustomers)) {
     #results_man_df[ii, eachAgg] <- mean(fcManRMSEs)
     results_automated_df[ii, eachAgg] <- mean(automated_RMSEs)
     
+    NP_MAPE[ii, eachAgg] <- mean(NP_MAPEs)
+    auto_MAPE[ii, eachAgg] <- mean(automated_MAPEs)
+    
     plot(NP_RMSEs, type="l",col="red", ylim=c(min(c(NP_RMSEs, automated_RMSEs)),
                                              max(c(NP_RMSEs, automated_RMSEs))))
     # lines(fcRMSEs, col="green")
@@ -147,6 +162,26 @@ for(ii in 1:length(nCustomers)) {
 print(results_NP_df)
 #print(results_man_df)
 print(results_automated_df)
+
+print(NP_MAPE)
+print(auto_MAPE)
+
+# Print MAPE of automated forecast method and NP over aggregation level:
+NP_MAPE <- transform(NP_MAPE, mean=apply(NP_MAPE,1,mean,na.rm=TRUE))
+NP_MAPE <- transform(NP_MAPE, std=apply(subset(NP_MAPE, select=-mean),1,sd,na.rm=TRUE))
+
+auto_MAPE <- transform(auto_MAPE, mean=apply(auto_MAPE,1,mean,na.rm=TRUE))
+auto_MAPE <- transform(auto_MAPE, std=apply(subset(auto_MAPE, select=-mean),1,sd,na.rm=TRUE))
+
+MAPEresults <- data.frame(nCustomers=nCustomers, NP_mean=NP_MAPE$mean, NP_std = NP_MAPE$std,
+                         auto_mean=auto_MAPE$mean, auto_std=auto_MAPE$std)
+
+print(ggplot(MAPEresults, aes(x = nCustomers, y = mean)) +
+        geom_line() +
+        geom_errorbar(aes(ymin = mean-std, ymax = mean+std)))
+
+
+
 
 # Stop the clock
 print(proc.time() - ptm)

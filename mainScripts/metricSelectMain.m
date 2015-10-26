@@ -5,41 +5,34 @@ disp(timeStart);
 
 Config;
 
-%% Source files for Common Functions
+%% Add path to the common functions (& any subfolders therein)
 [parentFold, ~, ~] = fileparts(pwd);
 commonFcnFold = [parentFold filesep 'functions'];
-addpath(commonFcnFold, '-BEGIN');
+addpath(genpath(commonFcnFold), '-BEGIN');
 
-%% Update compiled MEX Files (generally not required)
-if updateMex
-    mexFileNames = dir([commonFcnFold filesep '*.mex*']);
-    for item = 1:length(mexFileNames);
-        delete([commonFcnFold filesep mexFileNames(item).name]);
-    end
-    % Re-compile EMD mex files
-    compile_FastEMD;
-end
+%% Delete old and compile new mex files
+% if updateMex, compileMexes; end;
 
 %% Read in DATA
 load(dataFileWithPath);
-rng('default');             % seed for repeatability
 
 %% Extract useful demand data only
 if makeForecast
-    customer_indices = cell(Sim.numInstances, 1);
-    all_demand_vals = cell(Sim.numInstances, 1);
-    dataLengthReq = (Sim.num_days_train + Sim.num_days_sel +...
-        Sim.num_days_test)*Sim.steps_per_hour*Sim.hours_per_day;
+    customerIdxs = cell(Sim.nInstances, 1);
+    allDemandValues = cell(Sim.nInstances, 1);
+    dataLengthRequired = (Sim.nDaysTrain + Sim.nDaysSelect +...
+        Sim.nDaysTest)*Sim.stepsPerHour*Sim.hoursPerDay;
     
     instance = 0;
-    for nCustIndex = 1:length(Sim.numCustomers)
-        for trial = 1:Sim.numAggregates
+    for nCustomerIdx = 1:length(Sim.nCustomers)
+        for trial = 1:Sim.nAggregates
             instance = instance + 1;
-            customers = Sim.numCustomers(nCustIndex);
-            customer_indices{instance} = ...
+            customers = Sim.nCustomers(nCustomerIdx);
+            customerIdxs{instance} = ...
                 randsample(size(demandData, 2), customers);
-            all_demand_vals{instance} = ...
-                sum(demandData(1:dataLengthReq, customer_indices{instance}), 2);
+            allDemandValues{instance} = ...
+                sum(demandData(1:dataLengthRequired,...
+                customerIdxs{instance}), 2);
         end
     end
     
@@ -50,9 +43,9 @@ end
 %% Train All Forecasts (or load intermediate file)
 if makeForecast
     disp('======= FORECAST TRAINING =======');
-    [ PFEM, EMD, Sim, pars ] = ...
-        trainAllFcasts( PFEM, EMD, MPC, Sim, all_demand_vals,...
-        trControl, k);
+    [ Pfem, Pemd, Sim, pars ] = ...
+        trainAllForecasts( Pfem, Pemd, MPC, Sim, allDemandValues,...
+        trainControl, k);
     
     % Save intermediate file
     save(Sim.intermediateFileName, '-v7.3');
@@ -65,13 +58,13 @@ end
 
 %% Test All Forecasts:
 disp('======= FORECAST SELECTION / TESTING =======');
-[ Sim, results ] = testAllFcasts( pars, all_demand_vals, Sim, ...
-    EMD, PFEM, MPC, k);
+[ Sim, results ] = testAllForecasts( pars, allDemandValues, Sim, ...
+    Pemd, Pfem, MPC, k);
 
 %% Do Plotting
 disp('======= PLOTTING =======');
-% [significance] = plotAllResults(Sim, results, EMD, PFEM);
-[significance] = plotAllResultsEdward(Sim, results, EMD, PFEM);
+
+[significance] = plotAllResultsEdward(Sim, results, Pemd, Pfem);
 
 
 %% Save Results

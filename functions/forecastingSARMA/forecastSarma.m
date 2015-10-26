@@ -4,16 +4,20 @@
 % brief: Produce k-step forecast using pre-trained SARMA model
 
 function [ forecast ] = forecastSarma(parameters, demand, ...
-    suppressOutput, useHyndmanModel)
+    trainControl)
 %forecastSarma k-Step forecast using SARMA(3,0)x(1,0)
 
 % INPUTS
 % parameters:     Structure of parameters of SARMA model (including k and s)
 % demand:         historic demand up to *but not including* forecast origin
-% suppressOutput: boolean to control amount of output
+% trainControl:   Stricture of settings
 
 % OUTPUTS
 % forecast:      [k x 1] array of point forecast values
+
+suppressOutput = trainControl.suppressOutput;
+useHyndmanModel = trainControl.useHyndmanModel;
+
 
 k = parameters.k;               % number of steps into future to forecast
 coefficients = parameters.coefficients; % model coefficients

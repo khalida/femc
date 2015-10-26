@@ -1,10 +1,10 @@
-function compareForecastsPlotting(allMetrics, all_kWhs, fcTypeStrings,...
-    fcMetrics, numCustomers, savePlots, fileNames)
+function plotCompareForecasts(allMetrics, allKWhs, forecastTypeStrings,...
+    forecastMetrics, nCustomers, savePlots, fileNames)
 
 % For each type of loss plot the performance of the forecasts on the
 % test data
-fig = zeros(length(fcMetrics), 1);
-nMethods = length(fcTypeStrings);
+fig = zeros(length(forecastMetrics), 1);
+nMethods = length(forecastTypeStrings);
 
 % Set options for pretty plot
 opt.BoxDim = [5.5 3];
@@ -19,41 +19,40 @@ opt.YMinorTick = 'on';
 opt.LegendBox = 'on';
 opt.LegendBoxColor = [1, 1, 1];
 
-for ii = 1:length(fcMetrics)
-    % Select fcast indexes to plot - here MSE and metric of interest for
+whsMean = mean(allKWhs, 1).*1000;
+
+for ii = 1:length(forecastMetrics)
+    % Select forecast indexes to plot - here MSE and metric of interest for
     % FFNN and SARMA
     
-    if(ii == 1)
-        selectedFcasts = unique([1, 2, length(fcMetrics)+1, ...
-            length(fcMetrics)+2, length(fcTypeStrings)]);
-    else
-        selectedFcasts = unique([1, ii, length(fcMetrics)+1, ...
-            ii+length(fcMetrics), length(fcTypeStrings)]);
-    end
-
-    Whs_mean = mean(all_kWhs, 1).*1000;
-
+    selectedFcasts = unique([1, ii, length(forecastMetrics)+1, ...
+        ii+length(forecastMetrics), length(forecastTypeStrings)]);
     
-    % Plot points averaged over all aggregates with same number of customers
-    if strcmp('MAPE', fcMetrics{ii})
-        % For MAPE comparison Plot just MAPE SARMA, MAPE FFNN, and NP
-        selectedFcastsMAPE = [ii, ii+length(fcMetrics), length(fcTypeStrings)];
-        fig(ii) = figure(200 + ii);
-        thisMetric_mean = squeeze(mean(allMetrics(:, :, selectedFcastsMAPE, ii), 2));
-        thisMetric_std = squeeze(std(allMetrics(:, :, selectedFcastsMAPE, ii), [], 2));
+    % Plot points averaged over all aggregates with same nCustomers
+    
+    if strcmp('MAPE', forecastMetrics{ii})
+        % For MAPE comparison plot absolute peformance of
+        % MAPE SARMA, MAPE FFNN, and NP
+        selectedFcastsMAPE = [ii, ii+length(forecastMetrics),...
+            length(forecastTypeStrings)];
+        fig(ii) = figure(100 + ii);
+        thisMetricMean = squeeze(mean(allMetrics(:, :,...
+            selectedFcastsMAPE, ii), 1));
+        thisMetricStd = squeeze(std(allMetrics(:, :, ...
+            selectedFcastsMAPE, ii), [], 1));
         
         % Plot just mean for most methods
-        plt = plot(repmat(Whs_mean, [length(selectedFcastsMAPE)-1, 1])',...
-            thisMetric_mean(1:(end-1),:)', 'MarkerSize', 10);
+        plt = plot(repmat(whsMean, [length(selectedFcastsMAPE)-1, 1])',...
+            thisMetricMean(:,1:(end-1)), 'MarkerSize', 10);
         
         hold on
         % Plot error bars for NP
-        errorbar(Whs_mean', thisMetric_mean(end, :)', ...
-            thisMetric_std(end, :)','.-', 'markers', 10);
+        errorbar(whsMean', thisMetricMean(:, end), ...
+            thisMetricStd(:, end),'.-', 'markers', 10);
         
         ax = get(fig(ii), 'CurrentAxes');
         set(ax, 'XScale', 'log', 'YScale', 'log');
-        leg = legend(fcTypeStrings(selectedFcastsMAPE));
+        leg = legend(forecastTypeStrings(selectedFcastsMAPE));
         % Increase legend vertical spacing
         leg.Position(4) = 1.25*leg.Position(4);
         % & Move down (& left) to fit in
@@ -61,7 +60,7 @@ for ii = 1:length(fcMetrics)
         leg.Position(2) = leg.Position(2) - 0.5*leg.Position(4);
         
         xlabel('Mean Aggregate Demand per Interval [Wh]');
-        ylabel(['Forecast Error [' fcMetrics{ii} ']']);
+        ylabel(['Forecast Error [' forecastMetrics{ii} ']']);
         grid on;
         
         setPlotProp(opt, fig(ii));
@@ -74,50 +73,57 @@ for ii = 1:length(fcMetrics)
     end
     
     % Produce set of normalised plots - where losses are divided by those
-    % of NP for each instance:
-    refIndex = ismember(fcTypeStrings,'NP');
-    allMetrics_norm = allMetrics./repmat(allMetrics(:,:,refIndex,:), ...
-        [nMethods, 1, 1, 1]);
+    % of NP for each instance (and error metric)
+    refIndex = ismember(forecastTypeStrings,'NP');
+    allMetricsNormalized = allMetrics./repmat(...
+        allMetrics(:,:,refIndex,:), [1, 1, nMethods, 1]);
     
-    % Plot points averaged over all aggregates with same number of customers
-    fig(ii) = figure(400 + ii);
-    thisMetric_mean = squeeze(mean(allMetrics_norm(:, :, selectedFcasts(1:(end-1)), ii), 2));
-    thisMetric_std = squeeze(std(allMetrics_norm(:, :, selectedFcasts(1:(end-1)), ii), [], 2));
-    errorbar(repmat(Whs_mean, [length(selectedFcasts(1:(end-1))), 1])', thisMetric_mean', ...
-        thisMetric_std'./2,'.-', 'markers', 20);
+    % Plot points averaged over all aggregates with same nCustomers
+    fig(ii) = figure(200 + ii);
+    thisMetricMean = squeeze(mean(allMetricsNormalized(:, :, ...
+        selectedFcasts(1:(end-1)), ii), 1));
+    thisMetricStd = squeeze(std(allMetricsNormalized(:, :,...
+        selectedFcasts(1:(end-1)), ii), [], 1));
+    errorbar(repmat(whsMean, ([length(selectedFcasts(1:(end-1))), 1]))',...
+        thisMetricMean, thisMetricStd,'.-', 'markers', 20);
     ax = get(fig(ii), 'CurrentAxes');
     
-    legend(fcTypeStrings(selectedFcasts(1:(end-1))), 'interpreter', 'none');
+    legend(forecastTypeStrings(selectedFcasts(1:(end-1))),...
+        'interpreter', 'none');
     xlabel('Mean Aggregate Demand Per Time-step (Wh)');
-    ylabel([fcMetrics{ii} ' relative to NP forecast'], 'interpreter', 'none');
+    ylabel([forecastMetrics{ii} ' relative to NP forecast'],...
+        'interpreter', 'none');
     grid on;
     
     % Fix precision
-%     yTick = get(gca,'yTick');
-%     yTickLabel = arrayfun(@(x) sprintf('%3.1f',x),yTick,...
-%         'uniformoutput', false);
-%     set(gca, 'yTickLabel', yTickLabel);
+    %     yTick = get(gca,'yTick');
+    %     yTickLabel = arrayfun(@(x) sprintf('%3.1f',x),yTick,...
+    %         'uniformoutput', false);
+    %     set(gca, 'yTickLabel', yTickLabel);
     
     setPlotProp(opt, fig(ii));
     set(ax, 'XScale', 'log');
     
     % Boxplot
-    fig(ii) = figure(600 + ii);
-    if ~strcmp('MAPE', fcMetrics{ii})
-        aboxplot(allMetrics_norm(:, :, selectedFcasts(1:(end-1)), ii), ...
-            'labels', numCustomers,'fclabels', ...
-            fcTypeStrings(selectedFcasts(1:(end-1))));
+    fig(ii) = figure(300 + ii);
+    if ~strcmp('MAPE', forecastMetrics{ii})
+        aboxplot(allMetricsNormalized(:, :, selectedFcasts(1:(end-1)),...
+            ii), 'labels', nCustomers,'fclabels', ...
+            forecastTypeStrings(selectedFcasts(1:(end-1))));
+        legend(forecastTypeStrings(selectedFcasts(1:(end-1))),...
+            'interpreter', 'none');
+        xlabel('No. of Househoulds');
+        ylabel([forecastMetrics{ii} ' relative to NP forecast'],...
+            'interpreter', 'none');
+        grid on;
     end
-    legend(fcTypeStrings(selectedFcasts(1:(end-1))), 'interpreter', 'none');
-    xlabel('No. of Househoulds');
-    ylabel([fcMetrics{ii} ' relative to NP forecast'], 'interpreter', 'none');
-    grid on;
-    
 end
+
+% TODO: Need to tidy up the savePlots part of this code
 
 % save figures:
 if savePlots
-
+    
     figureNums = [601 602 603 604 202];
     
     for figNumIdx = 1:length(figureNums)
@@ -149,16 +155,16 @@ if savePlots
             end;
             
             % Fix precision
-%             yTick = get(gca,'yTick');
-%             yTickLabel = arrayfun(@(x) sprintf('%3.1f',x),yTick,...
-%                 'uniformoutput', false);
-%             if figNum==603 % || figNum==604
-%                 yTickLabel = arrayfun(@(x) sprintf('%3.2f',x),yTick,...
-%                     'uniformoutput', false);
-%                 set(gcf, 'PaperPosition', [-1 -0.25 19.75 15]);
-%             end
-%             set(gca, 'yTick', yTick);
-%             set(gca, 'yTickLabel', yTickLabel);
+            %             yTick = get(gca,'yTick');
+            %             yTickLabel = arrayfun(@(x) sprintf('%3.1f',x),yTick,...
+            %                 'uniformoutput', false);
+            %             if figNum==603 % || figNum==604
+            %                 yTickLabel = arrayfun(@(x) sprintf('%3.2f',x),yTick,...
+            %                     'uniformoutput', false);
+            %                 set(gcf, 'PaperPosition', [-1 -0.25 19.75 15]);
+            %             end
+            %             set(gca, 'yTick', yTick);
+            %             set(gca, 'yTickLabel', yTickLabel);
             
         else
             ylim([1e-2 3e0]);

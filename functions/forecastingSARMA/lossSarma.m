@@ -32,8 +32,7 @@ parameters.k = trainControl.minimiseOverFirst;
 
 for iObservation = 1:nObservations
     forecasts(iObservation,:) = forecastSarma(parameters, ...
-        featureVectors(:, iObservation), trainControl.suppressOutput, ...
-        trainControl.useHyndmanModel);
+        featureVectors(:, iObservation), trainControl);
 end
 
 
