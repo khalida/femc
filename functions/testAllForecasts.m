@@ -2,9 +2,9 @@ function [ Sim, results ] = testAllForecasts( pars, allDemandValues, ...
     Sim, Pemd, Pfem, MPC, k)
 
 % testAllForecasts: Test the performance of all trained (and non-trained)
-    % forecasts. First the parameterised forecasts are run to select the
-    % best parameters. Then these best selected ones are compared to other
-    % methods.
+% forecasts. First the parameterised forecasts are run to select the
+% best parameters. Then these best selected ones are compared to other
+% methods.
 
 %% Pre-Allocation
 % Index of the best forecasts for each instance
@@ -41,7 +41,7 @@ end
 
 % Extract data required from Sim structure for efficiency:
 batteryCapacityRatio = Sim.batteryCapacityRatio;
-batteryChargeFactor = Sim.batteryChargeFactor;
+batteryChargingFactor = Sim.batteryChargingFactor;
 trainIdxs = Sim.trainIdxs;
 forecastSelectionIdxs = Sim.forecastSelectionIdxs;
 testIdxs = Sim.testIdxs;
@@ -85,7 +85,7 @@ for iRun = 1:nRuns
         % Battery properties
         batteryCapacity = allKWhs(instance)*batteryCapacityRatio*...
             stepsPerDay;
-        maximumChargeRate = batteryChargeFactor*batteryCapacity;
+        maximumChargeRate = batteryChargingFactor*batteryCapacity;
         
         % Separate Data into training and parameter selection sets
         demandValuesTrain = allDemandValues{instance}(trainIdxs, :);
@@ -191,7 +191,7 @@ end
 
 % Extend relevant variables to accomodate the 2 new forecasts
 Sim.lossTypesStrings = [Sim.lossTypesStrings, {'bestPfemSelected',...
-    'bestEmdSelected'}];
+    'bestPemdSelected'}];
 Sim.nMethods = length(Sim.lossTypesStrings);
 
 for instance = 1:nInstances
@@ -224,7 +224,7 @@ parfor instance = 1:nInstances
     
     % Battery properties
     batteryCapacity = allKWhs(instance)*batteryCapacityRatio*stepsPerDay;
-    maximumChargeRate = batteryChargeFactor*batteryCapacity;
+    maximumChargeRate = batteryChargingFactor*batteryCapacity;
     
     % Separate data for parameter selection and testing
     demandValuesSelection = allDemandValues{instance}(...
@@ -248,7 +248,7 @@ parfor instance = 1:nInstances
     %% Test performance of all forecasts
     % (except non selected parameterized ones)
     
-    for forecastTypeIn = setdiff(1:nMethods, [pfemRange, pemdRange])
+    for forecastTypeIn = 1:nMethods
         
         runControl = [];
         runControl.MPC = MPC;
@@ -289,6 +289,14 @@ parfor instance = 1:nInstances
             runControl.MPC.setPoint = ...
                 strcmp(lossTypesStrings{forecastTypeIn}, 'setPoint');
             
+            % Check if fcast is in the original set of Pfem, Pemd forecasts
+            % in which case produce forecast but don't run!
+            if ismember(forecastTypeIn, [pfemRange, pemdRange])
+                runControl.skipRun = true;
+            else
+                runControl.skipRun = false;
+            end
+            
             % If method is set-point then show it current demand
             if(runControl.MPC.setPoint)
                 runControl.MPC.knowCurrentDemandNow = true
@@ -301,36 +309,41 @@ parfor instance = 1:nInstances
                 hourNumbersTest, stepsPerHour, k, runControl); %#ok<PFBNS>
         end
         
-        % Extract simulation results
-        gridPowerTimeSeries = runningPeak';
-        gridBillingPeriodColumns = reshape(gridPowerTimeSeries,...
-            [k*MPC.billingPeriodDays,...
-            length(gridPowerTimeSeries)/(k*MPC.billingPeriodDays)]);
-        
-        gridBillingPeriodPeaks = max(gridBillingPeriodColumns);
-        
-        demandBillingPeriodColumns = reshape(demandValuesTest,...
-            [k*MPC.billingPeriodDays, ...
-            length(demandValuesTest)/(k*MPC.billingPeriodDays)]);
-        
-        demandBillingPeriodPeaks = max(demandBillingPeriodColumns);
-        
-        billingPeriodRatios = ...
-            gridBillingPeriodPeaks./demandBillingPeriodPeaks;
-        
-        peakReductions{instance}(forecastTypeIn) = ...
-            1 - mean(billingPeriodRatios);
-        peakPowers{instance}(forecastTypeIn) = peakLocalPower;
-        smallestExitFlag{instance}(forecastTypeIn) = min(exitFlag);
+        if ~runControl.skipRun
+            
+            % Extract simulation results
+            gridPowerTimeSeries = runningPeak';
+            gridBillingPeriodColumns = reshape(gridPowerTimeSeries,...
+                [k*MPC.billingPeriodDays,...
+                length(gridPowerTimeSeries)/(k*MPC.billingPeriodDays)]);
+            
+            gridBillingPeriodPeaks = max(gridBillingPeriodColumns);
+            
+            demandBillingPeriodColumns = reshape(demandValuesTest,...
+                [k*MPC.billingPeriodDays, ...
+                length(demandValuesTest)/(k*MPC.billingPeriodDays)]);
+            
+            demandBillingPeriodPeaks = max(demandBillingPeriodColumns);
+            
+            billingPeriodRatios = ...
+                gridBillingPeriodPeaks./demandBillingPeriodPeaks;
+            
+            peakReductions{instance}(forecastTypeIn) = ...
+                1 - mean(billingPeriodRatios);
+            peakPowers{instance}(forecastTypeIn) = peakLocalPower;
+            smallestExitFlag{instance}(forecastTypeIn) = min(exitFlag);
+        end
         
         % Compute the performance of the forecast by all metrics
         isForecastFree = strcmp(lossTypesStrings{iForecastType},...
             'forecastFree');
         isSetPoint = strcmp(lossTypesStrings{iForecastType}, 'setPoint');
+        
         if (~isForecastFree && ~isSetPoint)
             for iMetric = 1:length(lossTypes)
                 lossTestResults{instance}(forecastTypeIn, iMetric)...
-                    = mean(lossTypes{iMetric}(godCastValues', forecastUsed));
+                    = mean(lossTypes{iMetric}(godCastValues', ...
+                    forecastUsed));
             end
         end
     end

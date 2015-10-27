@@ -25,8 +25,13 @@ for ii = 1:length(forecastMetrics)
     % Select forecast indexes to plot - here MSE and metric of interest for
     % FFNN and SARMA
     
-    selectedFcasts = unique([1, ii, length(forecastMetrics)+1, ...
-        ii+length(forecastMetrics), length(forecastTypeStrings)]);
+    if strcmp('MSE', forecastMetrics{ii})
+        selectedFcasts = unique([1, 2, length(forecastMetrics)+1, ...
+            length(forecastMetrics)+2, length(forecastTypeStrings)]);
+    else
+        selectedFcasts = unique([1, ii, length(forecastMetrics)+1, ...
+            length(forecastMetrics)+ii, length(forecastTypeStrings)]);
+    end
     
     % Plot points averaged over all aggregates with same nCustomers
     
@@ -104,12 +109,14 @@ for ii = 1:length(forecastMetrics)
     setPlotProp(opt, fig(ii));
     set(ax, 'XScale', 'log');
     
-    % Boxplot
-    fig(ii) = figure(300 + ii);
     if ~strcmp('MAPE', forecastMetrics{ii})
-        aboxplot(allMetricsNormalized(:, :, selectedFcasts(1:(end-1)),...
-            ii), 'labels', nCustomers,'fclabels', ...
+        % Boxplot
+        fig(ii) = figure(300 + ii);
+        aboxplot(permute(allMetricsNormalized(:, :,...
+            selectedFcasts(1:(end-1)),ii), [3 1 2]), 'labels',...
+            nCustomers,'fclabels', ...
             forecastTypeStrings(selectedFcasts(1:(end-1))));
+        
         legend(forecastTypeStrings(selectedFcasts(1:(end-1))),...
             'interpreter', 'none');
         xlabel('No. of Househoulds');

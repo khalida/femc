@@ -176,10 +176,22 @@ auto_MAPE <- transform(auto_MAPE, std=apply(subset(auto_MAPE, select=-mean),1,sd
 MAPEresults <- data.frame(nCustomers=nCustomers, NP_mean=NP_MAPE$mean, NP_std = NP_MAPE$std,
                          auto_mean=auto_MAPE$mean, auto_std=auto_MAPE$std)
 
-print(ggplot(MAPEresults, aes(x = nCustomers, y = mean)) +
-        geom_line() +
-        geom_errorbar(aes(ymin = mean-std, ymax = mean+std)))
+print(ggplot(MAPEresults, aes(x = nCustomers)) +
+        geom_line(aes(y=NP_mean, colour='NP')) +
+        geom_errorbar(aes(ymin = NP_mean-NP_std, ymax = NP_mean+NP_std)) + 
+        geom_line(aes(y=auto_mean, col='Auto')))
 
+
+# Repeat for MSE: which is what auto-method most-likely seeks to minimise:
+MSEresults <- data.frame(nCustomers=nCustomers, NP_mean=apply(results_NP_df,1,mean,na.rm=TRUE),
+                         NP_std = apply(results_NP_df,1,sd,na.rm=TRUE),
+                         auto_mean=apply(results_automated_df,1,mean,na.rm=TRUE),
+                         auto_std=apply(results_automated_df,1,sd,na.rm=TRUE))
+
+print(ggplot(MSEresults, aes(x = nCustomers)) +
+        geom_line(aes(y=NP_mean, colour='NP')) +
+        geom_errorbar(aes(ymin = NP_mean-NP_std, ymax = NP_mean+NP_std)) + 
+        geom_line(aes(y=auto_mean, col='Auto')))
 
 
 

@@ -1,7 +1,7 @@
 %% Global Configuration File
 
 %% Instances
-Sim.nCustomers = [5, 125];
+Sim.nCustomers = [1, 5, 25, 125];
 Sim.nAggregates = 2;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
 Sim.nProc = min(Sim.nInstances, 4);
@@ -56,7 +56,7 @@ Pemd.ds = [4];%, 10, 20 a*b must be >= d
 
 %% MPC options
 MPC.secondWeight = 1e-4; 		% of degeneracy preventing Objective
-MPC.knowCurrentDemandNow = false;  % Is current demand known to controller?
+MPC.knowCurrentDemandNow = true;  % Is current demand known to controller?
 MPC.clipNegativeFcast = true;
 MPC.iterationFactor = 1.0;		% To apply to default maximum iterations
 MPC.rewardMargin = false;		% Reward margin from creating a new peak?

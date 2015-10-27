@@ -64,7 +64,7 @@ disp('======= FORECAST SELECTION / TESTING =======');
 %% Do Plotting
 disp('======= PLOTTING =======');
 
-[significance] = plotAllResultsEdward(Sim, results, Pemd, Pfem);
+plotAllResultsEdward(Sim, results, Pemd, Pfem);
 
 
 %% Save Results

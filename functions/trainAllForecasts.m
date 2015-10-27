@@ -52,7 +52,7 @@ for a = Pemd.as
 end
 
 %% Generate list of loss function handles and labels
-Sim.lossTypes = [{@loss_mse, @loss_mape}, Pfem.loss', Pemd.loss'];
+Sim.lossTypes = [{@lossMse, @lossMape}, Pfem.loss', Pemd.loss'];
 Sim.lossTypesStrings = cell(1, length(Sim.lossTypes)+4);
 Pfem.range = (1:Pfem.num) + (length(Sim.lossTypes)-Pemd.num-Pfem.num);
 Pemd.range = (1:Pemd.num) + (length(Sim.lossTypes)-Pemd.num);

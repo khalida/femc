@@ -7,7 +7,8 @@ function [ runningPeak, exitFlag, forecastUsed ] = ...
         % given forecast
 
 % Set default MPC values if not given:
-runControl = setDefaultValues(runControl, {'MPC', 'default'});
+runControl = setDefaultValues(runControl, {'MPC', 'default',...
+    'skipRun', false});
 runControl.MPC = setDefaultValues(runControl.MPC,...
     {'SPrecourse', false, 'resetPeakToMean', false,...
     'billingPeriodDays', 1});
@@ -48,6 +49,10 @@ for t = timeInHours
     end
     
     forecastUsed(:, idx) = forecast;
+    
+    if runControl.skipRun
+        continue;
+    end
     
     [powerToBattery, exitFlag(idx)] = controllerOptimiser(forecast, ...
         stateOfCharge, demandNow, batteryCapacity, maximumChargeRate, ...

@@ -1,9 +1,29 @@
-function [significance] = plotAllResultsEdward( Sim, results, EMD, PFEM)
+function plotAllResultsEdward( Sim, results, Pemd, Pfem)
 
-%PLOT ALL RESULTS Plot outputs from 'trainAllFcasts' and 'testAllFcasts'
-%   functions.
+% plotAllResultsEdward: Plot outputs from 'trainAllForecasts' and
+% 'testAllFcasts' functions.
 
-%% Expand fields (of data structures)
+% Expand fields (of data structures)
+allKWhs = results.allKWhs;
+peakReductionsTrialFlattened = results.peakReductionsTrialFlattened;
+smallestExitFlag = results.smallestExitFlag;
+peakReductions = results.peakReductions;
+lossTestResults = results.lossTestResults;
+
+bestPfemForecast = results.bestPfemForecast;
+bestPemdForecast = results.bestPemdForecast;
+
+nDaysTrain = Sim.nDaysTrain;
+nDaysTest = Sim.nDaysTest;
+nDaysSelect = Sim.nDaysSelect;
+
+lossTypesStrings = Sim.lossTypesStrings;
+nMethods = length(lossTypesStrings);
+nInstances = Sim.nInstances;
+nAggregates = Sim.nAggregates;
+nCustomers = Sim.nCustomers;
+nTrainMethods = Sim.nTrainMethods;
+
 resultsFields = fieldnames(results);
 for ii = 1:length(resultsFields)
     eval([resultsFields{ii} ' = results.' resultsFields{ii} ';']);
@@ -14,253 +34,197 @@ for ii = 1:length(simFields)
     eval([simFields{ii} ' = Sim.' simFields{ii} ';']);
 end
 
-%% Plotting
-% Plot all peak reduction ratios VS aggregation size
+%% 1) Plot all individual peak reduction ratios VS Aggregation Size
+% With subplots for absolute and relative performance
 
-myPaperPosition = [0 0 6 4];
-myPaperSize = [6 4];
-myGcaPosition = [0 0 0.8 0.8];
-doSetGCA = false;
-smallerFontSize = 8;
-smallerMarkerSize = 10;
-if isfield(Sim, 'visiblePlots')
-    isVisible = Sim.visiblePlots;
-else
-    isVisible = 'off';
-end
+fig_1 = figure();
 
-fig_001 = figure('Visible', isVisible, 'PaperPosition', myPaperPosition, 'PaperSize', myPaperSize);
-
+% Absolite Peak Reduction Ratios
 subplot(1, 2, 1);
-plot(all_kWhs(:), peakReductions_', '.', 'markers', 20)
-hold on
+plot(allKWhs(:), peakReductionsTrialFlattened', '.', 'markers', 20);
+hold on;
 % Plot warning circles about optimality
-warnPeakReductions = peakReductions_(smallestExitFlag < 1);
-extended_kWhs = repmat(all_kWhs(:)', [nMethods, 1]);
-warn_kWhs = extended_kWhs(smallestExitFlag < 1);
-if (isempty(warn_kWhs))
-    warn_kWhs = -1;
+warnPeakReductions = peakReductionsTrialFlattened(smallestExitFlag < 1);
+extendedKWhs = repmat(allKWhs(:)', [nMethods, 1]);
+warnkWhs = extendedKWhs(smallestExitFlag < 1);
+if (isempty(warnkWhs))
+    warnkWhs = -1;
     warnPeakReductions = -1;
 end
-plot(warn_kWhs, warnPeakReductions, 'ro', 'markers', 20);
-xlabel('Mean Load [kWh/time-step]');
-ylabel(['Mean PRR, ' num2str(num_days_train) '-day train, '...
-    num2str(num_days_test) '-day test']);
-legend(lossTypesStrings{:}, 'Some time-steps not solved to optimality',...
- 'Location', 'northoutside', 'Orientation', 'vertical');
+plot(warnkWhs, warnPeakReductions, 'ro', 'markers', 20);
+xlabel('Mean Load [kWh/interval]');
+ylabel(['Mean PRR, ' num2str(nDaysTrain) '-day train, '...
+    num2str(nDaysSelect) '-day parameter selection, ' ...
+    num2str(nDaysTest) '-day test']);
+
+legend([lossTypesStrings, {'Some intervals not solved to optimality'}],...
+    'Location', 'best','Interpreter', 'none');
 hold off;
 
-% Plot of all relative peak reduction ratios VS aggregation size
+% Relative peak reduction ratios
 subplot(1, 2, 2);
 
-% Reference method is still godCast - but no longer at end of matrix
-refMethod = find(ismember(lossTypesStrings,'godCast'));
-peakReductions_rel = peakReductions./repmat(...
+% Reference method godCast
+refMethod = ismember(lossTypesStrings,'godCast');
+peakReductionsRelative = peakReductions./repmat(...
     peakReductions(refMethod, :, :), [nMethods, 1, 1]);
 
-peakReductions_rel_ = reshape(peakReductions_rel,...
-    [nMethods, length(numCustomers)*numAggregates]);
+peakReductionsRelativeTrialFlattened = reshape(peakReductionsRelative,...
+    [nMethods, nInstances]);
 
-plot(all_kWhs(:), peakReductions_rel_', '.', 'markers', 20)
+plot(allKWhs(:), peakReductionsRelativeTrialFlattened', '.', 'markers', 20)
 hold on
 % Plot warning circles about optimality
-warnPeakReductions = peakReductions_rel_(smallestExitFlag < 1);
-extended_kWhs = repmat(all_kWhs(:)', [nMethods, 1]);
-warn_kWhs = extended_kWhs(smallestExitFlag < 1);
-if (isempty(warn_kWhs))
-    warn_kWhs = -1;
-    warnPeakReductions = -1;
-end
-plot(warn_kWhs, warnPeakReductions, 'ro', 'markers', 20);
-xlabel('Mean Load [kWh/time-step]');
-ylabel(['Mean PRR relative to perfect forecast, ' num2str(num_days_train)...
-    '-day train, ' num2str(num_days_test) '-day test']);
-legend(lossTypesStrings{:}, 'Some time-steps not solved to optimality',...
- 'Location', 'northoutside', 'Orientation', 'vertical');
+warnPeakReductions = peakReductionsRelativeTrialFlattened(...
+    smallestExitFlag < 1);
+plot(warnkWhs, warnPeakReductions, 'ro', 'markers', 20);
+xlabel('Mean Load [kWh/interval]');
+ylabel(['Mean PRR relative to Perfect Forecast, ' num2str(nDaysTrain)...
+    '-day train, ' num2str(nDaysSelect) '-day parameter selection, '...
+    num2str(nDaysTest) '-day test']);
+
+legend([lossTypesStrings, {'Some intervals not solved to optimality'}],...
+    'Location', 'best', 'Orientation', 'vertical', 'Interpreter', 'none');
+
 hold off;
+print(fig_1, '-dpdf', 'allPrrResults.pdf');
 
-if doSetGCA
-	set(gca, 'Position', myGcaPosition);
-end
-set(findall(fig_001,'-property','FontSize'),'FontSize',smallerFontSize);
-set(findall(fig_001,'-property','MarkerSize'),'MarkerSize',smallerMarkerSize);
+%% 2) Plot Absolute PRR against aggregation size (as means +/- error bars)
 
-print(fig_001, '-dpdf', 'all_PRR_results.pdf');
-if ~strcmp(isVisible, 'on')
-    close(fig_001);
-end
+fig_2 = figure();
 
-
-fig_201 = figure('Visible', isVisible, 'PaperPosition', myPaperPosition, 'PaperSize', myPaperSize);
-
-% Plot mean peak reduction ratio for given number of customers
-selectedFcs = setdiff(1:nMethods, [PFEM.range, EMD.range]);
-selectedFcLabels = lossTypesStrings(selectedFcs);
-meanPeakReductions = ...    % nCustomers X fcTypes
-    squeeze(mean(peakReductions(selectedFcs, :, :), 2));
+selectedForecasts = setdiff(1:nMethods, [Pfem.range, Pemd.range]);
+selectedForecastLabels = lossTypesStrings(selectedForecasts);
+meanPeakReductions = ...    % nCustomers X forecastTypes
+    squeeze(mean(peakReductions(selectedForecasts, :, :), 2));
 stdPeakReductions = ...
-    squeeze(std(peakReductions(selectedFcs, :, :),[], 2));
-mean_kWhs = mean(all_kWhs, 1); % nCustomers X 1
-errorbar(repmat(mean_kWhs, [length(selectedFcs), 1])', ...
-    meanPeakReductions',stdPeakReductions'./2,'.-', 'markers', 20);
-xlabel('Mean Load [kWh/time-step]');
-ylabel('Mean PRR, with +/- 0.5 std. dev.');
-legend(selectedFcLabels, 'interpreter', 'none',...
- 'Location', 'northoutside', 'Orientation', 'vertical');
-grid on;
-hold off;
-if doSetGCA
-	set(gca, 'Position', myGcaPosition);
-end
-set(findall(fig_201,'-property','FontSize'),'FontSize',smallerFontSize);
-set(findall(fig_201,'-property','MarkerSize'),'MarkerSize',smallerMarkerSize);
-
-print(fig_201, '-dpdf', 'abs_PRR_VS_aggregation_size.pdf');
-
-if ~strcmp(isVisible, 'on')
-    close(fig_201);
-end
-
-
-
-fig_202 = figure('Visible', isVisible, 'PaperPosition', myPaperPosition, 'PaperSize', myPaperSize);
-
-% Plot mean rel. peak reduction ratio for given number of customers
-meanPeakReductions_rel = ...    % nCustomers X fcTypes
-    squeeze(mean(peakReductions_rel(selectedFcs, :, :), 2));
-stdPeakReductions_rel = ...
-    squeeze(std(peakReductions_rel(selectedFcs, :, :),[], 2));
-errorbar(repmat(mean_kWhs, [length(selectedFcs), 1])', ...
-    meanPeakReductions_rel',stdPeakReductions_rel'./2,'.-', 'markers', 20);
-xlabel('Mean Load [kWh/time-step]');
-ylabel('Mean relative PRR, with +/- 0.5 std. dev.');
-legend(selectedFcLabels, 'interpreter', 'none',...
- 'Location', 'northoutside', 'Orientation', 'vertical');
+    squeeze(std(peakReductions(selectedForecasts, :, :),[], 2));
+meanKWhs = mean(allKWhs, 1); % nCustomers X 1
+errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
+    meanPeakReductions',stdPeakReductions','.-', 'markers', 20);
+xlabel('Mean Load [kWh/interval]');
+ylabel('Mean PRR, with +/- 1.0 std. dev.');
+legend(selectedForecastLabels, 'Interpreter', 'none',...
+    'Location', 'best', 'Orientation', 'vertical');
 grid on;
 hold off;
 
-if doSetGCA
-	set(gca, 'Position', myGcaPosition);
-end
-set(findall(fig_202,'-property','FontSize'),'FontSize',smallerFontSize);
-set(findall(fig_202,'-property','MarkerSize'),'MarkerSize',smallerMarkerSize);
+print(fig_2, '-dpdf', 'absolutePrrVsAggregationSize.pdf');
 
-print(fig_202, '-dpdf', 'rel_PRR_VS_aggregation_size.pdf');
+%% 3) Plot Relative PRR against aggregation size (as means +/- error bars)
 
-if ~strcmp(isVisible, 'on')
-    close(fig_202);
-end
+fig_3 = figure();
 
+meanPeakReductionsRelative = ...    % nCustomers X forecastTypes
+    squeeze(mean(peakReductionsRelative(selectedForecasts, :, :), 2));
+stdPeakReductionsRelative = ...
+    squeeze(std(peakReductionsRelative(selectedForecasts, :, :),[], 2));
+errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
+    meanPeakReductionsRelative',stdPeakReductionsRelative','.-',...
+    'markers', 20);
+xlabel('Mean Load [kWh/interval]');
+ylabel('Mean relative PRR, with +/- 1.0 std. dev.');
+legend(selectedForecastLabels, 'Interpreter', 'none',...
+    'Location', 'best', 'Orientation', 'vertical');
+grid on;
+hold off;
 
-fig_401 = figure('Visible', isVisible, 'PaperPosition', myPaperPosition, 'PaperSize', myPaperSize);
+print(fig_3, '-dpdf', 'relativePrrVsAggregationSize.pdf');
 
-% Plot the distribution of abs peak reduction ratios for each fcast
+%% 4) BoxPlots of Rel/Abs PRR for each Method (across all instances)
+
+fig_4 = figure();
+% Absolute PRRs
 subplot(1, 2, 1);
-peakReductions_flat = squeeze(peakReductions_(selectedFcs, :));
-boxplot(peakReductions_flat', 'labels', selectedFcLabels, 'plotstyle', 'compact');
+peakReductionsFlattened = ...
+    squeeze(peakReductionsTrialFlattened(selectedForecasts, :));
+boxplot(peakReductionsFlattened', 'labels', selectedForecastLabels,...
+    'plotstyle', 'compact');
 ylabel('Mean PRR []');
 grid on;
 
-% Plot the distribution of rel peak reduction ratios for each fcast
+% Relative PRRs
 subplot(1, 2, 2);
-peakReductions_rel_flat = ...
-    squeeze(peakReductions_rel_(selectedFcs, :));
-boxplot(peakReductions_rel_flat', 'labels', selectedFcLabels, 'plotstyle', 'compact');
+peakReductionsRelativeFlattened = ...
+    squeeze(peakReductionsRelativeTrialFlattened(selectedForecasts, :));
+boxplot(peakReductionsRelativeFlattened', 'labels', ...
+    selectedForecastLabels, 'plotstyle', 'compact');
 ylabel('Mean PRR relative to perfect forecast');
 grid on;
 
-if doSetGCA
-	set(gca, 'Position', myGcaPosition);
-end
-% set(findall(fig_401,'-property','FontSize'),'FontSize',smallerFontSize);
+print(fig_4, '-dpdf', 'allPrrResultsBoxPlot.pdf');
 
+%% 5) Plots showing performace of Each Forecast Against the different
+% Error metrics (look at only BestPfem and BestPemd metrics to keep
+% the number of plots manageable (but plot all relevant forecasts).
+fig_5 = figure();
 
-print(fig_401, '-dpdf', 'all_PRR_results_box_plot.pdf');
+% Extend 'lossTestResults' with loss according to the 'bestPfem',
+% 'bestPemd' metric for each instance. lossTestResults is:
+% [nMethods x nAggregates x length(nCustomers) x nTrainMethods]);
 
-if ~strcmp(isVisible, 'on')
-    close(fig_401);
-end
-
-
-fig_901 = figure('Visible', isVisible, 'PaperPosition', myPaperPosition, 'PaperSize', myPaperSize);
-
-% Plot performance of the fcasts for each error metric
-lossTestResults_meanOverTrials = squeeze(mean(lossTestResults, 2));
-lossTestResults_stdOverTrials = squeeze(std(lossTestResults, [], 2));
-for eachErrorIdx = 1:nTrainMethods
-    thisSelectedFcs = unique([selectedFcs, eachErrorIdx]);
-    thisSelectedFcsString = lossTypesStrings(thisSelectedFcs);
-    subplot(2, ceil(nTrainMethods/2), eachErrorIdx);
-    errorbar(repmat(mean_kWhs, [length(thisSelectedFcs), 1])', ...
-        squeeze(lossTestResults_meanOverTrials(thisSelectedFcs, :, ...
-        eachErrorIdx))', squeeze(lossTestResults_stdOverTrials(...
-        thisSelectedFcs, :, eachErrorIdx))','.-', 'markers', 20);
-    
-    grid on;
-    legend(thisSelectedFcsString, 'interpreter', 'none',...
-     'Location', 'northoutside', 'Orientation', 'vertical');
-    xlabel('Mean Load [kWh/time-step]');
-    ylabel('Forecast Error Metric +/- 1 std. dev.');
-    title(lossTypesStrings{eachErrorIdx}, 'interpreter', 'none');
-end
-
-if doSetGCA
-	set(gca, 'Position', myGcaPosition);
-end
-set(findall(fig_901,'-property','FontSize'),'FontSize',smallerFontSize);
-set(findall(fig_901,'-property','MarkerSize'),'MarkerSize',smallerMarkerSize);
-
-
-print(fig_901, '-dpdf', 'all_forecast_performances.pdf');
-
-if ~strcmp(isVisible, 'on')
-    close(fig_901);
-end
-
-%% Compute tests for Statistical Significance between Results
-% Overall statistical significance
-nSelMethods = length(selectedFcs);
-overallSignificance = ones(nSelMethods-1, nSelMethods-1).*NaN;
-for firstMethod = 1:(nSelMethods-1)
-    for secondMethod = (firstMethod+1):nSelMethods
-        firstMethod_results = squeeze(peakReductions_rel(...
-            selectedFcs(firstMethod), :, :));
-        firstMethod_results = firstMethod_results(:);
-        
-        secondMethod_results = squeeze(peakReductions_rel(...
-            selectedFcs(secondMethod), :, :));
-        secondMethod_results = secondMethod_results(:);
-        
-        [overallSignificance(firstMethod, secondMethod), ~] = ...
-            ttest2(firstMethod_results, secondMethod_results);
-    end
-end
-overallSig_ds = dataset({overallSignificance selectedFcLabels{1:end}}, ...
-    'obsnames', selectedFcLabels(1:(end-1)));
-disp(overallSig_ds);
-significance.overall = overallSig_ds;
-
-% For a particular level of agregation
-eachLevelSignificance = cell(length(numCustomers), 1);
-eachLevelSig_ds = cell(length(numCustomers), 1);
-for aggLevel = 1:length(numCustomers)
-    eachLevelSignificance{aggLevel} = ...
-        ones(nSelMethods-1, nSelMethods-1).*NaN;
-    for firstMethod = 1:(nSelMethods-1)
-        for secondMethod = (firstMethod+1):nSelMethods
-            firstMethod_results = squeeze(peakReductions_rel(...
-                selectedFcs(firstMethod), :, aggLevel));
-            secondMethod_results = squeeze(peakReductions_rel(...
-                selectedFcs(secondMethod), :, aggLevel));
+instance = 0;
+for eachNcust = 1:length(nCustomers)
+    for eachAgg = 1:nAggregates;
+        instance = instance + 1;
+        for eachMethod = 1:nMethods
+            lossTestResults(eachMethod, eachAgg, eachNcust, ...
+                nTrainMethods+1) = lossTestResults(eachMethod, eachAgg, ...
+                eachNcust, bestPfemForecast(instance));
             
-            [eachLevelSignificance{aggLevel}(firstMethod, secondMethod),...
-                ~] = ttest2(firstMethod_results, secondMethod_results);
+            lossTestResults(eachMethod, eachAgg, eachNcust, ...
+                nTrainMethods+2) = lossTestResults(eachMethod, eachAgg, ...
+                eachNcust, bestPemdForecast(instance));
         end
     end
-    eachLevelSig_ds{aggLevel} = ...
-        dataset({eachLevelSignificance{aggLevel}...
-        selectedFcLabels{1:end}}, 'obsnames', selectedFcLabels(1:(end-1)));
-    disp([num2str(numCustomers(aggLevel)) ' Customers:']);
-    disp(eachLevelSig_ds{aggLevel});
 end
-significance.eachLevel = eachLevelSig_ds;
+
+lossTestResultsMeanOverTrials = squeeze(mean(lossTestResults, 2));
+lossTestResultsStdOverTrials = squeeze(std(lossTestResults, [], 2));
+
+% Find indexes of metrics to plot (TODO: this is a bit of hack!)
+
+metricsToPlotStrings = {'lossMse', 'lossMape', 'bestPfemSelected', ...
+    'bestPemdSelected'};
+metricsToPlotIdx = zeros(length(metricsToPlotStrings), 1);
+for ii = 1:length(metricsToPlotStrings);
+    if strcmp(metricsToPlotStrings{ii}, 'bestPfemSelected')
+        metricsToPlotIdx(ii) = nTrainMethods+1;
+    elseif strcmp(metricsToPlotStrings{ii}, 'bestPemdSelected')
+        metricsToPlotIdx(ii) = nTrainMethods+2;
+    else
+        metricsToPlotIdx(ii) = find(ismember(lossTypesStrings,...
+            metricsToPlotStrings{ii}));
+    end
+end
+
+% Find indexes of forecasts to plot
+
+methodsNotToPlotStrings = {'forecastFree', 'setPoint'};
+methodsNotToPlotIdx = zeros(length(methodsNotToPlotStrings), 1);
+for ii = 1:length(methodsNotToPlotStrings);
+    methodsNotToPlotIdx(ii) = find(ismember(lossTypesStrings,...
+        methodsNotToPlotStrings{ii}));
+end
+
+selectedForecasts = setdiff(1:nMethods, methodsNotToPlotIdx);
+
+for eachMetricIdxIdx = 1:length(metricsToPlotIdx)
+    eachMetricIdx = metricsToPlotIdx(eachMetricIdxIdx);
+    subplot(2, ceil(nTrainMethods/2), eachMetricIdxIdx);
+    errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
+        squeeze(lossTestResultsMeanOverTrials(selectedForecasts, :, ...
+        eachMetricIdx))', squeeze(lossTestResultsStdOverTrials(...
+        selectedForecasts, :, eachMetricIdx))','.-', 'markers', 20);
+    
+    grid on;
+    legend(lossTypesStrings(selectedForecasts), 'Interpreter', 'none',...
+        'Location', 'best', 'Orientation', 'vertical');
+    xlabel('Mean Load [kWh/interval]');
+    ylabel('Forecast Error Metric +/- 1.0 std. dev.');
+    title(metricsToPlotStrings{eachMetricIdxIdx}, 'Interpreter', 'none');
+end
+
+print(fig_5, '-dpdf', 'allForecastPerformances.pdf');
+
+end
