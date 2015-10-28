@@ -4,6 +4,7 @@
 Sim.nCustomers = [5, 125];
 % Sim.nCustomers = [1, 10, 100, 1000];
 Sim.nAggregates = 2;
+Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
 Sim.nProc = min(Sim.nInstances, 4);
 Sim.numStochFcasts = 10;% 100;
 Sim.relativeSizeError = 0.5;
@@ -13,9 +14,9 @@ Sim.batteryCapacityRatio = 0.05; % as fraction of daily average demand
 Sim.batteryChargingFactor = 1;   % ratio of charge rate to capacity
 
 %% Simulation Duration and properties
-Sim.nDaysTrain = 50;    %200;   % days of historic demand data
-Sim.nDaysSelect = 14;    %56;    % to select forecast parameters
-Sim.nDaysTest = 14;      %56;    % days to run simulation for
+Sim.nDaysTrain = 100;    %200;   % days of historic demand data
+Sim.nDaysSelect = 28;    %56;    % to select forecast parameters
+Sim.nDaysTest = 28;      %56;    % days to run simulation for
 Sim.stepsPerHour = 2;   % Half-hourly data
 Sim.hoursPerDay = 24;
 k = 48;                 % horizon & seasonality (assumed same)
@@ -88,7 +89,6 @@ Sim.stepsPerDay = Sim.stepsPerHour*Sim.hoursPerDay;
 Sim.nHoursTrain = Sim.hoursPerDay*Sim.nDaysTrain;
 Sim.nHoursTest = Sim.hoursPerDay*Sim.nDaysTest;
 Sim.nHoursSelect = Sim.hoursPerDay*Sim.nDaysSelect;
-Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
 
 nCustString = '';
 for ii = 1:length(Sim.nCustomers);

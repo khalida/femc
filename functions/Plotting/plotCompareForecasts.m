@@ -50,7 +50,7 @@ for ii = 1:length(forecastMetrics)
             selectedFcastsMAPE, ii), [], 1));
         
         % Plot just mean for most methods
-        plt = plot(repmat(whsMean, [length(selectedFcastsMAPE)-1, 1])',...
+        plot(repmat(whsMean, [length(selectedFcastsMAPE)-1, 1])',...
             thisMetricMean(:,1:(end-1)), 'MarkerSize', 10);
         
         hold on
@@ -72,10 +72,10 @@ for ii = 1:length(forecastMetrics)
         ylabel(['Forecast Error [' forecastMetrics{ii} ']']);
         grid on;
         
-        setPlotProp(opt, fig(ii));
-        
-        plt(1).MarkerSize = 5;
-        plt(2).MarkerSize = 5;
+        thisOpt = opt;
+        thisOpt.LineStyle={'-', '--', ':'};
+        thisOpt.LineWidth = ones(1,3).*2;
+        setPlotProp(thisOpt, fig(ii));
         
         hold off;
     end

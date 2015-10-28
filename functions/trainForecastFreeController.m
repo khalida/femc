@@ -9,9 +9,9 @@ k = trainControl.horizon;
 
 %% Seperate training data into initialization (1-day) and training (rest)
 nDaysInitialization = 1;
-initializationIdxs = 1:(nDaysInitialization*stepsPerDay);
+initializationIdxs = 1:(nDaysInitialization*Sim.stepsPerDay);
 demandValuesInitialization = demandValuesTrain(initializationIdxs, :);
-demandValuesTrainOnly = demandValuesTrain(setdiff(trainIdxs,...
+demandValuesTrainOnly = demandValuesTrain(setdiff(Sim.trainIdxs,...
     initializationIdxs), :);
 
 % Create 'historical load pattern' used for initialization etc.
@@ -28,9 +28,9 @@ end
 batteryCapacity = meanKWh*Sim.batteryCapacityRatio*Sim.stepsPerDay;
 maximumChargingRate = Sim.batteryChargingFactor*batteryCapacity;
 simRangeTrain = [0 Sim.nHoursTrain - ...
-    Sim.hoursPerDay*Sim.nDaysInitialization - 1/Sim.stepsPerHour];
+    Sim.hoursPerDay*nDaysInitialization - 1/Sim.stepsPerHour];
 
-hourNumbersTrainOnly = Sim.hourNumbersTrain(setdiff(trainIdxs,...
+hourNumbersTrainOnly = Sim.hourNumbersTrain(setdiff(Sim.trainIdxs,...
     initializationIdxs));
 
 %% Run On-line Model to create training examples
@@ -77,6 +77,6 @@ end
 
 %% Train forecast free NN model based on examples generated
 pars = generateForecastFreeController( allFeatureVectors, ...
-    allDecisionVectors, nHidden, trainControl.nStart);
+    allDecisionVectors, Sim.nHidden, trainControl.nStart);
 
 end

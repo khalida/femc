@@ -1,7 +1,6 @@
-function [ runningPeak, exitFlag, forecastUsed ] = ...
-    mpcController( simRange, net, godCast, demand, ...
-    batteryCapacity, maximumChargeRate, loadPattern, hourNum,...
-    stepsPerHour, k, runControl)
+function [ runningPeak, exitFlag, forecastUsed ] = mpcController( net, ...
+    godCast, demand, batteryCapacity, maximumChargeRate, loadPattern, ...
+    hourNum, stepsPerHour, k, runControl)
 
 % mpcController: Simulate time series behaviour of MPC controller with
         % given forecast
@@ -24,16 +23,15 @@ else
 end
 daysPassed = 0;
 
-timeInHours = simRange(1):(1/stepsPerHour):simRange(2);
+nIdxs = length(demand);
 
 %% Pre-Allocations
-runningPeak = zeros(1, length(timeInHours));
-exitFlag = zeros(1, length(timeInHours));
-forecastUsed = zeros(k, length(timeInHours));
+runningPeak = zeros(1, nIdxs);
+exitFlag = zeros(1, nIdxs);
+forecastUsed = zeros(k, nIdxs);
 
 %% Run through time series
-idx = 1;
-for t = timeInHours
+for idx = 1:nIdxs;
     demandNow = demand(idx);
     hourNow = hourNum(idx);
     
@@ -107,7 +105,6 @@ for t = timeInHours
     
     % Shift demandDelays (and add current demand)
     demandDelays = [demandDelays(2:end); demand(idx)];
-    idx = idx + 1;
 end
 
 end

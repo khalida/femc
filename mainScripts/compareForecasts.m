@@ -13,7 +13,7 @@ commonFcnFold = [parentFold filesep 'functions'];
 addpath(genpath(commonFcnFold), '-BEGIN');
 
 % if updateMex, compileMexes; end;
-saveFileName = '..\results\2015_10_27_compareForecast_minimiseOver_1.mat';
+saveFileName = '..\results\2015_10_28_compareForecast_compareR.mat';
 
 %% Set-up // workers
 poolObj = parpool('local', Sim.nProc);
@@ -34,8 +34,10 @@ lossTypes = {@lossMse, @lossMape, unitLossPfem, ...
     unitLossPemd, @lossMse, @lossMape, unitLossPfem, ...
     unitLossPemd};
 
-forecastTypeStrings = {'MSE SARMA', 'MAPE SARMA', 'PFEM SARMA', 'PEMD SARMA', ...
-    'MSE FFNN', 'MAPE FFNN', 'PFEM FFNN', 'PEMD FFNN', 'NP'};
+forecastTypeStrings = {'MSE SARMA', 'MAPE SARMA', 'PFEM SARMA',...
+    'PEMD SARMA', 'MSE FFNN', 'MAPE FFNN', 'PFEM FFNN', 'PEMD FFNN',...
+    'NP'};
+
 forecastMetrics = {'MSE', 'MAPE', 'PFEM', 'PEMD'};
 
 if length(lossTypes) ~= 2*length(forecastMetrics)
@@ -45,8 +47,9 @@ end
 trainingHandles = [repmat({@trainSarma}, [1, length(forecastMetrics)]), ...
     repmat({@trainFfnnMultipleStarts}, [1, length(forecastMetrics)])];
 
-forecastHandles = [repmat({@forecastSarma}, [1, length(forecastMetrics)]), ...
-    repmat({@forecastFfnn}, [1, length(forecastMetrics)])];
+forecastHandles = [repmat({@forecastSarma}, ...
+    [1, length(forecastMetrics)]), repmat({@forecastFfnn}, ...
+    [1, length(forecastMetrics)])];
 
 %% Pre-Allocation
 nMethods = length(forecastTypeStrings);
@@ -96,6 +99,8 @@ end
 
 % Produce the forecasts
 tic;
+poolobj = gcp('nocreate');
+delete(poolobj);
 parfor instance = 1:Sim.nInstances
     
     y = allDemandValues(instance, :)';
@@ -142,6 +147,10 @@ parfor instance = 1:Sim.nInstances
                 squeeze(forecastValues{instance}(nMethods, ii, ...
                 1:trainControl.minimiseOverFirst)));
         end
+        
+        % 'R forecast':
+        getAutomatedForecastR(historicData, trainControl);
+        
         historicData = [historicData; actual(1)];
     end
     

@@ -1,5 +1,5 @@
 function [ featureVectors, decisionVectors ] = ...
-    mpcGenerateForecastFreeExamples( simRange, godCast, demand, ...
+    mpcGenerateForecastFreeExamples(godCast, demand, ...
     batteryCapacity, maximumChargeRate, loadPattern, hourNum,...
     stepsPerHour, k, MPC)
 
@@ -10,7 +10,7 @@ function [ featureVectors, decisionVectors ] = ...
 %% Initializations
 demandDelays = loadPattern;
 stateOfCharge = 0.5*batteryCapacity;
-timeInHours = simRange(1):(1/stepsPerHour):simRange(2); % time in hours
+nIdxs = length(demand);
 
 % Set default values of MPC structure
 MPC = setDefaultValues(MPC, {'SPrecourse', false, ...
@@ -28,22 +28,21 @@ daysPassed = 0;
 %% Pre-Allocations
 % Features <k previous demands, (demandNow), SoC, peakSoFar, hourNum>
 if MPC.knowCurrentDemandNow
-    featureVectors = zeros(k + 4, length(timeInHours));
+    featureVectors = zeros(k + 4, nIdxs);
 else
-    featureVectors = zeros(k + 3, length(timeInHours));
+    featureVectors = zeros(k + 3, nIdxs);
 end
 
 % Response <next step charging power, (peakForecastPower)>
 if MPC.SPrecourse
-    decisionVectors = zeros(2, length(timeInHours));
+    decisionVectors = zeros(2, nIdxs);
 else
-    decisionVectors = zeros(1, length(timeInHours));
+    decisionVectors = zeros(1, nIdxs);
 end
 
 
 %% Run through time series
-idx = 1;
-for t = timeInHours
+for idx = 1:nIdxs
     demandNow = demand(idx);
     hourNow = hourNum(idx);
     
@@ -115,7 +114,6 @@ for t = timeInHours
     
     % Shift demand delays and add current demand
     demandDelays = [demandDelays(2:end); demand(idx)];
-    idx = idx + 1;
 end
 
 end

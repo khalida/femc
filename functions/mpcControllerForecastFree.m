@@ -1,6 +1,6 @@
-function [ runningPeak ] = ...
-    mpcControllerForecastFree( simRange, net, demand, batteryCapacity, ...
-    maximumChargeRate, loadPattern, hourNum, stepsPerHour, MPC)
+function [ runningPeak ] = mpcControllerForecastFree( net, demand, ...
+    batteryCapacity, maximumChargeRate, loadPattern, hourNum,...
+    stepsPerHour, MPC)
 
 % mpcControllerForecastFree: Time series simulation of a forecast free
                                 % controller
@@ -8,10 +8,10 @@ function [ runningPeak ] = ...
 %% Initialisations
 demandDelays = loadPattern;
 stateOfCharge = 0.5*batteryCapacity;
-timeInHours = simRange(1):(1/stepsPerHour):simRange(2);
+nIdxs = length(demand);
 
 %% Pre-Allocations
-runningPeak = zeros(1, length(timeInHours));
+runningPeak = zeros(1, nIdxs);
 
 %% Set Default Values:
 MPC = setDefaultValues(MPC, {'knowCurrentDemandNow', false, ...
@@ -26,8 +26,7 @@ end
 daysPassed = 0;
 
 %% Run through time series
-idx = 1;
-for t = timeInHours
+for idx = 1:nIdxs
     demandNow = demand(idx);
     hourNow = hourNum(idx);
     
@@ -83,7 +82,6 @@ for t = timeInHours
     
     % Shift demand delays (and add current demand)
     demandDelays = [demandDelays(2:end); demand(idx)];
-    idx = idx + 1;
 end
 
 end
