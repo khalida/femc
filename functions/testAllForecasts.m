@@ -7,7 +7,7 @@ function [ Sim, results ] = testAllForecasts( pars, allDemandValues, ...
 % methods.
 
 %% Pre-Allocation
-% Index of the best forecasts for each instance
+% Index of the best forecasts for each instance (within Sim.lossTypes)
 bestPfemIdx = zeros(Sim.nInstances, 1);
 bestPemdIdx = zeros(Sim.nInstances, 1);
 
@@ -33,13 +33,13 @@ for instance = 1:Sim.nInstances
     peakReductions{instance} = zeros(Sim.nMethods,1);
     peakPowers{instance} = zeros(Sim.nMethods,1);
     smallestExitFlag{instance} = zeros(Sim.nMethods,1);
-    lossTestResults{instance} = ...
-        zeros(Sim.nMethods, length(Sim.lossTypes));
+    lossTestResults{instance} = zeros(Sim.nMethods, Sim.nTrainMethods);
 end
 
 %% Run Models for Forecast selection
 
-% Extract data required from Sim structure for efficiency:
+% Extract data required from Sim structure for efficiency of parfor
+% communications
 batteryCapacityRatio = Sim.batteryCapacityRatio;
 batteryChargingFactor = Sim.batteryChargingFactor;
 trainIdxs = Sim.trainIdxs;
@@ -47,33 +47,33 @@ forecastSelectionIdxs = Sim.forecastSelectionIdxs;
 testIdxs = Sim.testIdxs;
 pfemRange = Pfem.range;
 pemdRange = Pemd.range;
-lossTypesStrings = Sim.lossTypesStrings;
 lossTypes = Sim.lossTypes;
+allMethodStrings = Sim.allMethodStrings;
 
 hourNumbersSelection = Sim.hourNumbersSelection;
 stepsPerHour = Sim.stepsPerHour;
 stepsPerDay = Sim.stepsPerDay;
 nInstances = Sim.nInstances;
 
-% Set any default values of MPC that aren't set:
+% Set any default values of MPC that aren't already set:
 MPC = setDefaultValues(MPC, {'billingPeriodDays', 1, ...
     'maxParForTypes', 4});
 
 forecastSelectionTic = tic;
 
-allForecastTypes = [pfemRange, pemdRange];
-forecastTypesOffset = 1;
+allForecastsToSelectFrom = [pfemRange, pemdRange];
+forecastOffset = 1;
 
-nRuns = ceil(length(allForecastTypes)/MPC.maxParForTypes);
+nRuns = ceil(length(allForecastsToSelectFrom)/MPC.maxParForTypes);
 
-disp('==== Forecast Selection ===')
+disp('===== Forecast Selection =====')
 
 for iRun = 1:nRuns
     
-    theseForecastTypes = allForecastTypes(...
-        forecastTypesOffset:min(forecastTypesOffset + ...
-        MPC.maxParForTypes - 1, end));
-    forecastTypesOffset = forecastTypesOffset + MPC.maxParForTypes;
+    theseForecasts = allForecastsToSelectFrom(forecastOffset:...
+        min(forecastOffset + MPC.maxParForTypes - 1, end));
+    
+    forecastOffset = forecastOffset + MPC.maxParForTypes;
     
     poolobj = gcp('nocreate');
     delete(poolobj);
@@ -85,12 +85,14 @@ for iRun = 1:nRuns
         % Battery properties
         batteryCapacity = allKWhs(instance)*batteryCapacityRatio*...
             stepsPerDay;
+        
         maximumChargeRate = batteryChargingFactor*batteryCapacity;
         
         % Separate Data into training and parameter selection sets
         demandValuesTrain = allDemandValues{instance}(trainIdxs, :);
         demandValuesSelection = allDemandValues{instance}(...
             forecastSelectionIdxs, :);
+        
         peakLocalPower = max(demandValuesSelection);
         
         % Create 'historical load pattern' used for initialization etc.
@@ -103,22 +105,22 @@ for iRun = 1:nRuns
                 circshift(demandValuesSelection, -[jj-1, 0]);
         end
         
-        %% For each parameterized method run simulation
-        for iForecastType = theseForecastTypes
+        %% For each parametrized method run simulation
+        for iForecastType = theseForecasts
             
             runControl = [];
             runControl.MPC = MPC;
             
-            runControl.MPC.setPoint = ...
-                strcmp(lossTypesStrings{iForecastType}, 'setPoint'); %#ok<PFBNS>
-            
-            % If method is set-point then show it current demand
-            if(runControl.MPC.setPoint)
-                runControl.MPC.knowCurrentDemandNow = true
+            if strcmp(allMethodStrings{iForecastType},...
+                    'setPoint'); %#ok<PFBNS>
+                
+                error(['Should not have found setPoint method during' ...
+                    'parameter selection']);
             end
             
             runControl.naivePeriodic = false;
             runControl.godCast = false;
+            runControl.skipRun = false;
             
             [runningPeak, exitFlag, forecastUsed] = mpcController( ...
                 simRangeSelection, pars{instance, iForecastType},...
@@ -126,41 +128,29 @@ for iRun = 1:nRuns
                 maximumChargeRate, loadPattern, hourNumbersSelection, ...
                 stepsPerHour, k, runControl);
             
-            % Extract simulation results
-            gridPowerTimeSeries = runningPeak';
-            gridBillingPeriodColumns = reshape(gridPowerTimeSeries,...
-                [k*MPC.billingPeriodDays, ...
-                length(gridPowerTimeSeries)/(k*MPC.billingPeriodDays)]);
-            
-            gridBillingPeriodPeaks = max(gridBillingPeriodColumns);
-            
-            demandBillingPeriodColumns = reshape(demandValuesSelection,...
-                [k*MPC.billingPeriodDays,...
-                length(demandValuesSelection)/(k*MPC.billingPeriodDays)]);
-            
-            demandBillingPeriodPeaks = max(demandBillingPeriodColumns);
-            
-            billingPeriodRatios = ...
-                gridBillingPeriodPeaks./demandBillingPeriodPeaks;
-            
+            %% Extract simulation results
             peakReductions{instance}(iForecastType) = ...
-                1 - mean(billingPeriodRatios);
+                extractSimulationResults(runningPeak',...
+                demandValuesSelection, k*MPC.billingPeriodDays);
             
             peakPowers{instance}(iForecastType) = peakLocalPower;
             smallestExitFlag{instance}(iForecastType) = min(exitFlag);
             
-            % Compute the performance of the forecast by all metrics
-            isForecastFree = ...
-                strcmp(lossTypesStrings{iForecastType}, 'forecastFree');
-            isSetPoint = ...
-                strcmp(lossTypesStrings{iForecastType}, 'setPoint');
+            if strcmp(allMethodStrings{iForecastType}, 'forecastFree');
+                error(['Should not have found forecastFree method ' ...
+                    'during parameter selection']);
+            end
             
-            if (~isForecastFree && ~isSetPoint)
-                for iMetric = 1:length(lossTypes)
-                    lossTestResults{instance}(iForecastType, iMetric)...
-                        = mean(lossTypes{iMetric}(godCastValues',...
-                        forecastUsed));
-                end
+            if strcmp(allMethodStrings{iForecastType}, 'setPoint');
+                error(['Should not have found setPoint method ' ...
+                    'during parameter selection']);
+            end
+            
+            % Compute the performance of the forecast by all metrics
+            for iMetric = 1:length(lossTypes)
+                lossTestResults{instance}(iForecastType, iMetric)...
+                    = mean(lossTypes{iMetric}(godCastValues',...
+                    forecastUsed));
             end
         end
         
@@ -173,7 +163,7 @@ for iRun = 1:nRuns
     delete(poolobj);
     
     disp(' ===== Completed Forecast Types: ===== ');
-    disp(theseForecastTypes);
+    disp(theseForecasts);
     
 end
 
@@ -189,10 +179,10 @@ for instance = 1:nInstances
     bestPemdIdx(instance) = idx + min(pemdRange) - 1;
 end
 
-% Extend relevant variables to accomodate the 2 new forecasts
-Sim.lossTypesStrings = [Sim.lossTypesStrings, {'bestPfemSelected',...
+%% Extend relevant variables to accomodate the 2 'new' forecasts
+Sim.allMethodStrings = [allMethodStrings, {'bestPfemSelected',...
     'bestPemdSelected'}];
-Sim.nMethods = length(Sim.lossTypesStrings);
+Sim.nMethods = length(Sim.allMethodStrings);
 
 for instance = 1:nInstances
     peakReductions{instance} = [peakReductions{instance}; ...
@@ -206,10 +196,11 @@ for instance = 1:nInstances
 end
 
 %% Run Models for Performance Testing
-% Extract data from Sim struct for efficiency
+
+% Extract data from Sim struct for efficiency in parfor communication
 nMethods = Sim.nMethods;
 nTrainMethods = Sim.nTrainMethods;
-lossTypesStrings = Sim.lossTypesStrings;
+allMethodStrings = Sim.allMethodStrings;
 hourNumbersTest = Sim.hourNumbersTest;
 stepsPerHour = Sim.stepsPerHour;
 
@@ -218,11 +209,11 @@ testingTic = tic;
 poolobj = gcp('nocreate');
 delete(poolobj);
 
-disp('==== Forecast Testing ===')
+disp('===== Forecast Testing =====')
 
 parfor instance = 1:nInstances
     
-    % Battery properties
+    %% Battery properties
     batteryCapacity = allKWhs(instance)*batteryCapacityRatio*stepsPerDay;
     maximumChargeRate = batteryChargingFactor*batteryCapacity;
     
@@ -243,18 +234,19 @@ parfor instance = 1:nInstances
     end
     
     % Avoid parfor errors
-    forecastUsed = []; exitFlag = []; iForecastType = [];
+    forecastUsed = []; exitFlag = [];
     
-    %% Test performance of all forecasts
-    % (except non selected parameterized ones)
+    %% Test performance of all methods
     
-    for forecastTypeIn = 1:nMethods
+    for methodType = 1:nMethods
         
         runControl = [];
         runControl.MPC = MPC;
+        thisMethodString = allMethodStrings{methodType}; %#ok<PFBNS>
         
-        if strcmp(lossTypesStrings{forecastTypeIn},'fcastFree') %#ok<PFBNS>
-            % Implement forecast free controller
+        if strcmp(thisMethodString, 'forecastFree')
+            
+            %% Forecast Free Controller
             demandValuesTrain = allDemandValues{instance}(trainIdxs, :);
             
             % Create 'historical load pattern' used for initialization etc.
@@ -263,43 +255,45 @@ parfor instance = 1:nInstances
             
             % Evaluate performance of controller
             [ runningPeak ] = mpcControllerForecastFree( simRangeTest, ...
-                pars{instance, forecastTypeIn}, demandValuesTest,...
+                pars{instance, methodType}, demandValuesTest,...
                 batteryCapacity, maximumChargeRate, loadPatternTrain,...
                 hourNumbersTest, stepsPerHour, MPC);
-        else
-            % Implement a normal forecast driven or set-point controller
             
-            % If we are using 'bestSelected' forecast then set fcType:
-            if strcmp(lossTypesStrings{forecastTypeIn}, 'bestPfemSelected')
+        else
+            
+            %% Normal forecast-driven or set-point controller
+            
+            % If we are using 'bestSelected' forecast then set forecast
+            % index
+            if strcmp(thisMethodString, 'bestPfemSelected')
                 iForecastType = bestPfemIdx(instance);
-            elseif strcmp(lossTypesStrings{forecastTypeIn},...
-                    'bestEmdSelected')
+                
+            elseif strcmp(thisMethodString, 'bestPemdSelected')
                 iForecastType = bestPemdIdx(instance);
+                
             else
-                iForecastType = forecastTypeIn;
+                iForecastType = methodType;
             end
             
             % Check for godCast or naivePeriodic
-            runControl.naivePeriodic = ...
-                strcmp(lossTypesStrings{forecastTypeIn}, 'naivePeriodic');
+            runControl.naivePeriodic = strcmp(thisMethodString,...
+                'naivePeriodic');
             
-            runControl.godCast = ...
-                strcmp(lossTypesStrings{forecastTypeIn}, 'godCast');
+            runControl.godCast = strcmp(thisMethodString, 'godCast');
             
-            runControl.MPC.setPoint = ...
-                strcmp(lossTypesStrings{forecastTypeIn}, 'setPoint');
-            
-            % Check if fcast is in the original set of Pfem, Pemd forecasts
-            % in which case produce forecast but don't run!
-            if ismember(forecastTypeIn, [pfemRange, pemdRange])
-                runControl.skipRun = true;
-            else
-                runControl.skipRun = false;
-            end
+            runControl.MPC.setPoint = strcmp(thisMethodString, 'setPoint');
             
             % If method is set-point then show it current demand
             if(runControl.MPC.setPoint)
                 runControl.MPC.knowCurrentDemandNow = true
+            end
+            
+            % Check if forecast is in the set of {Pfem, Pemd} forecasts
+            % in which case produce forecast but don't run simulation
+            if ismember(methodType, [pfemRange, pemdRange])
+                runControl.skipRun = true;
+            else
+                runControl.skipRun = false;
             end
             
             [runningPeak, exitFlag, forecastUsed] = mpcController( ...
@@ -310,38 +304,22 @@ parfor instance = 1:nInstances
         end
         
         if ~runControl.skipRun
-            
             % Extract simulation results
-            gridPowerTimeSeries = runningPeak';
-            gridBillingPeriodColumns = reshape(gridPowerTimeSeries,...
-                [k*MPC.billingPeriodDays,...
-                length(gridPowerTimeSeries)/(k*MPC.billingPeriodDays)]);
+            peakReductions{instance}(methodType) = ...
+                extractSimulationResults(runningPeak',...
+                demandValuesTest, k*MPC.billingPeriodDays);
             
-            gridBillingPeriodPeaks = max(gridBillingPeriodColumns);
-            
-            demandBillingPeriodColumns = reshape(demandValuesTest,...
-                [k*MPC.billingPeriodDays, ...
-                length(demandValuesTest)/(k*MPC.billingPeriodDays)]);
-            
-            demandBillingPeriodPeaks = max(demandBillingPeriodColumns);
-            
-            billingPeriodRatios = ...
-                gridBillingPeriodPeaks./demandBillingPeriodPeaks;
-            
-            peakReductions{instance}(forecastTypeIn) = ...
-                1 - mean(billingPeriodRatios);
-            peakPowers{instance}(forecastTypeIn) = peakLocalPower;
-            smallestExitFlag{instance}(forecastTypeIn) = min(exitFlag);
+            peakPowers{instance}(methodType) = peakLocalPower;
+            smallestExitFlag{instance}(methodType) = min(exitFlag);
         end
         
         % Compute the performance of the forecast by all metrics
-        isForecastFree = strcmp(lossTypesStrings{iForecastType},...
-            'forecastFree');
-        isSetPoint = strcmp(lossTypesStrings{iForecastType}, 'setPoint');
+        isForecastFree = strcmp(thisMethodString, 'forecastFree');
+        isSetPoint = strcmp(thisMethodString, 'setPoint');
         
         if (~isForecastFree && ~isSetPoint)
             for iMetric = 1:length(lossTypes)
-                lossTestResults{instance}(forecastTypeIn, iMetric)...
+                lossTestResults{instance}(methodType, iMetric)...
                     = mean(lossTypes{iMetric}(godCastValues', ...
                     forecastUsed));
             end
@@ -361,38 +339,59 @@ disp('Time for Testing Forecasts:'); disp(timeTesting);
 
 
 %% Convert to arrays from cellArrays
-peakReductions = reshape(cell2mat(peakReductions), ...
-    [nMethods, Sim.nAggregates, length(Sim.nCustomers)]);
+% Use for loops to avoid the confusion of reshape statements
 
-peakPowers = reshape(cell2mat(peakPowers), ...
-    [nMethods, Sim.nAggregates, length(Sim.nCustomers)]);
+peakPowersArray = zeros(nMethods, Sim.nAggregates, length(Sim.nCustomers));
+peakReductionsArray = peakPowersArray;
+smallestExitFlagArray = peakPowersArray;
+allKWhsArray = zeros(Sim.nAggregates, length(Sim.nCustomers));
+lossTestResultsArray = zeros([nMethods, Sim.nAggregates, ...
+    length(Sim.nCustomers), nTrainMethods]);
 
-smallestExitFlag = reshape(cell2mat(smallestExitFlag), ...
-    [nMethods, Sim.nAggregates, length(Sim.nCustomers)]);
-
-allKWhs = reshape(allKWhs, ...
-    [Sim.nAggregates, length(Sim.nCustomers)]);
-
-lossTestResults = reshape(cell2mat(lossTestResults), ...
-    [nMethods, Sim.nAggregates, length(Sim.nCustomers), nTrainMethods]);
-
+instance = 0;
+for nCustomerIdx = 1:length(Sim.nCustomers)
+    for trial = 1:Sim.nAggregates
+        
+        instance = instance + 1;
+        allKWhsArray(trial, nCustomerIdx) = allKWhs(instance, 1);
+        
+        for iMethod = 1:nMethods
+            
+            peakPowersArray(iMethod, trial, nCustomerIdx) = ...
+                peakPowers{instance}(iMethod, 1);
+            
+            peakReductionsArray(iMethod, trial, nCustomerIdx) = ...
+                peakReductions{instance}(iMethod, 1);
+            
+            smallestExitFlagArray(iMethod, trial, nCustomerIdx) = ...
+                smallestExitFlag{instance}(iMethod, 1);
+            
+            for metric = 1:nTrainMethods
+                
+                lossTestResultsArray(iMethod, trial, nCustomerIdx, ...
+                    metric) = lossTestResults{instance}(iMethod, metric);
+                
+            end
+        end
+    end
+end
 
 %% Fromatting
 % Collapse Trial Dimension
-peakReductionsTrialFlattened = reshape(peakReductions, ...
+peakReductionsTrialFlattened = reshape(peakReductionsArray, ...
     [nMethods, length(Sim.nCustomers)*Sim.nAggregates]);
 
-peakPowersTrialFlattened = reshape(peakPowers, ...
+peakPowersTrialFlattened = reshape(peakPowersArray, ...
     [nMethods, length(Sim.nCustomers)*Sim.nAggregates]);
 
 %% Put results together in structure for passing out
-results.peakReductions = peakReductions;
+results.peakReductions = peakReductionsArray;
 results.peakReductionsTrialFlattened = peakReductionsTrialFlattened;
-results.peakPowers = peakPowers;
+results.peakPowers = peakPowersArray;
 results.peakPowersTrialFlattened = peakPowersTrialFlattened;
-results.smallestExitFlag = smallestExitFlag;
-results.allKWhs = allKWhs;
-results.lossTestResults = lossTestResults;
+results.smallestExitFlag = smallestExitFlagArray;
+results.allKWhs = allKWhsArray;
+results.lossTestResults = lossTestResultsArray;
 results.bestPfemForecast = bestPfemIdx;
 results.bestPemdForecast = bestPemdIdx;
 

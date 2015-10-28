@@ -72,6 +72,8 @@ parfor instance = 1:nInstances
     end
     
     %% For each method (except non-opt parameterised ones)
+    % TO-DO: it seems further work is require on this method; as we only
+    % want to run the 'bestSelected' of methods => need to review
     for forecastType = 1:nMethods
         
         runControl = [];
@@ -100,6 +102,8 @@ parfor instance = 1:nInstances
             runControl.MPC.setPoint = ...
                 strcmp(lossTypesStrings{forecastType}, 'setPoint');
             
+            runControl.skipRun = false;
+            
             % If method is set-point then show it current demand
             if(runControl.MPC.setPoint)
                 runControl.MPC.knowCurrentDemandNow = true;
@@ -112,7 +116,7 @@ parfor instance = 1:nInstances
                 stepsPerHour, k, runControl);
             
             % Compute the performance of the forecast by all metrics
-            if ~strcmp(lossTypesStrings{forecastType}, 'setPoint');
+            if ~runControl.MPC.setPoint;
                 for eachError = 1:length(lossTypes)
                     lossTestResults{instance}(forecastType, eachError)...
                         = mean(lossTypes{eachError}(godCastValues', fcUsed));

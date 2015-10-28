@@ -17,27 +17,27 @@ function [loss] = lossSarma (parameterValues, demand, lossType, k,...
 if ~trainControl.useHyndmanModel
     [ featureVectors, responseVectors ] = ...
         computeFeatureResponseVectors( demand, k,...
-        trainControl.minimiseOverFirst);
+        k);
 else
     [ featureVectors, responseVectors ] = ...
         computeFeatureResponseVectors( demand, k+3,...
-        trainControl.minimiseOverFirst);
+        k);
 end
 
 nObservations = size(featureVectors, 2);
-forecasts = zeros(nObservations, trainControl.minimiseOverFirst);
+forecasts = zeros(nObservations, k);
 
 parameters.coefficients = parameterValues;
-parameters.k = trainControl.minimiseOverFirst;
+parameters.k = k;
 
 for iObservation = 1:nObservations
     forecasts(iObservation,:) = forecastSarma(parameters, ...
         featureVectors(:, iObservation), trainControl);
 end
 
-
 % loss functions expect [nDimensions x nObservations], as produced by
 % computeFeatureResponseVectors
-loss = lossType(responseVectors, forecasts');
+loss = lossType(responseVectors(1:trainControl.minimiseOverFirst, :),...
+    forecasts(:, 1:trainControl.minimiseOverFirst)');
 
 end

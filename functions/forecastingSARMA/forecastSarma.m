@@ -10,7 +10,7 @@ function [ forecast ] = forecastSarma(parameters, demand, ...
 % INPUTS
 % parameters:     Structure of parameters of SARMA model (including k and s)
 % demand:         historic demand up to *but not including* forecast origin
-% trainControl:   Stricture of settings
+% trainControl:   Structure of settings
 
 % OUTPUTS
 % forecast:      [k x 1] array of point forecast values

@@ -97,6 +97,7 @@ for instance = 1:nInstances
         
         runControl.naivePeriodic = false;
         runControl.godCast = false;
+        runControl.skipRun = false;
         
         [runningPeak, exitFlag, fcUsed] = mpcController( ...
             simRangeSelection, pars{instance, forecastType}, ...

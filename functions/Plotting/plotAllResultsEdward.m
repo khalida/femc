@@ -1,7 +1,7 @@
 function plotAllResultsEdward( Sim, results, Pemd, Pfem)
 
 % plotAllResultsEdward: Plot outputs from 'trainAllForecasts' and
-% 'testAllFcasts' functions.
+                        % 'testAllFcasts' functions.
 
 % Expand fields (of data structures)
 allKWhs = results.allKWhs;
@@ -17,29 +17,19 @@ nDaysTrain = Sim.nDaysTrain;
 nDaysTest = Sim.nDaysTest;
 nDaysSelect = Sim.nDaysSelect;
 
-lossTypesStrings = Sim.lossTypesStrings;
-nMethods = length(lossTypesStrings);
+allMethodStrings = Sim.allMethodStrings;
+nMethods = Sim.nMethods;
 nInstances = Sim.nInstances;
 nAggregates = Sim.nAggregates;
 nCustomers = Sim.nCustomers;
 nTrainMethods = Sim.nTrainMethods;
-
-resultsFields = fieldnames(results);
-for ii = 1:length(resultsFields)
-    eval([resultsFields{ii} ' = results.' resultsFields{ii} ';']);
-end
-
-simFields = fieldnames(Sim);
-for ii = 1:length(simFields)
-    eval([simFields{ii} ' = Sim.' simFields{ii} ';']);
-end
 
 %% 1) Plot all individual peak reduction ratios VS Aggregation Size
 % With subplots for absolute and relative performance
 
 fig_1 = figure();
 
-% Absolite Peak Reduction Ratios
+% Absolute Peak Reduction Ratios
 subplot(1, 2, 1);
 plot(allKWhs(:), peakReductionsTrialFlattened', '.', 'markers', 20);
 hold on;
@@ -57,7 +47,7 @@ ylabel(['Mean PRR, ' num2str(nDaysTrain) '-day train, '...
     num2str(nDaysSelect) '-day parameter selection, ' ...
     num2str(nDaysTest) '-day test']);
 
-legend([lossTypesStrings, {'Some intervals not solved to optimality'}],...
+legend([allMethodStrings, {'Some intervals not solved to optimality'}],...
     'Location', 'best','Interpreter', 'none');
 hold off;
 
@@ -65,9 +55,9 @@ hold off;
 subplot(1, 2, 2);
 
 % Reference method godCast
-refMethod = ismember(lossTypesStrings,'godCast');
+refMethodIdx = ismember(allMethodStrings,'godCast');
 peakReductionsRelative = peakReductions./repmat(...
-    peakReductions(refMethod, :, :), [nMethods, 1, 1]);
+    peakReductions(refMethodIdx, :, :), [nMethods, 1, 1]);
 
 peakReductionsRelativeTrialFlattened = reshape(peakReductionsRelative,...
     [nMethods, nInstances]);
@@ -83,18 +73,18 @@ ylabel(['Mean PRR relative to Perfect Forecast, ' num2str(nDaysTrain)...
     '-day train, ' num2str(nDaysSelect) '-day parameter selection, '...
     num2str(nDaysTest) '-day test']);
 
-legend([lossTypesStrings, {'Some intervals not solved to optimality'}],...
+legend([allMethodStrings, {'Some intervals not solved to optimality'}],...
     'Location', 'best', 'Orientation', 'vertical', 'Interpreter', 'none');
 
 hold off;
-print(fig_1, '-dpdf', 'allPrrResults.pdf');
+print(fig_1, '-dpdf', '..\results\allPrrResults.pdf');
 
 %% 2) Plot Absolute PRR against aggregation size (as means +/- error bars)
 
 fig_2 = figure();
 
 selectedForecasts = setdiff(1:nMethods, [Pfem.range, Pemd.range]);
-selectedForecastLabels = lossTypesStrings(selectedForecasts);
+selectedForecastLabels = allMethodStrings(selectedForecasts);
 meanPeakReductions = ...    % nCustomers X forecastTypes
     squeeze(mean(peakReductions(selectedForecasts, :, :), 2));
 stdPeakReductions = ...
@@ -109,10 +99,10 @@ legend(selectedForecastLabels, 'Interpreter', 'none',...
 grid on;
 hold off;
 
-print(fig_2, '-dpdf', 'absolutePrrVsAggregationSize.pdf');
+print(fig_2, '-dpdf', '..\results\absolutePrrVsAggregationSize.pdf');
+
 
 %% 3) Plot Relative PRR against aggregation size (as means +/- error bars)
-
 fig_3 = figure();
 
 meanPeakReductionsRelative = ...    % nCustomers X forecastTypes
@@ -129,7 +119,7 @@ legend(selectedForecastLabels, 'Interpreter', 'none',...
 grid on;
 hold off;
 
-print(fig_3, '-dpdf', 'relativePrrVsAggregationSize.pdf');
+print(fig_3, '-dpdf', '..\results\relativePrrVsAggregationSize.pdf');
 
 %% 4) BoxPlots of Rel/Abs PRR for each Method (across all instances)
 
@@ -152,9 +142,9 @@ boxplot(peakReductionsRelativeFlattened', 'labels', ...
 ylabel('Mean PRR relative to perfect forecast');
 grid on;
 
-print(fig_4, '-dpdf', 'allPrrResultsBoxPlot.pdf');
+print(fig_4, '-dpdf', '..\results\allPrrResultsBoxPlot.pdf');
 
-%% 5) Plots showing performace of Each Forecast Against the different
+%% 5) Plots showing performace of each Forecast Against the different
 % Error metrics (look at only BestPfem and BestPemd metrics to keep
 % the number of plots manageable (but plot all relevant forecasts).
 fig_5 = figure();
@@ -167,6 +157,7 @@ instance = 0;
 for eachNcust = 1:length(nCustomers)
     for eachAgg = 1:nAggregates;
         instance = instance + 1;
+        
         for eachMethod = 1:nMethods
             lossTestResults(eachMethod, eachAgg, eachNcust, ...
                 nTrainMethods+1) = lossTestResults(eachMethod, eachAgg, ...
@@ -182,8 +173,8 @@ end
 lossTestResultsMeanOverTrials = squeeze(mean(lossTestResults, 2));
 lossTestResultsStdOverTrials = squeeze(std(lossTestResults, [], 2));
 
-% Find indexes of metrics to plot (TODO: this is a bit of hack!)
-
+% Find indexes of metrics to plot
+% TODO: Sort this out: currently a bit of hack!)
 metricsToPlotStrings = {'lossMse', 'lossMape', 'bestPfemSelected', ...
     'bestPemdSelected'};
 metricsToPlotIdx = zeros(length(metricsToPlotStrings), 1);
@@ -193,17 +184,16 @@ for ii = 1:length(metricsToPlotStrings);
     elseif strcmp(metricsToPlotStrings{ii}, 'bestPemdSelected')
         metricsToPlotIdx(ii) = nTrainMethods+2;
     else
-        metricsToPlotIdx(ii) = find(ismember(lossTypesStrings,...
+        metricsToPlotIdx(ii) = find(ismember(allMethodStrings,...
             metricsToPlotStrings{ii}));
     end
 end
 
 % Find indexes of forecasts to plot
-
 methodsNotToPlotStrings = {'forecastFree', 'setPoint'};
 methodsNotToPlotIdx = zeros(length(methodsNotToPlotStrings), 1);
 for ii = 1:length(methodsNotToPlotStrings);
-    methodsNotToPlotIdx(ii) = find(ismember(lossTypesStrings,...
+    methodsNotToPlotIdx(ii) = find(ismember(allMethodStrings,...
         methodsNotToPlotStrings{ii}));
 end
 
@@ -212,19 +202,21 @@ selectedForecasts = setdiff(1:nMethods, methodsNotToPlotIdx);
 for eachMetricIdxIdx = 1:length(metricsToPlotIdx)
     eachMetricIdx = metricsToPlotIdx(eachMetricIdxIdx);
     subplot(2, ceil(nTrainMethods/2), eachMetricIdxIdx);
+    
     errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
         squeeze(lossTestResultsMeanOverTrials(selectedForecasts, :, ...
         eachMetricIdx))', squeeze(lossTestResultsStdOverTrials(...
         selectedForecasts, :, eachMetricIdx))','.-', 'markers', 20);
     
     grid on;
-    legend(lossTypesStrings(selectedForecasts), 'Interpreter', 'none',...
+    legend(allMethodStrings(selectedForecasts), 'Interpreter', 'none',...
         'Location', 'best', 'Orientation', 'vertical');
+    
     xlabel('Mean Load [kWh/interval]');
     ylabel('Forecast Error Metric +/- 1.0 std. dev.');
     title(metricsToPlotStrings{eachMetricIdxIdx}, 'Interpreter', 'none');
 end
 
-print(fig_5, '-dpdf', 'allForecastPerformances.pdf');
+print(fig_5, '-dpdf', '..\results\allForecastPerformances.pdf');
 
 end

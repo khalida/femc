@@ -59,15 +59,15 @@ end
 outputNet.trainParam.epochs = originalEpochs;
 
 %% Model training according to chosen lossType
-if ~strcmp(func2str(lossType), 'loss_mse')
+if ~strcmp(func2str(lossType), 'lossMse')
     % Set the (non-mse) loss function
-    outputNet.performFcn = 'gen_loss';
+    outputNet.performFcn = 'lossGeneral';
     if ~suppressOutput
-        outputNet.performParam.gen_loss = ...
+        outputNet.performParam.lossGeneral = ...
             @(t, x)lossType(t(1:trainControl.minimiseOverFirst, :), ...
             x(1:trainControl.minimiseOverFirst, :));
     else
-        evalc(['outputNet.performParam.gen_loss = '...
+        evalc(['outputNet.performParam.lossGeneral = '...
             '@(t, x)lossType(t(1:trainControl.minimiseOverFirst, :),' ...
             'x(1:trainControl.minimiseOverFirst, :));']);
     end
@@ -96,7 +96,7 @@ else
     batchIdxs{1} = 1:nObservations;
 end
 
-% TODO: Limiting training time to 60min overall (NB: will get sub-optimal networks)
+% TODO: Limiting training time overall (NB: will get sub-optimal networks)
 outputNet.trainParam.time = (trainControl.maxTime*60)/nBatch;
 outputNet.trainParam.epochs = trainControl.maxEpochs;
 
@@ -104,7 +104,7 @@ for iBatch = 1:nBatch
     batchFeature = featureVectorTrain(:, batchIdxs{iBatch});
     batchResponse = responseVectorTrain(:, batchIdxs{iBatch});
     
-    if ~strcmp(func2str(lossType), 'loss_mse')
+    if ~strcmp(func2str(lossType), 'lossMse')
         if(~suppressOutput)
             [outputNet,tr] = train(outputNet,batchFeature,...
                 batchResponse, nn7);
@@ -123,7 +123,7 @@ for iBatch = 1:nBatch
 end
 
 % Store various parameters along with the neural network
-outputNet.userdata.numObs = size(featureVectorTrain,2);
+outputNet.userdata.nObs = size(featureVectorTrain,2);
 outputNet.userdata.finalPerf_ts = tr.best_tperf;
 outputNet.userdata.trainIndL = length(tr.trainInd(:));
 outputNet.userdata.trainStop = tr.stop;

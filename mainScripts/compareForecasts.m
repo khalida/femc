@@ -13,7 +13,7 @@ commonFcnFold = [parentFold filesep 'functions'];
 addpath(genpath(commonFcnFold), '-BEGIN');
 
 % if updateMex, compileMexes; end;
-saveFileName = 'compareFcast_results_2015_10_25.mat';
+saveFileName = '..\results\2015_10_27_compareForecast_minimiseOver_1.mat';
 
 %% Set-up // workers
 poolObj = parpool('local', Sim.nProc);
@@ -116,7 +116,8 @@ parfor instance = 1:Sim.nInstances
     tempMetrics = zeros(nMethods, nTests, length(forecastMetrics));
     
     for ii = 1:nTests
-        actual = actualValuesAll(instance, :, ii)';
+        actual = actualValuesAll(instance, ...
+            1:trainControl.minimiseOverFirst, ii)'; %#ok<PFBNS>
         for jj = 1:length(lossTypes)
             tempForecast = forecastHandles{jj}(pars{instance}{jj},...
                 historicData, trainControl); %#ok<PFBNS>
@@ -125,8 +126,9 @@ parfor instance = 1:Sim.nInstances
             
             for eachError = 1:(length(lossTypes)/2)
                 tempMetrics(jj, ii, eachError) = ...
-                    lossTypes{eachError}(actual,...
-                    squeeze(forecastValues{instance}(jj, ii, :)));
+                    lossTypes{eachError}(actual, ...
+                    squeeze(forecastValues{instance}(jj, ii, ...
+                    1:trainControl.minimiseOverFirst)));
             end
         end
         
@@ -137,7 +139,8 @@ parfor instance = 1:Sim.nInstances
         for eachError = 1:(length(lossTypes)/2)
             tempMetrics(nMethods, ii, eachError) = ...
                 lossTypes{eachError}(actual,...
-                squeeze(forecastValues{instance}(nMethods, ii, :)));
+                squeeze(forecastValues{instance}(nMethods, ii, ...
+                1:trainControl.minimiseOverFirst)));
         end
         historicData = [historicData; actual(1)];
     end
@@ -182,4 +185,4 @@ save(saveFileName);
 
 %% Produce Plots
 plotCompareForecasts(allMetricsArray, allKWhs, forecastTypeStrings,...
-    forecastMetrics, Sim.nCustomers, false, {});
+    forecastMetrics, Sim.nCustomers, true);
