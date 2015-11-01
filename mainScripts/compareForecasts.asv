@@ -13,9 +13,11 @@ commonFcnFold = [parentFold filesep 'functions'];
 addpath(genpath(commonFcnFold), '-BEGIN');
 
 % if updateMex, compileMexes; end;
-saveFileName = '..\results\2015_10_28_compareForecast_compareR.mat';
+saveFileName = '..\results\2015_11_03_compareForecast_compareR.mat';
 
 %% Set-up // workers
+poolobj = gcp('nocreate');
+delete(poolobj);
 poolObj = parpool('local', Sim.nProc);
 
 %% Read in DATA
@@ -36,7 +38,7 @@ lossTypes = {@lossMse, @lossMape, unitLossPfem, ...
 
 forecastTypeStrings = {'MSE SARMA', 'MAPE SARMA', 'PFEM SARMA',...
     'PEMD SARMA', 'MSE FFNN', 'MAPE FFNN', 'PFEM FFNN', 'PEMD FFNN',...
-    'NP', 'R AUTO'};
+    'NP', 'R AUTO.ARIMA', 'R ETS'};
 
 forecastMetrics = {'MSE', 'MAPE', 'PFEM', 'PEMD'};
 
@@ -53,7 +55,8 @@ forecastHandles = [repmat({@forecastSarma}, ...
 
 %% Pre-Allocation
 nMethods = length(forecastTypeStrings);
-nMetrics = length(fore
+nMetrics = length(forecastMetrics);
+nTrainedMethods = length(lossTypes);
 
 % Set up 'instances matrix'
 allDemandValues = zeros(Sim.nInstances, size(demandData, 1));
@@ -100,8 +103,6 @@ end
 
 % Produce the forecasts
 tic;
-poolobj = gcp('nocreate');
-delete(poolobj);
 parfor instance = 1:Sim.nInstances
     
     y = allDemandValues(instance, :)';
@@ -110,7 +111,7 @@ parfor instance = 1:Sim.nInstances
     yTrain = y(1:trainLength);
     
     %% Train forecast parameters
-    for ii = 1:length(lossTypes)
+    for ii = 1:nTrainedMethods
         disp(forecastTypeStrings{ii}); %#ok<PFBNS>
         pars{instance}{ii} = trainingHandles{ii}(yTrain, lossTypes{ii},...
             trainControl); %#ok<PFBNS>
@@ -124,42 +125,54 @@ parfor instance = 1:Sim.nInstances
     for ii = 1:nTests
         actual = actualValuesAll(instance, ...
             1:trainControl.minimiseOverFirst, ii)'; %#ok<PFBNS>
-        for jj = 1:length(lossTypes)
-            tempForecast = forecastHandles{jj}(pars{instance}{jj},...
+        for eachMethod = 1:nTrainedMethods
+            tempForecast = forecastHandles{eachMethod}(pars{instance}{eachMethod},...
                 historicData, trainControl); %#ok<PFBNS>
-            forecastValues{instance}(jj, ii, :) = ...
+            forecastValues{instance}(eachMethod, ii, :) = ...
                 tempForecast(1:testLength);
             
-            for eachError = 1:(length(lossTypes)/2)
-                tempMetrics(jj, ii, eachError) = ...
+            for eachError = 1:nMetrics
+                tempMetrics(eachMethod, ii, eachError) = ...
                     lossTypes{eachError}(actual, ...
-                    squeeze(forecastValues{instance}(jj, ii, ...
+                    squeeze(forecastValues{instance}(eachMethod, ii, ...
                     1:trainControl.minimiseOverFirst)));
             end
         end
         
         % Naive periodic forecast
+        NPidx = find(ismember(forecastTypeStrings, 'NP'));
         tempForecast = historicData((end-k+1):end);
-        forecastValues{instance}(nMethods, ii, :) = ...
+        forecastValues{instance}(NPidx, ii, :) = ...
             tempForecast(1:testLength);
         
-        for eachError = 1:(length(lossTypes)/2)
-            tempMetrics(nMethods, ii, eachError) = ...
+        for eachError = 1:nMetrics
+            tempMetrics(NPidx, ii, eachError) = ...
                 lossTypes{eachError}(actual,...
-                squeeze(forecastValues{instance}(nMethods, ii, ...
+                squeeze(forecastValues{instance}(NPidx, ii, ...
                 1:trainControl.minimiseOverFirst)));
         end
         
-        % 'R forecast':
-        getAutomatedForecastR(historicData, trainControl);
+        % 'R forecasts':
+        ARIMAidx = find(ismember(forecastTypeStrings, 'R AUTO'));
+        tempForecast = getAutomatedForecastR(historicData, trainControl);
+        forecastValues{instance}(ARIMAidx, ii, ...
+            1:trainControl.minimiseOverFirst) = tempForecast;
+        
+        for eachError = 1:nMetrics
+            tempMetrics(ARIMAidx, ii, eachError) = ...
+                lossTypes{eachError}(actual,...
+                squeeze(forecastValues{instance}(ARIMAidx, ii, ...
+                1:trainControl.minimiseOverFirst)));
+        end
         
         historicData = [historicData; actual(1)];
     end
     
     % Calculate overall summary values
-    for jj = 1:(length(lossTypes)+1)
-        for kk = 1:length(forecastMetrics)
-            allMetrics{instance}(jj, kk) = mean(tempMetrics(jj, :, kk), 2);
+    for eachMethod = 1:nMethods
+        for eachMetric = 1:nMetrics
+            allMetrics{instance}(eachMethod, eachMetric) = ...
+                mean(tempMetrics(eachMethod, :, eachMetric), 2);
         end
     end
     disp('==========');
@@ -180,10 +193,10 @@ instance = 0;
 for nCustIdx = 1:length(Sim.nCustomers)
     for trial = 1:Sim.nAggregates
         instance = instance + 1;
-        for forecastType = 1:(length(lossTypes)+1)
-            for metric = 1:length(forecastMetrics)
-                allMetricsArray(trial, nCustIdx, forecastType, metric) =...
-                    allMetrics{instance}(forecastType, metric);
+        for iMethod = 1:nMethods
+            for metric = 1:nMetrics
+                allMetricsArray(trial, nCustIdx, iMethod, metric) =...
+                    allMetrics{instance}(iMethod, metric);
             end
         end
     end

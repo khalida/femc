@@ -2,8 +2,8 @@
 
 %% Instances
 % Sim.nCustomers = [5, 125];
-Sim.nCustomers = [1, 10, 100, 1000];
-Sim.nAggregates = 4;
+Sim.nCustomers = [10, 1000];
+Sim.nAggregates = 2;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
 Sim.nProc = min(Sim.nInstances, 2);
 Sim.numStochFcasts = 10;% 100;
