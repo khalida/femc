@@ -9,7 +9,7 @@ function [ forecast ] = forecastFfnn( net, demand, trainControl )
 % INPUT:
 % net: MATLAB trained neural network object
 % demand: input data [nInputs x nObservations]
-% trainControl: structure of settings
+% trainControl: structure of train controllering parameters
 
 % OUPUT:
 % forecast: output forecast [nResponses x nObservations]

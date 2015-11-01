@@ -43,7 +43,9 @@ for idx = 1:nIdxs;
         forecast = ones(size(demandDelays)).*demandNow;
     else
         % Produce forecast from input net
-        forecast = fc_FFNN( net, demandDelays, true );
+        trainControl.suppressOutput = runControl.MPC.suppressOutput;
+        forecast = forecastFfnn( net, demandDelays, ...
+            trainControl);
     end
     
     forecastUsed(:, idx) = forecast;

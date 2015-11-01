@@ -2,7 +2,9 @@
 
 load('test_data.mat');
 testDemandSeries = (1:100)';
-outputs = forecastFfnn( net, testDemandSeries, false );
+trainControl.suppressOutput = false;
+
+outputs = forecastFfnn( net, testDemandSeries, trainControl );
 
 fcBasic = net(((100-47):100)');
 

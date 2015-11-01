@@ -169,11 +169,15 @@ disp('Time to Select Forecast Parameters:'); disp(timeSelection);
 
 % Find the best forecast metrics from the parameter grid search
 for instance = 1:nInstances
-    [~, idx] = max(peakReductions{instance}(pfemRange));
-    bestPfemIdx(instance) = idx + min(pfemRange) - 1;
+    if ~isempty(pfemRange)
+        [~, idx] = max(peakReductions{instance}(pfemRange));
+        bestPfemIdx(instance) = idx + min(pfemRange) - 1;
+    end
     
-    [~, idx] = max(peakReductions{instance}(pemdRange));
-    bestPemdIdx(instance) = idx + min(pemdRange) - 1;
+    if ~isempty(pemdRange)
+        [~, idx] = max(peakReductions{instance}(pemdRange));
+        bestPemdIdx(instance) = idx + min(pemdRange) - 1;
+    end
 end
 
 %% Extend relevant variables to accomodate the 2 'new' forecasts
@@ -208,7 +212,8 @@ delete(poolobj);
 
 disp('===== Forecast Testing =====')
 
-parfor instance = 1:nInstances
+for instance = 1:nInstances
+% parfor instance = 1:nInstances
     
     %% Battery properties
     batteryCapacity = allKWhs(instance)*batteryCapacityRatio*stepsPerDay;
@@ -260,7 +265,7 @@ parfor instance = 1:nInstances
         else
             
             %% Normal forecast-driven or set-point controller
-            
+           
             % If we are using 'bestSelected' forecast then set forecast
             % index
             if strcmp(thisMethodString, 'bestPfemSelected')
@@ -295,10 +300,10 @@ parfor instance = 1:nInstances
             end
             
             [runningPeak, exitFlag, forecastUsed] = mpcController( ...
-                pars{instance, min(iForecastType, nTrainMethods)}, ...
-                godCastValues, demandValuesTest, batteryCapacity, ...
-                maximumChargeRate, loadPattern, hourNumbersTest, ...
-                stepsPerHour, k, runControl); %#ok<PFBNS>
+                pars{instance, iForecastType}, godCastValues,...
+                demandValuesTest, batteryCapacity, maximumChargeRate, ...
+                loadPattern, hourNumbersTest, stepsPerHour, k,...
+                runControl); %#ok<PFBNS>
         end
         
         if ~runControl.skipRun
