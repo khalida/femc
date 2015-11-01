@@ -1,11 +1,11 @@
 %% Global Configuration File
 
 %% Instances
-Sim.nCustomers = [5, 125];
-% Sim.nCustomers = [1, 10, 100, 1000];
-Sim.nAggregates = 2;
+% Sim.nCustomers = [5, 125];
+Sim.nCustomers = [1, 10, 100, 1000];
+Sim.nAggregates = 4;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
-Sim.nProc = min(Sim.nInstances, 4);
+Sim.nProc = min(Sim.nInstances, 2);
 Sim.numStochFcasts = 10;% 100;
 Sim.relativeSizeError = 0.5;
 
@@ -37,6 +37,7 @@ trainControl.performanceDifferenceThreshold = 0.02;
 trainControl.nBestToCompare = 3;
 trainControl.nDaysPreviousTrainSarma = 20;
 trainControl.useHyndmanModel = false;
+trainControl.seasonality = k;
 
 % Forecast-free parameters
 Sim.nTrainShuffles = 5; %5;     % # of shuffles to consider

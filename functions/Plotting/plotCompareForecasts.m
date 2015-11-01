@@ -17,9 +17,8 @@ opt.FontSize = 10;
 opt.LineWidth = ones(1,7).*1;
 opt.AxisLineWidth = 0.5;
 opt.LineStyle={'-', '--', '-', ':', '-'};
-opt.Markers = {'diamond','o','','',''};
-opt.MarkerSpacing = [1 1];
-opt.MarkerSize = 10;
+opt.Markers = {'diamond','o','square','',''};
+opt.MarkerSize = 4;
 opt.YMinorTick = 'on';
 opt.LegendBox = 'on';
 opt.LegendBoxColor = [1, 1, 1];
@@ -33,16 +32,20 @@ for ii = 1:length(forecastMetrics)
     
     if strcmp('MSE', forecastMetrics{ii})
         selectedFcasts = unique([1, 2, length(forecastMetrics)+1, ...
-            length(forecastMetrics)+2, length(forecastTypeStrings)]);
+            length(forecastMetrics)+2, nMethods]);
     else
         selectedFcasts = unique([1, ii, length(forecastMetrics)+1, ...
-            length(forecastMetrics)+ii, length(forecastTypeStrings)]);
+            length(forecastMetrics)+ii, nMethods]);
     end
     
-    %% For MAPE plot absolute performance of MAPE SARMA, MAPE FFNN, NP
+    %% For MAPE plot absolute performance of MAPE SARMA, MAPE FFNN, NP, R
     if strcmp('MAPE', forecastMetrics{ii})
-        selectedFcastsMAPE = [ii, ii+length(forecastMetrics),...
-            length(forecastTypeStrings)];
+        
+        selectedFcastsMAPE = [...
+            find(ismember(forecastTypeStrings, 'MAPE SARMA')), ...
+            find(ismember(forecastTypeStrings, 'MAPE FFNN')), ...
+            find(ismember(forecastTypeStrings, 'R AUTO')), ...
+            find(ismember(forecastTypeStrings, 'NP'))];
         fig(ii) = figure(100 + ii);
         thisMetricMean = squeeze(mean(allMetrics(:, :,...
             selectedFcastsMAPE, ii), 1));
@@ -51,7 +54,7 @@ for ii = 1:length(forecastMetrics)
         
         % Plot just mean for most methods
         plot(repmat(whsMean, [length(selectedFcastsMAPE)-1, 1])',...
-            thisMetricMean(:,1:(end-1)), 'MarkerSize', 10);
+            thisMetricMean(:,1:(end-1)), 'MarkerSize', 6);
         
         hold on
         % Plot error bars for NP
@@ -60,6 +63,14 @@ for ii = 1:length(forecastMetrics)
         
         ax = get(fig(ii), 'CurrentAxes');
         set(ax, 'XScale', 'log', 'YScale', 'log');
+        xlabel('Mean Aggregate Demand per Interval [Wh]');
+        ylabel(['Forecast Error [' forecastMetrics{ii} ']']);
+        grid on;
+        thisOpt = opt;
+        thisOpt.LineStyle={'-', '--', ':'};
+        thisOpt.LineWidth = ones(1,3).*2;
+        setPlotProp(thisOpt, fig(ii));
+        
         leg = legend(forecastTypeStrings(selectedFcastsMAPE), ...
             'Interpreter', 'none');
         % Increase legend vertical spacing
@@ -68,14 +79,6 @@ for ii = 1:length(forecastMetrics)
         leg.Position(1) = leg.Position(1) - 0.1*leg.Position(3);
         leg.Position(2) = leg.Position(2) - 0.5*leg.Position(4);
         
-        xlabel('Mean Aggregate Demand per Interval [Wh]');
-        ylabel(['Forecast Error [' forecastMetrics{ii} ']']);
-        grid on;
-        
-        thisOpt = opt;
-        thisOpt.LineStyle={'-', '--', ':'};
-        thisOpt.LineWidth = ones(1,3).*2;
-        setPlotProp(thisOpt, fig(ii));
         
         hold off;
     end
@@ -168,15 +171,15 @@ if savePlots
             end;
             
             % Fix precision of y axis ticks:
-%             yTick = get(gca,'yTick');
-%             yTickLabel = arrayfun(@(x) sprintf('%3.1f',x),yTick,...
-%                 'uniformoutput', false);
-%             set(gca, 'yTickLabel', yTickLabel);
+            %             yTick = get(gca,'yTick');
+            %             yTickLabel = arrayfun(@(x) sprintf('%3.1f',x),yTick,...
+            %                 'uniformoutput', false);
+            %             set(gca, 'yTickLabel', yTickLabel);
         else
             % Set limits for Absolute MAPE plot
             
-            ylim([1e-2 3e0]);
-            xlim([3e2 7e5]);
+            %ylim([1e-2 3e0]);
+            %xlim([3e2 7e5]);
         end
         
         saveas(gcf, fileNames{figNumIdx}, 'pdf');
