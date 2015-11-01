@@ -1,11 +1,11 @@
 %% Global Configuration File
 
 %% Instances
-Sim.nCustomers = [5, 125];
-% Sim.nCustomers = [1, 10, 100, 1000];
-Sim.nAggregates = 2;
+% Sim.nCustomers = [5, 125];
+Sim.nCustomers = [1, 10, 100, 1000];
+Sim.nAggregates = 4;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
-Sim.nProc = min(Sim.nInstances, 4);
+Sim.nProc = min(Sim.nInstances, 2);
 Sim.numStochFcasts = 10;% 100;
 Sim.relativeSizeError = 0.5;
 
@@ -14,15 +14,15 @@ Sim.batteryCapacityRatio = 0.05; % as fraction of daily average demand
 Sim.batteryChargingFactor = 1;   % ratio of charge rate to capacity
 
 %% Simulation Duration and properties
-Sim.nDaysTrain = 100;    %200;   % days of historic demand data
-Sim.nDaysSelect = 28;    %56;    % to select forecast parameters
-Sim.nDaysTest = 28;      %56;    % days to run simulation for
+Sim.nDaysTrain = 200;    %200;   % days of historic demand data
+Sim.nDaysSelect = 56;    %56;    % to select forecast parameters
+Sim.nDaysTest = 56;      %56;    % days to run simulation for
 Sim.stepsPerHour = 2;   % Half-hourly data
 Sim.hoursPerDay = 24;
 k = 48;                 % horizon & seasonality (assumed same)
 
 %% Forecast training options
-trainControl.nHidden = 25; %50;
+trainControl.nHidden = 50; %50;
 trainControl.suppressOutput = true;
 trainControl.nStart = 3;% 3;
 trainControl.mseEpochs = 1000;        % No. of MSE epochs for pre-training
@@ -37,11 +37,12 @@ trainControl.performanceDifferenceThreshold = 0.02;
 trainControl.nBestToCompare = 3;
 trainControl.nDaysPreviousTrainSarma = 20;
 trainControl.useHyndmanModel = false;
+trainControl.seasonality = k;
 
 % Forecast-free parameters
-Sim.nTrainShuffles = 2; %5;     % # of shuffles to consider
+Sim.nTrainShuffles = 5; %5;     % # of shuffles to consider
 Sim.nDaysSwap = 25;             % pairs of days to swap per shuffle
-Sim.nHidden = 125; %250;        % For the fcast free controller FFNN
+Sim.nHidden = 250; %250;        % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
 Pfem.alphas = [2];% 2, 4
@@ -62,11 +63,11 @@ additionalMethods = {'forecastFree', 'naivePeriodic', 'godCast',...
 
 %% MPC options
 MPC.secondWeight = 1e-4; 		% of degeneracy preventing Objective
-MPC.knowCurrentDemandNow = true;  % Is current demand known to controller?
+MPC.knowCurrentDemandNow = false;  % Is current demand known to controller?
 MPC.clipNegativeFcast = true;
 MPC.iterationFactor = 1.0;		% To apply to default maximum iterations
 MPC.rewardMargin = false;		% Reward margin from creating a new peak?
-MPC.SPrecourse = false;			% whether or not to allow setPoint recourse
+MPC.SPrecourse = true;			% whether or not to allow setPoint recourse
 MPC.billingPeriodDays = 7;
 MPC.resetPeakToMean = true;
 MPC.maxParForTypes = 4;
