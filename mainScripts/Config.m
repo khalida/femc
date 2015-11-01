@@ -26,7 +26,7 @@ trainControl.nHidden = 50; %50;
 trainControl.suppressOutput = true;
 trainControl.nStart = 3;% 3;
 trainControl.mseEpochs = 1000;        % No. of MSE epochs for pre-training
-trainControl.minimiseOverFirst = 1;  % # of fcast steps to minimise over
+trainControl.minimiseOverFirst = 48;  % # of fcast steps to minimise over
 trainControl.batchSize = 1000;
 trainControl.maxTime = 15;                  % maximum training time in mins
 trainControl.maxEpochs = 1000;              % maximum No. of epochs
@@ -45,13 +45,13 @@ Sim.nDaysSwap = 25;             % pairs of days to swap per shuffle
 Sim.nHidden = 250; %250;        % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
-Pfem.alphas = [2];% 2, 4
+Pfem.alphas = [];%2];% 2, 4
 Pfem.betas = [2];%, 2, 4
 Pfem.gammas = [2];%, 4, 10
 Pfem.deltas = [1];%, 2, 3
 
 % EMD Parameter Gridsearch points
-Pemd.as = [10];%#ok<*NBRAK> %, 200
+Pemd.as = [];%10];%#ok<*NBRAK> %, 200
 Pemd.bs = [0.5];%, 0.75, 1
 Pemd.cs = [0.5];%, 0.75, 1
 Pemd.ds = [4];%, 10, 20 a*b must be >= d
