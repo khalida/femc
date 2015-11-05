@@ -20,7 +20,7 @@ timeIndexesTrain = linspace(0, 2*pi*testMultiplier,...
     trainControl.horizon*testMultiplier);
 exampleTimeSeries = sin(timeIndexesTrain);
 
-lossType = @loss_mse;
+lossType = @lossMse;
 
 trainControl.nStart = 1;
 outputNetSingle = trainFfnnMultipleStarts( exampleTimeSeries, lossType,...

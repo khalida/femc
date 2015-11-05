@@ -2,13 +2,13 @@ function [powerToBattery, exitFlag] = controllerOptimiser(forecast, ...
     stateOfCharge, demandNow, batteryCapacity, maximumChargeRate, ...
     stepsPerHour, peakSoFar, MPC)
 
-% controllerOptimiser: Optimise the control given a forecast of demandNow
+% controllerOptimiser: Optimise the control given a forecast of demand
 %                       using linear programming
 
 % INPUTS:
 % forecast:          demandNow forecast for next k steps [kW]
 % stateOfCharge:     kWh currently in the battery
-% demandNow:            actual demandNow for current time-step [kW]
+% demandNow:         actual demandNow for current time-step [kW]
 % batteryCapacity:   kWh capacity of the battery
 % maximumChargeRate: maximum kW in/out of battery
 % stepsPerHour:      No. of intervals per hour
@@ -16,13 +16,13 @@ function [powerToBattery, exitFlag] = controllerOptimiser(forecast, ...
 % MPC:               structure containing details of MPC set-up
 
 % OUTPUTS:
-% powerToBattery:    kWh to send to battery during current interval
+% powerToBattery:    kWh to send to battery during intervals 1:k
 % exitFlag:          status flag of the linear program solver
 
 % Set Defaults for MPC if not specified in MPC structure
 MPC = setDefaultValues(MPC, {'secondWeight', 1e-4, ...
     'knowCurrentDemandNow', false, 'clipNegativeFcast', true, ...
-    'iterationFactor', 1.0, 'rewardMargin', false, 'setPoint', false, ...
+    'iterationFactor', 1.0, 'rewardMargin', true, 'setPoint', false, ...
     'chargeWhenCan', false, 'suppressOutput', true});
 
 if MPC.clipNegativeFcast
@@ -56,24 +56,24 @@ else
     %% LINEAR PROGRAM CONTROL
     % Let variables x_i for i = {1:k} be the power to send to battery over
     % next k intervals. Total energy stored in battery will be (in kWh)
-    % sum(i in 1:k) x_i/steps_per_hour
+    % sum(i in 1:k) (x_i/steps_per_hour) + stateOfCharge
     
     % Let the x_(k+1) variable represent the amount by which the
     % maximum forecast power drawn from the grid exceeds the running peak
+    % (this number is always non-negative)
     
-    % Let variables x_(k+2)...(2k+1) be the absolute values of variables
-    % x_(1:k)
+    % Let variable x_(k+2) be the peak forecast power from the grid, minus
+    % the running peak (this number can be negative, and equales x_(k+1) if
+    % x_(k+1) is positive
     
-    % Objective is  1) Minimise exceedance of running peak
-    %               2) (Secondary) don't (dis)charge unecessarily
-    
-    % Only apply the second weight to the implemented (first) step
-    secondWeights = [1; zeros(k-1, 1)].*MPC.secondWeight;
+    % Objective is  1) Minimise positive exceedance of running peak
+    %               2) (Secondary) maximise negative exceedance of running
+                            % peak (margin from positive exceedance)
     
     if ~MPC.chargeWhenCan
-        f = [zeros(k, 1); 1; ones(k, 1).*secondWeights];
+        f = [zeros(k, 1); 1; MPC.secondWeight];
     else
-        f = [-MPC.secondWeight; zeros(k-1, 1); 1; zeros(k, 1)];
+        f = [-MPC.secondWeight; zeros(k-1, 1); 1; 0];
     end
     
     %% CONSTRAINTS:
@@ -89,50 +89,43 @@ else
     %(batteryCapacity - stateOfCharge)*stepsPerHour
     
     % Express these as inequality A*x <= b
-    % NB: we have zeros for our k+1:2k+1 variables:
-    A = [tril(ones(k, k)), zeros(k, k+1)];
+    % NB: we have zeros for our k+1, k+2 variables:
+    A = [tril(ones(k, k)), zeros(k, 2)];
     b = repmat((batteryCapacity - stateOfCharge)*stepsPerHour, [k, 1]);
     
     % 2. Similar constraints ensure stateOfCharge doesn't fall below zero
     % Add these to contraints above:
-    A = [A; [tril(-1*ones(k,k)), zeros(k, k+1)]];
+    A = [A; [tril(-1*ones(k,k)), zeros(k, 2)]];
     b = [b; repmat(stateOfCharge*stepsPerHour, [k, 1])];
     
     % 3. Constrain k+1 variable to be >= forecast power drawn from grid
     % exceedance determined by the 1..k variables:
     % Require: x_(k+1) >= x_i + forecast_i - peakSoFar
     %          x_i - x_(k+1) <= peakSoFar - forecast_i (for all i in 1:k)
-    A = [A; [eye(k, k), ones(k, 1).*-1, zeros(k, k)]];
+    A = [A; [eye(k, k), ones(k, 1).*-1, zeros(k, 1)]];
     b = [b; peakSoFar - forecast];
     
-    % 4. Constrain (k+2):(2k+1) variables to be >= to 1:k variables
-    % i.e. x_(i+k+1) >= x_i     for all i in 1:k
-    % so: x_i - x_(i+k+1) <= 0  for all i in 1:k
-    A = [A; eye(k, k), zeros(k, 1), -1.*eye(k, k)];
-    b = [b; zeros(k, 1)];
+    % 4. Constrain k+2 variable to be >= forecast power drawn from grid
+    % exceedance determined by the 1..k variables:
+    A = [A; eye(k, k), zeros(k, 1), ones(k, 1)];
+    b = [b; peakSoFar - forecast];
     
-    % 5. Constrain (k+2):(2k+1) variables to be >= to -1 * 1:k variables
-    % i.e. x_(i+k+1) >= -x_i     for all i in 1:k
-    % so: -x_i - x_(i+k+1) <= 0  for all i in 1:k
-    A = [A; -1*eye(k, k), zeros(k, 1), -1.*eye(k, k)];
-    b = [b; zeros(k, 1)];
     
     %% BOUNDS:
     
     % 1. Each of x_i (powerToBattery) must be <= maximumChargeRate
-    %       leave x_((k+1):(2k+1)) unbounded above
-    ub = [ones([k 1]).*maximumChargeRate; Inf; Inf.*ones([k 1])];
+    %       leave x_(k+1, k+2) unbounded above
+    ub = [ones([k 1]).*maximumChargeRate; Inf; Inf];
     
     % 2. Power withdrawn from battery is bounded below by
     %       -maximumChargeRate and forecast demandNow (no export allowed)
-    %       leave x_(k+1) unbounded below if we want to reward margin; i.e.
-    %       keep solutions as far from establishing a new peak as possible.
+    %       bound x_(k+1) below at 0; primary object is to not exceed peak
+    %       Leave x_(k_2) unbounded below if we want to reward margin as
+                % secondary objective.
     if MPC.rewardMargin
-        lb = [max(ones([k 1]).*-maximumChargeRate, -forecast); -Inf; ...
-            -Inf.*ones([k 1])];
+        lb = [max(ones([k 1]).*-maximumChargeRate, -forecast); 0; -Inf];
     else
-        lb = [max(ones(size(forecast)).*-maximumChargeRate, -forecast); 0; ...
-            -Inf.*ones(size(forecast))];
+        lb = [max(ones([k 1]).*-maximumChargeRate, -forecast); 0; 0];
     end
     
     % Optimisation running options
@@ -148,7 +141,7 @@ else
     end
     
     % Check if output vector & exitFlag are of correct size
-    if sum(size(xSoln) == [(2*k+1) 1]) ~= 2 || ...
+    if sum(size(xSoln) == [(k+2) 1]) ~= 2 || ...
             sum(size(exitFlag) == [1 1]) ~= 2
         disp('x_soln= '); disp(xSoln);
         disp('exitFlag= ');disp(exitFlag);

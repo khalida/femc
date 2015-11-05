@@ -3,34 +3,33 @@
 
 % NB: this effectively also tests the 'lossSarma' function
 
-doPlots = false;
+%% Running options
+doPlots = true;
 suppressOutput = true;
-percentThreshold = 0.05;
+percentThreshold = 0.2;
 
-load('test_demand_data.mat');
-% INCLUDES: demand, coefficients, meanRforecast, zeroARmeanRforecast
-% zeroSARmeanRforecast
+% Demand Data
+[demand, periodLength] = getNoisySinusoid();
+demand = demand + 10;
 
-k = 48;
 trainControl.suppressOutput = suppressOutput;
 trainControl.useHyndmanModel = true;
-trainControl.minimiseOverFirst = k;
+trainControl.minimiseOverFirst = periodLength;
 trainControl.nDaysPreviousTrainSarma = 20;
 trainControl.performanceDifferenceThreshold = 0.02;
 trainControl.nBestToCompare = 3;
+trainControl.nLags = periodLength;
 
-% Divide data into training and testing:
-demand = demand*2 + 50;
-demandTrain = demand(1:(end-k));
-demandTest = demand((end-k+1):end);
+demandTrain = demand(1:(end-periodLength));
+demandTest = demand((end-periodLength+1):end);
+
 
 %% Test Hyndman model:
 tic;
-[ parametersHyndman ] = trainSarma( demandTrain, k,  @loss_mse,...
-    trainControl);
+[ parametersHyndman ] = trainSarma( demandTrain, @lossMse, trainControl);
 hyndmanTrainTime = toc;
 forecastHyndman = forecastSarma(parametersHyndman, demandTrain, ...
-    trainControl.suppressOutput, true);
+    trainControl);
 
 %% Numerical pass-fail:
 absolutePercentageErrorsHyndman = abs(forecastHyndman(:) - ...
@@ -39,18 +38,17 @@ absolutePercentageErrorsHyndman = abs(forecastHyndman(:) - ...
 if max(absolutePercentageErrorsHyndman) < percentThreshold
     disp('trainSarma hyndman-type test PASSED!');
 else
-    error('trainSarma hyndmand-type test FAILED!');
+    error('trainSarma hyndman-type test FAILED!');
 end
 disp(['hyndman training time [s] = ' num2str(hyndmanTrainTime)]);
 
 %% Test Sevlian et. al model:
 trainControl.useHyndmanModel = false;
 tic;
-[ parametersSevlian ] = trainSarma( demandTrain, k,  @loss_mse,...
-    trainControl);
+[ parametersSevlian ] = trainSarma( demandTrain, @lossMse, trainControl);
 sevlianTrainTime = toc;
 forecastSevlian = forecastSarma(parametersSevlian, demandTrain, ...
-    trainControl.suppressOutput, false);
+    trainControl);
 absolutePercentageErrorsSevlian = abs(forecastSevlian(:) - ...
     demandTest) ./ abs(demandTest);
 
@@ -64,21 +62,21 @@ disp(['sevlian training time [s] = ' num2str(sevlianTrainTime)]);
 
 %% Do some plotting:
 if doPlots
-    figure(1);
-    plot(1:length(demand), demand, length(demand) + (1:k), ...
+    figure();
+    plot(1:length(demand), demand, length(demand) + (1:periodLength), ...
         forecastHyndman);
     xlabel('Index');
     ylabel('Forecast from hyndman-type model (coefficents from Matlab)');
     grid on;
     
-    figure(2);
-    plot(1:length(demand), demand, length(demand) + (1:k), ...
+    figure();
+    plot(1:length(demand), demand, length(demand) + (1:periodLength), ...
         forecastSevlian);
     xlabel('Index');
     ylabel('Forecast from Sevlian-type model (coefficents from Matlab)');
     grid on;
     
-    figure(3);
+    figure();
     subplot(1,2,1);
     plot(demandTest, forecastHyndman, '.');
     xlabel('Actual');

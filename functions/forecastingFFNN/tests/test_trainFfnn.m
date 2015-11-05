@@ -1,4 +1,4 @@
-% Test using a simple (XOR) logical function, and confirm addequate
+% Test using a simple (XOR) logical function, and confirm adequate
 % performance:
 
 trainControl.suppressOutput = false;
@@ -13,7 +13,7 @@ featureVectorTrain = randi([0,1], [100, 2])';
 responseVectorTrain = xor(featureVectorTrain(1, :), ...
     featureVectorTrain(2, :));
 
-lossType = @loss_mse;
+lossType = @lossMse;
 
 outputNet = trainFfnn( featureVectorTrain, responseVectorTrain,...
     lossType, trainControl);
