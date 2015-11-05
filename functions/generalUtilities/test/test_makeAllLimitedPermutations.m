@@ -1,5 +1,5 @@
 %% Test by confirming performance on a couple of simple examples:
-%% test the permutation radius limited version of SJT permmutation at
+% test the permutation radius limited version of SJT permmutation at
 % the same time.
 
 test1 = makeAllLimitedPermutations(4, 0);

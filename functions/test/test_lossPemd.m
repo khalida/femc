@@ -1,72 +1,108 @@
 %% Test lossPfem by doing some simple numerical examples:
 % Not an exhaustive unit test, but better than nothing
 
-tTest1 = ones(10,1);
-yTest1 = ones(10,1);
-parameters = [1, 1, 1, 0];
+%% Allowable Percentage error:
+tolerance = 1e-4;
 
 %% TEST 1
-pfem1 = lossPfem(tTest1, yTest1, parameters);
+tTest1 = ones(7,1);
+yTest1 = ones(7,1);
+parameters = [100, 1, 1, 50];
+pemd1 = lossPemd(tTest1, yTest1, parameters);
 expectedResult1 = 0;
-pass1 = isequal(pfem1, expectedResult1);
+pass1 = or(isequal(expectedResult1, pemd1), ...
+    abs((expectedResult1 - pemd1)/pemd1) < tolerance);
+
 
 %% TEST 2
-tTest2 = ones(10,1);
-yTest2 = (1:10)';
-pfem2 = lossPfem(tTest2, yTest2, parameters);
-expectedResult2 = mean(yTest2-tTest2);
-pass2 = isequal(pfem2, expectedResult2);
+tTest2 = zeros(7,1) + 10;
+yTest2 = (-3:3)' + 10;
+pemd2 = lossPemd(tTest2, yTest2, parameters);
+expectedResult2 = 1*2 + 2*4 + 3*6;
+pass2 = abs((expectedResult2 - pemd2)/pemd2) < tolerance;
 
-%% TEST 3
-tTest3 = ones(10,1);
-yTest3 = (1:10)';
-alphaValue = 2;
-parameters(1) = alphaValue;      % Inrease the cost of under-forecasts
-pfem3 = lossPfem(tTest3, yTest3, parameters);
-expectedResult3 = (alphaValue*mean(yTest2-tTest1) + ...
-    mean(tTest3-yTest3))/((1+alphaValue)/2);
-pass3 = isequal(pfem3, expectedResult3);
 
-%% TEST 4
-tTest4 = ones(10,1);
-yTest4 = (1:10)';
-betaValue = 2;
-parameters([1, 2]) = [1, betaValue];
-pfem4 = lossPfem(tTest4, yTest4, parameters);
-expectedResult4 = sqrt(lossMse(tTest4, yTest4));
-pass4 = isequal(pfem4, expectedResult4);
+%% TEST 3; include a difference in the integrals
+tTest3 = ones(7,1);
+yTest3 = ones(7,1).*2;
+pemd3 = lossPemd(tTest3, yTest3, parameters);
+expectedResult3 = 7*parameters(1);
+pass3 = isequal(pemd3, expectedResult3);
 
-%% TEST 5
-tTest5 = ones(10,1);
-yTest5 = (1:10)';
-gammaValue = 2;
-parameters([2, 3]) = [1, gammaValue];
-pfem5 = lossPfem(tTest5, yTest5, parameters);
-weights = linspace(gammaValue, 1, 10);
-weights = weights./(mean(weights)); % so weigths average to 1.0
-expectedResult5 = mean((yTest5-tTest5).*weights');
-pass5 = isequal(pfem5, expectedResult5);
 
-%% TEST 6
-yTest6 = [ones(3,1); 10; ones(6,1)];
-tTest6 = [ones(4,1); 10; ones(5,1)];
-deltaValue = 1;
-parameters([3, 4]) = [1, deltaValue];
-pfem6 = lossPfem(tTest6, yTest6, parameters);
-expectedResult6 = 0;
-pass6 = isequal(pfem6, expectedResult6);
+%% TEST 4; combined difference in integrals and flows
+tTest4 = zeros(7,1) + 10;
+yTest4 = (-3:3)' + 11;
+pemd4 = lossPemd(tTest4, yTest4, parameters);
+expectedResult4 =  (1*2 + 2*4) + (sum(yTest4)-sum(tTest4))*parameters(1);
+pass4 = or(isequal(expectedResult4, pemd4), ...
+    abs((expectedResult4 - pemd4)/pemd4) < tolerance);
 
-%% TEST 7; combination of first two tests
-yTest = [yTest1, yTest2];
-tTest = [tTest1, tTest2];
-parameters = [1, 1, 1, 0];
-pfemAll = lossPfem(tTest, yTest, parameters);
-expectedAll = [expectedResult1, expectedResult2];
-pass7 = isequal(expectedAll, pfemAll);
+%% TEST 5; check that we have symmetry with b==1
+tTest5 = yTest4;
+yTest5 = tTest4;
+pemd5 = lossPemd(tTest5, yTest5, parameters);
+expectedResult5 = expectedResult4;
+pass5 = or(isequal(expectedResult5, pemd5), ...
+    abs((expectedResult5 - pemd5)/pemd5) < tolerance);
+
+%% TEST 6; try reducing b to 0.5 so errors no long symmetric:
+parameters(2) = 0.5;
+yTest6 = yTest5;
+tTest6 = tTest5;
+pemd6 = lossPemd(tTest6, yTest6, parameters);
+expectedResult6 = (1*2 + 2*4) + (sum(tTest6)-sum(yTest6))*parameters(1);
+pass6 = or(isequal(expectedResult5, pemd5), ...
+    abs((expectedResult5 - pemd5)/pemd5) < tolerance);
+
+%% TEST 7; test symmetric in other direction:
+yTest7 = tTest5;
+tTest7 = yTest5;
+pemd7 = lossPemd(tTest7, yTest7, parameters);
+expectedResult7 = (1*2 + 2*4) + (sum(yTest7)-sum(tTest7))*parameters(2)*parameters(1);
+pass7 = or(isequal(expectedResult7, pemd7), ...
+    abs((expectedResult7 - pemd7)/pemd7) < tolerance);
+
+%% TEST 8; Check interval assymetry with c=0.5
+parameters(2) = 1;
+parameters(3) = 0.5;
+tTest8 = zeros(7,1) + 10;
+yTest8 = (-3:3)' + 10;
+pemd8_1 = lossPemd(tTest8, yTest8, parameters);
+expectedResult8_1 = (1*2 + 2*4 + 3*6);
+pass8_1 = or(isequal(expectedResult8_1, pemd8_1), ...
+    abs((expectedResult8_1 - pemd8_1)/pemd8_1) < tolerance);
+
+% Check interval symmetry in other direction
+pemd8_2 = lossPemd(yTest8,tTest8, parameters);
+expectedResult8_2 = (1*2 + 2*4 + 3*6)*parameters(3);
+pass8_2 = or(isequal(expectedResult8_2, pemd8_2), ...
+    abs((expectedResult8_2 - pemd8_2)/pemd8_2) < tolerance);
 
 %% SUMMARY:
-if pass1 && pass2 && pass3 && pass4 && pass5 && pass6 && pass7
-    disp('lossPfem test PASSED');
+if pass1 && pass2 && pass3 && pass4 && pass5 && pass6 && pass7 && ...
+        pass8_1 && pass8_2
+    disp('lossPemd test PASSED');
 else
-    error('lossPfem test FAILED');
+    error('lossPemd test FAILED');
+end
+
+% Check that can be used to get multiple instances at same time:
+allTtest = [tTest1, tTest2, tTest3, tTest4, tTest5];
+
+allYtest = [yTest1, yTest2, yTest3, yTest4, yTest5];
+
+parameters = [100, 1, 1, 50];
+allPemds = lossPemd(allTtest, allYtest, parameters);
+
+allExpectedValues = [expectedResult1, expectedResult2, expectedResult3, ...
+    expectedResult4, expectedResult5];
+
+testsPassed = or(allPemds==allExpectedValues, ...
+    abs((allPemds - allExpectedValues)./allExpectedValues) < tolerance);
+
+if sum(testsPassed) == length(testsPassed)
+    disp('lossPemd test PASSED');
+else
+    error('lossPemd test FAILED');
 end

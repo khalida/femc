@@ -15,21 +15,21 @@ Sim.batteryChargingFactor = 1;   % ratio of charge rate to capacity
 
 %% Simulation Duration and properties
 Sim.nDaysTrain = 200;    %200;   % days of historic demand data
-Sim.nDaysSelect = 56;    %56;    % to select forecast parameters
-Sim.nDaysTest = 56;      %56;    % days to run simulation for
+Sim.nDaysSelect = 14;    %56;    % to select forecast parameters
+Sim.nDaysTest = 14;      %56;    % days to run simulation for
 Sim.stepsPerHour = 2;   % Half-hourly data
 Sim.hoursPerDay = 24;
 k = 48;                 % horizon & seasonality (assumed same)
 
 %% Forecast training options
-trainControl.nHidden = 50; %50;
+trainControl.nHidden = 20; %50;
 trainControl.suppressOutput = true;
-trainControl.nStart = 3;% 3;
-trainControl.mseEpochs = 1000;        % No. of MSE epochs for pre-training
+trainControl.nStart = 2;% 3;
+trainControl.mseEpochs = 250;        % No. of MSE epochs for pre-training
 trainControl.minimiseOverFirst = 48;  % # of fcast steps to minimise over
-trainControl.batchSize = 1000;
-trainControl.maxTime = 15;                  % maximum training time in mins
-trainControl.maxEpochs = 1000;              % maximum No. of epochs
+trainControl.batchSize = 250;
+trainControl.maxTime = 5;                  % maximum training time in mins
+trainControl.maxEpochs = 250;              % maximum No. of epochs
 trainControl.trainRatio = 0.9;              % to train each net on
 trainControl.nLags = k;
 trainControl.horizon = k;
@@ -40,15 +40,15 @@ trainControl.useHyndmanModel = false;
 trainControl.seasonality = k;
 
 % Forecast-free parameters
-Sim.nTrainShuffles = 5; %5;     % # of shuffles to consider
-Sim.nDaysSwap = 25;             % pairs of days to swap per shuffle
-Sim.nHidden = 250; %250;        % For the fcast free controller FFNN
+Sim.nTrainShuffles = 2; %5;     % # of shuffles to consider
+Sim.nDaysSwap = 12;             % pairs of days to swap per shuffle
+Sim.nHidden = 60; %250;        % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
 Pfem.alphas = [0.25, 1, 4];% 2, 4
-Pfem.betas = [1];%, 2, 4
-Pfem.gammas = [1];%, 4, 10
-Pfem.deltas = [1];%, 2, 3
+Pfem.betas = [0.25, 1, 4];%, 2, 4
+Pfem.gammas = [1, 4];%, 4, 10
+Pfem.deltas = [0, 1, 2];%, 2, 3
 
 % EMD Parameter Gridsearch points
 Pemd.as = [10];%#ok<*NBRAK> %, 200

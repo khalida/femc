@@ -58,6 +58,20 @@ for idx = 1:nIdxs;
         stateOfCharge, demandNow, batteryCapacity, maximumChargeRate, ...
         stepsPerHour, peakSoFar, runControl.MPC);
     
+    % ===== DEBUGGING ===== :
+%     figure(1);
+%     plot([forecast./stepsPerHour, godCast(idx, :)'./stepsPerHour, ...
+%         powerToBattery./stepsPerHour, ...
+%         cumsum(powerToBattery./stepsPerHour) + stateOfCharge, ...
+%         (forecast + powerToBattery)./stepsPerHour]);
+%     hline = refline(0, peakSoFar./stepsPerHour); hline.LineWidth = 2;
+%     hline.Color = 'k';
+%     grid on;
+%     legend('Forecast [kWh/interval]', 'GodCast [kWh/interval]', ...
+%         'Power to Batt [kWh/interval]', 'SoC [kWh]', ...
+%         'Demand from Grid [kWh/interval]');
+    % ===== ======
+
     % Implement set point recourse, if selected
     if runControl.MPC.SPrecourse
         

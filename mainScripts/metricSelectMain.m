@@ -2,7 +2,6 @@
 tic;
 timeStart = clock;
 disp(timeStart);
-
 Config;
 
 %% Add path to the common functions (& any subfolders therein)
@@ -12,6 +11,7 @@ addpath(genpath(commonFcnFold), '-BEGIN');
 
 %% Delete old and compile new mex files
 % if updateMex, compileMexes; end;
+% makeForecast = false;
 
 %% Read in DATA
 load(dataFileWithPath);
@@ -65,7 +65,6 @@ disp('======= FORECAST SELECTION / TESTING =======');
 disp('======= PLOTTING =======');
 
 plotAllResultsEdward(Sim, results, Pemd, Pfem);
-
 
 %% Save Results
 disp('======= SAVING =======');

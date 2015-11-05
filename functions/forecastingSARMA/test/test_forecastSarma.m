@@ -1,23 +1,34 @@
 %% Test by checking the results produced VS those found from R forecasting
-% package for a particular trained SARMA model and previous values
+% package for a particular trained SARMA model (ltd to (3,0)x(1,0)[nPeriod]
 
-doPlots = false;
-if doPlots, suppressOutput = false; else suppressOutput = true; end %#ok<*UNRCH>
-percentThreshold = 0.05;
+doPlots = true;
+if doPlots, suppressOutput = false; else
+    suppressOutput = true; end %#ok<*UNRCH>
+percentThreshold = 1e-3;
 
-parameters.k = 48;
-load('test_demand_data.mat');
-% INCLUDES: demand, coefficients, meanRforecast, zeroARmeanRforecast
-% zeroSARmeanRforecast
+%% Generate some historicData
+[dataValues, periodLength] = getNoisySinusoid();
+
+trainControl.horizon = periodLength;
+trainControl.seasonality = periodLength;
+trainControl.suppressOutput = suppressOutput;
+trainControl.useHyndmanModel = true;
+trainControl.nLags = periodLength;
+
+[coefficients, meanForecast] = ...
+    getAutoArimaModelCoefficientsAndForecast(dataValues, trainControl, ...
+    [3, 0, 0], [1, 0, 0]);
+
+parameters.k = periodLength;
 parameters.coefficients = coefficients(1:4)';
 
-%% Test Hyndman model:
-[ forecastHyndman ] = forecastSarma(parameters, demand, suppressOutput, ...
-    true);
+%% Test Hyndman model (one implemented in R forecast package)
+[ forecastHyndman ] = forecastSarma(parameters, dataValues, ...
+    trainControl);
 
 %% Numerical pass-fail:
-absolutePercentageErrors = abs(forecastHyndman(:) - meanRforecast) ./ ...
-    abs(meanRforecast);
+absolutePercentageErrors = abs(forecastHyndman(:) - meanForecast) ./ ...
+    abs(meanForecast);
 
 if max(absolutePercentageErrors) < percentThreshold
     disp('forecastSarma hyndman-type test PASSED!');
@@ -25,20 +36,27 @@ else
     error('forecastSarma hyndmand-type test FAILED!');
 end
 
-%% Test Sevlian et. al model:
+%% Test Sevlian et. al model (need to have zero AR or SAR components)
+trainControl.useHyndmanModel = false;
 % Zero AR components:
-parameters.coefficients = [0, 0, 0, coefficients(4)'];
-[ forecastSevlian ] = forecastSarma(parameters, demand, suppressOutput, ...
-    false);
+[coefficients, meanSevlianForecast] = ...
+    getAutoArimaModelCoefficientsAndForecast(dataValues, trainControl, ...
+    [0, 0, 0], [1, 0, 0]);
+
+parameters.coefficients = [0, 0, 0, coefficients];
+
+[ forecastSevlian ] = forecastSarma(parameters, dataValues, trainControl);
 absolutePercentageErrorsZeroAR = abs(forecastSevlian(:) - ...
-    zeroARmeanRforecast) ./ abs(zeroARmeanRforecast);
+    meanSevlianForecast) ./ abs(meanSevlianForecast);
 
 % Zero SAR components:
-parameters.coefficients = [coefficients(1:3)', 0];
-[ forecastSevlian ] = forecastSarma(parameters, demand, suppressOutput, ...
-    false);
+[coefficients, meanSevlianForecast] = ...
+    getAutoArimaModelCoefficientsAndForecast(dataValues, trainControl, ...
+    [3; 0; 0], [0; 0; 0]);
+parameters.coefficients = [coefficients', 0];
+[ forecastSevlian ] = forecastSarma(parameters, dataValues, trainControl);
 absolutePercentageErrorsZeroSAR = abs(forecastSevlian(:) - ...
-    zeroSARmeanRforecast) ./ abs(zeroSARmeanRforecast);
+    meanSevlianForecast) ./ abs(meanSevlianForecast);
 
 % Numerical pass-fail:
 if (max(absolutePercentageErrorsZeroAR) < percentThreshold) && ...
@@ -50,22 +68,22 @@ end
 
 %% Do some plotting:
 if doPlots
-    figure(1);
-    plot(1:length(demand), demand, length(demand) + (1:parameters.k), ...
+    figure();
+    plot(1:length(dataValues), dataValues, length(dataValues) + (1:parameters.k), ...
         forecastSevlian);
     xlabel('Index');
     ylabel('Forecast from sevlian-type model (coefficents from R ARIMA())');
     grid on;
     
-    figure(2);
-    plot(1:length(demand), demand, length(demand) + (1:parameters.k), ...
+    figure();
+    plot(1:length(dataValues), dataValues, length(dataValues) + (1:parameters.k), ...
         forecastHyndman);
     xlabel('Index');
     ylabel('Forecast from hyndman-type model (coefficents from R ARIMA())');
     grid on;
     
-    figure(3);
-    plot(meanRforecast, forecastHyndman, '.');
+    figure();
+    plot(meanForecast, forecastHyndman, '.');
     xlabel('Mean of R forecast');
     ylabel('Point forecast from Matlab using Hyndmand-type model');
     grid on;

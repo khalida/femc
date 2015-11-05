@@ -1,7 +1,7 @@
 function plotAllResultsEdward( Sim, results, Pemd, Pfem)
 
 % plotAllResultsEdward: Plot outputs from 'trainAllForecasts' and
-                        % 'testAllFcasts' functions.
+% 'testAllFcasts' functions.
 
 % Expand fields (of data structures)
 allKWhs = results.allKWhs;
@@ -158,14 +158,19 @@ for eachNcust = 1:length(nCustomers)
     for eachAgg = 1:nAggregates;
         instance = instance + 1;
         
-        for eachMethod = 1:nMethods
-            lossTestResults(eachMethod, eachAgg, eachNcust, ...
-                nTrainMethods+1) = lossTestResults(eachMethod, eachAgg, ...
-                eachNcust, bestPfemForecast(instance));
-            
-            lossTestResults(eachMethod, eachAgg, eachNcust, ...
-                nTrainMethods+2) = lossTestResults(eachMethod, eachAgg, ...
-                eachNcust, bestPemdForecast(instance));
+        if Pfem.num > 0
+            for eachMethod = 1:nMethods
+                lossTestResults(eachMethod, eachAgg, eachNcust, ...
+                    nTrainMethods+1) = lossTestResults(eachMethod, eachAgg, ...
+                    eachNcust, bestPfemForecast(instance));
+            end
+        end
+        if Pemd.num > 0
+            for eachMethod = 1:nMethods
+                lossTestResults(eachMethod, eachAgg, eachNcust, ...
+                    nTrainMethods+2) = lossTestResults(eachMethod, eachAgg, ...
+                    eachNcust, bestPemdForecast(instance));
+            end
         end
     end
 end
@@ -175,8 +180,14 @@ lossTestResultsStdOverTrials = squeeze(std(lossTestResults, [], 2));
 
 % Find indexes of metrics to plot
 % TODO: Sort this out: currently a bit of hack!)
-metricsToPlotStrings = {'lossMse', 'lossMape', 'bestPfemSelected', ...
-    'bestPemdSelected'};
+metricsToPlotStrings = {'lossMse', 'lossMape'};
+if Pfem.num > 0
+    metricsToPlotStrings = [metricsToPlotStrings, {'bestPfemSelected'}];
+end
+if Pemd.num > 0
+    metricsToPlotStrings = [metricsToPlotStrings, {'bestPemdSelected'}];
+end
+
 metricsToPlotIdx = zeros(length(metricsToPlotStrings), 1);
 for ii = 1:length(metricsToPlotStrings);
     if strcmp(metricsToPlotStrings{ii}, 'bestPfemSelected')

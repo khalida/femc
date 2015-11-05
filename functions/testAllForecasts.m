@@ -30,6 +30,7 @@ for instance = 1:Sim.nInstances
     peakPowers{instance} = zeros(Sim.nMethods,1);
     smallestExitFlag{instance} = zeros(Sim.nMethods,1);
     lossTestResults{instance} = zeros(Sim.nMethods, Sim.nTrainMethods);
+    allKWhs(instance) = mean(allDemandValues{instance});
 end
 
 %% Run Models for Forecast selection
@@ -75,8 +76,6 @@ for iRun = 1:nRuns
     delete(poolobj);
     
     parfor instance = 1:nInstances
-        
-        allKWhs(instance) = mean(allDemandValues{instance});
         
         % Battery properties
         batteryCapacity = allKWhs(instance)*batteryCapacityRatio*...
@@ -181,19 +180,22 @@ for instance = 1:nInstances
 end
 
 %% Extend relevant variables to accomodate the 2 'new' forecasts
-Sim.allMethodStrings = [allMethodStrings, {'bestPfemSelected',...
-    'bestPemdSelected'}];
+% If they exist:
+
+if Pfem.num > 0
+    Sim.allMethodStrings = [allMethodStrings, {'bestPfemSelected'}];
+end
+if Pemd.num > 0
+    Sim.allMethodStrings = [Sim.allMethodStrings, {'bestPemdSelected'}];
+end
+    
 Sim.nMethods = length(Sim.allMethodStrings);
 
 for instance = 1:nInstances
-    peakReductions{instance} = [peakReductions{instance}; ...
-        zeros(2,1)];
-    peakPowers{instance} = [peakPowers{instance};
-        zeros(2,1)];
-    smallestExitFlag{instance} = [smallestExitFlag{instance}; ...
-        zeros(2,1)];
-    lossTestResults{instance} = [lossTestResults{instance}; ...
-        zeros(2, length(Sim.lossTypes))];
+    peakReductions{instance} = zeros(Sim.nMethods,1);
+    peakPowers{instance} = zeros(Sim.nMethods,1);
+    smallestExitFlag{instance} = zeros(Sim.nMethods,1);
+    lossTestResults{instance} = zeros(Sim.nMethods, Sim.nTrainMethods);
 end
 
 %% Run Models for Performance Testing
@@ -212,8 +214,8 @@ delete(poolobj);
 
 disp('===== Forecast Testing =====')
 
-for instance = 1:nInstances
-% parfor instance = 1:nInstances
+% for instance = 1:nInstances
+parfor instance = 1:nInstances
     
     %% Battery properties
     batteryCapacity = allKWhs(instance)*batteryCapacityRatio*stepsPerDay;
@@ -288,7 +290,7 @@ for instance = 1:nInstances
             
             % If method is set-point then show it current demand
             if(runControl.MPC.setPoint)
-                runControl.MPC.knowCurrentDemandNow = true
+                runControl.MPC.knowCurrentDemandNow = true;
             end
             
             % Check if forecast is in the set of {Pfem, Pemd} forecasts
@@ -307,6 +309,12 @@ for instance = 1:nInstances
         end
         
         if ~runControl.skipRun
+            
+            % ====== DEBUGGING ====== :
+            % plot([runningPeak', demandValuesTest]);
+            % legend('Running Peak [kW]', 'Local Demand [kWh]');
+            % ====== ======
+            
             % Extract simulation results
             peakReductions{instance}(methodType) = ...
                 extractSimulationResults(runningPeak',...
