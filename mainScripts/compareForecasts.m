@@ -104,7 +104,7 @@ end
 % Produce the forecasts
 tic;
 parfor instance = 1:Sim.nInstances
-    
+  
     y = allDemandValues(instance, :)';
     
     % Training Data
@@ -140,11 +140,13 @@ parfor instance = 1:Sim.nInstances
         
         % 'R forecasts':
         ARIMAidx = find(ismember(forecastTypeStrings, 'R AUTO.ARIMA'));
-        ETSdx = find(ismember(forecastTypeStrings, 'R ETS'));
+        ETSidx = find(ismember(forecastTypeStrings, 'R ETS'));
         
-        forecastValues{instance}([ARIMAidx, ETSids], ii, ...
-            1:trainControl.minimiseOverFirst) = getAutomatedForecastR(...
-            historicData, trainControl);
+        [tmpArima, tmpEts] = getAutomatedForecastR(historicData,...
+            trainControl);
+        
+        forecastValues{instance}([ARIMAidx, ETSidx], ii, ...
+            1:trainControl.minimiseOverFirst) = [tmpArima'; tmpEts'];
         
         % Compute error metrics (for each test, and method):
         for eachMethod = 1:nMethods

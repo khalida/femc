@@ -84,6 +84,48 @@ for ii = 1:length(forecastMetrics)
         hold off;
     end
     
+    
+    %% For MSE also plot dabsolute performance of MSE SARMA, MSE FFNN, NP, R
+    if strcmp('MSE', forecastMetrics{ii})
+        
+        selectedFcastsMSE = [...
+            find(ismember(forecastTypeStrings, 'MSE SARMA')), ...
+            find(ismember(forecastTypeStrings, 'MSE FFNN')), ...
+            find(ismember(forecastTypeStrings, 'R AUTO.ARIMA')), ...
+            find(ismember(forecastTypeStrings, 'R ETS')), ...
+            find(ismember(forecastTypeStrings, 'NP'))];
+        fig(ii) = figure(100 + ii);
+        thisMetricMean = squeeze(mean(allMetrics(:, :,...
+            selectedFcastsMSE, ii), 1));
+        thisMetricStd = squeeze(std(allMetrics(:, :, ...
+            selectedFcastsMSE, ii), [], 1));
+        
+        % Plot just mean for most methods
+        plot(repmat(whsMean, [length(selectedFcastsMSE)-1, 1])',...
+            thisMetricMean(:,1:(end-1)), 'MarkerSize', 6);
+        
+        hold on
+        % Plot error bars for NP
+        errorbar(whsMean', thisMetricMean(:, end), ...
+            thisMetricStd(:, end),'.-', 'markers', 10);
+        
+        ax = get(fig(ii), 'CurrentAxes');
+        set(ax, 'XScale', 'log', 'YScale', 'log');
+        xlabel('Mean Aggregate Demand per Interval [Wh]');
+        ylabel(['Forecast Error [' forecastMetrics{ii} ']']);
+        grid on;
+        thisOpt = opt;
+        thisOpt.LineStyle={'-', '--', ':'};
+        thisOpt.LineWidth = ones(1,3).*2;
+        setPlotProp(thisOpt, fig(ii));
+        
+        legend(forecastTypeStrings(selectedFcastsMSE), ...
+            'Interpreter', 'none', 'Location', 'best');
+        
+        hold off;
+    end
+    
+    
     %% Produce set of normalised plots - where losses are divided by those
     % of NP for each instance (and error metric)
     refIndex = ismember(forecastTypeStrings,'NP');
