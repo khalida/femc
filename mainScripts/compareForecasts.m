@@ -13,7 +13,7 @@ commonFcnFold = [parentFold filesep 'functions'];
 addpath(genpath(commonFcnFold), '-BEGIN');
 
 % if updateMex, compileMexes; end;
-saveFileName = '..\results\2015_10_31_compareForecast_compareR.mat';
+saveFileName = '..\results\2015_11_03_compareForecast_compareR.mat';
 
 %% Set-up // workers
 poolobj = gcp('nocreate');
@@ -38,7 +38,7 @@ lossTypes = {@lossMse, @lossMape, unitLossPfem, ...
 
 forecastTypeStrings = {'MSE SARMA', 'MAPE SARMA', 'PFEM SARMA',...
     'PEMD SARMA', 'MSE FFNN', 'MAPE FFNN', 'PFEM FFNN', 'PEMD FFNN',...
-    'NP', 'R AUTO'};
+    'NP', 'R AUTO.ARIMA', 'R ETS'};
 
 forecastMetrics = {'MSE', 'MAPE', 'PFEM', 'PEMD'};
 
@@ -130,13 +130,6 @@ parfor instance = 1:Sim.nInstances
                 historicData, trainControl); %#ok<PFBNS>
             forecastValues{instance}(eachMethod, ii, :) = ...
                 tempForecast(1:testLength);
-            
-            for eachError = 1:nMetrics
-                tempMetrics(eachMethod, ii, eachError) = ...
-                    lossTypes{eachError}(actual, ...
-                    squeeze(forecastValues{instance}(eachMethod, ii, ...
-                    1:trainControl.minimiseOverFirst)));
-            end
         end
         
         % Naive periodic forecast
@@ -145,24 +138,22 @@ parfor instance = 1:Sim.nInstances
         forecastValues{instance}(NPidx, ii, :) = ...
             tempForecast(1:testLength);
         
-        for eachError = 1:nMetrics
-            tempMetrics(NPidx, ii, eachError) = ...
-                lossTypes{eachError}(actual,...
-                squeeze(forecastValues{instance}(NPidx, ii, ...
-                1:trainControl.minimiseOverFirst)));
-        end
+        % 'R forecasts':
+        ARIMAidx = find(ismember(forecastTypeStrings, 'R AUTO.ARIMA'));
+        ETSdx = find(ismember(forecastTypeStrings, 'R ETS'));
         
-        % 'R forecast':
-        Ridx = find(ismember(forecastTypeStrings, 'R AUTO'));
-        tempForecast = getAutomatedForecastR(historicData, trainControl);
-        forecastValues{instance}(Ridx, ii, ...
-            1:trainControl.minimiseOverFirst) = tempForecast;
+        forecastValues{instance}([ARIMAidx, ETSids], ii, ...
+            1:trainControl.minimiseOverFirst) = getAutomatedForecastR(...
+            historicData, trainControl);
         
-        for eachError = 1:nMetrics
-            tempMetrics(Ridx, ii, eachError) = ...
-                lossTypes{eachError}(actual,...
-                squeeze(forecastValues{instance}(Ridx, ii, ...
-                1:trainControl.minimiseOverFirst)));
+        % Compute error metrics (for each test, and method):
+        for eachMethod = 1:nMethods
+            for eachError = 1:nMetrics
+                tempMetrics(eachMethod, ii, eachError) = ...
+                    lossTypes{eachError}(actual, ...
+                    squeeze(forecastValues{instance}(eachMethod, ii, ...
+                    1:trainControl.minimiseOverFirst)));
+            end
         end
         
         historicData = [historicData; actual(1)];
