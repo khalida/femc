@@ -77,7 +77,8 @@ legend([allMethodStrings, {'Some intervals not solved to optimality'}],...
     'Location', 'best', 'Orientation', 'vertical', 'Interpreter', 'none');
 
 hold off;
-print(fig_1, '-dpdf', '..\results\allPrrResults.pdf');
+print(fig_1, '-dpdf', ['..' filesep 'results' filesep ...
+    'allPrrResults.pdf']);
 
 %% 2) Plot Absolute PRR against aggregation size (as means +/- error bars)
 
@@ -99,7 +100,8 @@ legend(selectedForecastLabels, 'Interpreter', 'none',...
 grid on;
 hold off;
 
-print(fig_2, '-dpdf', '..\results\absolutePrrVsAggregationSize.pdf');
+print(fig_2, '-dpdf', ['..' filesep 'results' filesep ...
+    'absolutePrrVsAggregationSize.pdf']);
 
 
 %% 3) Plot Relative PRR against aggregation size (as means +/- error bars)
@@ -119,7 +121,8 @@ legend(selectedForecastLabels, 'Interpreter', 'none',...
 grid on;
 hold off;
 
-print(fig_3, '-dpdf', '..\results\relativePrrVsAggregationSize.pdf');
+print(fig_3, '-dpdf', ['..' filesep 'results' filesep ...
+    'relativePrrVsAggregationSize.pdf']);
 
 %% 4) BoxPlots of Rel/Abs PRR for each Method (across all instances)
 
@@ -142,7 +145,8 @@ boxplot(peakReductionsRelativeFlattened', 'labels', ...
 ylabel('Mean PRR relative to perfect forecast');
 grid on;
 
-print(fig_4, '-dpdf', '..\results\allPrrResultsBoxPlot.pdf');
+print(fig_4, '-dpdf', ['..' filesep 'results' filesep ...
+    'allPrrResultsBoxPlot.pdf']);
 
 %% 5) Plots showing performace of each Forecast Against the different
 % Error metrics (look at only BestPfem and BestPemd metrics to keep
@@ -228,6 +232,7 @@ for eachMetricIdxIdx = 1:length(metricsToPlotIdx)
     title(metricsToPlotStrings{eachMetricIdxIdx}, 'Interpreter', 'none');
 end
 
-print(fig_5, '-dpdf', '..\results\allForecastPerformances.pdf');
+print(fig_5, '-dpdf', ['..' filesep 'results' filesep...
+    'allForecastPerformances.pdf']);
 
 end

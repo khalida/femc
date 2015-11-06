@@ -9,7 +9,7 @@ mkdir(tmpName);
 [locationOfRfile, ~, ~] = fileparts(which(...
     'getAutoArimaModelCoefficientsAndForecast.m'));
 copyfile([locationOfRfile...
-    '\getAutoArimaModelCoefficientsAndForecast.R'],tmpName);
+     filesep 'getAutoArimaModelCoefficientsAndForecast.R'],tmpName);
 cd(tmpName);
 
 %% Write historic (& other info) as columns
