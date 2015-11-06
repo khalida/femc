@@ -9,8 +9,8 @@ Config
 
 %% Add path to the common functions (& any subfolders therein)
 [parentFold, ~, ~] = fileparts(pwd);
-commonFcnFold = [parentFold filesep 'functions'];
-addpath(genpath(commonFcnFold), '-BEGIN');
+commonFunctionFolder = [parentFold filesep 'functions'];
+addpath(genpath(commonFunctionFolder), '-BEGIN');
 
 % if updateMex, compileMexes; end;
 saveFileName = ['..' filesep 'results' filesep ...

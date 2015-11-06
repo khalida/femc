@@ -1,36 +1,35 @@
 %% Global Configuration File
 
 %% Instances
-Sim.nCustomers = [1, 5, 25, 125];
-% Sim.nCustomers = [1, 10, 100, 1000];
-Sim.nAggregates = 4;
+Sim.nCustomers = [5, 125];
+Sim.nAggregates = 2;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
 Sim.nProc = min(Sim.nInstances, 4);
-Sim.numStochFcasts = 10;% 100;
+Sim.nStochasticForecasts = 10;        % 100;
 Sim.relativeSizeError = 0.5;
 
 %% Battery Properties
-Sim.batteryCapacityRatio = 0.05; % as fraction of daily average demand
-Sim.batteryChargingFactor = 1;   % ratio of charge rate to capacity
+Sim.batteryCapacityRatio = 0.05;    % as fraction of daily average demand
+Sim.batteryChargingFactor = 1;      % ratio of charge rate to capacity
 
 %% Simulation Duration and properties
-Sim.nDaysTrain = 200;% 200;    %200;   % days of historic demand data
-Sim.nDaysSelect = 56;% 56;    %56;    % to select forecast parameters
-Sim.nDaysTest = 56;% 56;      %56;    % days to run simulation for
-Sim.stepsPerHour = 2;   % Half-hourly data
+Sim.nDaysTrain = 200;       %200;   % days of historic demand data
+Sim.nDaysSelect = 56;       %56;    % to select forecast parameters
+Sim.nDaysTest = 56;         %56;    % days to run simulation for
+Sim.stepsPerHour = 2;       % Half-hourly data
 Sim.hoursPerDay = 24;
 k = 48;                 % horizon & seasonality (assumed same)
 
 %% Forecast training options
-trainControl.nHidden = 50;% 50; %50;
+trainControl.nHidden = 50; %50;
 trainControl.suppressOutput = true;
-trainControl.nStart = 3;% 3;% 3;
-trainControl.mseEpochs = 1000;% 1000;        % No. of MSE epochs for pre-training
+trainControl.nStart = 3; %3;
+trainControl.mseEpochs = 1000; %1000; % No. of MSE epochs for pre-training
 trainControl.minimiseOverFirst = 48;  % # of fcast steps to minimise over
-trainControl.batchSize = 1000;% 1000;
-trainControl.maxTime = 15;% 15;                  % maximum training time in mins
-trainControl.maxEpochs = 1000;% 1000;              % maximum No. of epochs
-trainControl.trainRatio = 0.9;              % to train each net on
+trainControl.batchSize = 1000; %1000;
+trainControl.maxTime = 15; %15;       % maximum training time in mins
+trainControl.maxEpochs = 1000; %1000; % maximum No. of epochs
+trainControl.trainRatio = 0.9;        % to train each net on
 trainControl.nLags = k;
 trainControl.horizon = k;
 trainControl.performanceDifferenceThreshold = 0.02;
@@ -41,28 +40,28 @@ trainControl.seasonality = k;
 
 % Forecast-free parameters
 Sim.nTrainShuffles = 5; %5;     % # of shuffles to consider
-Sim.nDaysSwap = 25;             % pairs of days to swap per shuffle
+Sim.nDaysSwap = 25; %25         % pairs of days to swap per shuffle
 Sim.nHidden = 250; %250;        % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
-Pfem.alphas = [0.25, 1, 4];% 2, 4
-Pfem.betas = [1];%, 2, 4
-Pfem.gammas = [1];%, 4, 10
-Pfem.deltas = [1];%, 2, 3
+Pfem.alphas = [0.25, 1, 4];     % 2
+Pfem.betas = [0.25, 1, 4];      % 2
+Pfem.gammas = [1, 4, 16];       % 2
+Pfem.deltas = [0, 1, 2];        % 1
 
 % EMD Parameter Gridsearch points
-Pemd.as = [10];%#ok<*NBRAK> %, 200
-Pemd.bs = [0.5];%, 0.75, 1
-Pemd.cs = [0.5];%, 0.75, 1
-Pemd.ds = [4];%, 10, 20 a*b must be >= d
+Pemd.as = [10, 40, 160];       % 10
+Pemd.bs = [0.5, 1, 2];         % 0.5
+Pemd.cs = [0.5, 1, 2];         % 0.5
+Pemd.ds = [1, 2, 4];           % 4
 
 % Other loss functions to consider, and additional control methods:
 otherLossHandles = {@lossMse, @lossMape};
-additionalMethods = {'forecastFree', 'naivePeriodic', 'godCast',...
+Sim.additionalMethods = {'forecastFree', 'naivePeriodic', 'godCast',...
     'setPoint'};
 
 %% MPC options
-MPC.secondWeight = 1e-4;% 1e-4; 		% of degeneracy preventing Objective
+MPC.secondWeight = 1e-4;% 1e-4;    % of degeneracy preventing Objective
 MPC.knowCurrentDemandNow = false;  % Is current demand known to controller?
 MPC.clipNegativeFcast = true;
 MPC.iterationFactor = 1.0;		% To apply to default maximum iterations
@@ -74,7 +73,7 @@ MPC.maxParForTypes = 4;
 MPC.chargeWhenCan = false;
 MPC.suppressOutput = trainControl.suppressOutput;
 
-%% Data filenames
+%% Data filename
 dataFileWithPath = ...
     ['..' filesep 'data' filesep 'demand_3639.mat'];
 
@@ -173,6 +172,6 @@ for ii = 1:length(Sim.lossTypes)
     end
 end
 
-Sim.allMethodStrings = [Sim.lossTypesStrings, additionalMethods];
+Sim.allMethodStrings = [Sim.lossTypesStrings, Sim.additionalMethods];
 Sim.nTrainMethods = length(Sim.lossTypes);
 Sim.nMethods = length(Sim.allMethodStrings);
