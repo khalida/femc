@@ -1,16 +1,16 @@
-function [ forecastArima, forecastEts ] = getAutomatedForecastR( ...
+function [ forecastEts ] = getAutomatedForecastR( ...
     historicData, trainControl )
 
 % getAutomatedForecastR: Produce point forecast using R forecasting pkg
-                % NB: this relies on reading/writing files so care required
-                % in handling temporary files when running in parrallel.
+% NB: this relies on reading/writing files so care required
+% in handling temporary files when running in parrallel.
 
 %% Create temprary directory for storing temporary files (and move into it)
 originalDir = pwd;
-tmpName = tempname;
+tmpName = tempname([pwd filesep 'tmp']);
 mkdir(tmpName);
 [locationOfRfile, ~, ~] = fileparts(which('getAutomatedForecastR.m'));
-copyfile([locationOfRfile '\forecast.R'],tmpName);
+copyfile([locationOfRfile filesep 'forecast.R'],tmpName);
 cd(tmpName);
 
 %% Write historic (& other info) as columns
@@ -21,15 +21,8 @@ csvwrite('seasonality.csv', trainControl.seasonality);
 %% Call the R forecasting script:
 system('R CMD BATCH forecast.R outputForDebugging.txt');
 
-%Read in the mean forecast (saved by the R script):
-%Allow for file not being found:
-if exist('meanForecastArima.csv', 'file') == 2
-    forecastArima = csvread('meanForecastArima.csv');
-else
-    forecastArima = zeros(trainControl.minimiseOverFirst, 1);
-    warning(['meanForecastArima.csv not found, folder: ' pwd]);
-end
-
+%% Read mean forecast (saved by the R script):
+% Allow for file not being found:
 if exist('meanForecastEts.csv', 'file') == 2
     forecastEts = csvread('meanForecastEts.csv');
 else
@@ -37,8 +30,12 @@ else
     warning(['meanForecastEts.csv not found, folder: ' pwd]);
 end
 
-%% Return to original directory & destroy temporary directory
+%% Return to original directory & attempt to destroy temporary directory
 cd(originalDir);
-% rmdir(tmpName, 's');
+[status, message, id] = rmdir(tmpName, 's');
+if status ~= 1
+    warning(['Temp directory not destroyed: ' tmpName ...
+        ', message: ' message ', id: ' id]);
+end
 
 end

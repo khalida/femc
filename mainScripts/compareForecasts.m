@@ -1,6 +1,6 @@
 % file: compareForecasts.m
 % auth: Khalid Abdulla
-% date: 20/10/2015
+% date: 6/11/2015
 % brief: Evaluate various forecast models trained on various
 %           error metrics (over a number of aggregation levels)
 
@@ -13,7 +13,8 @@ commonFcnFold = [parentFold filesep 'functions'];
 addpath(genpath(commonFcnFold), '-BEGIN');
 
 % if updateMex, compileMexes; end;
-saveFileName = '..\results\2015_11_03_compareForecast_compareR.mat';
+saveFileName = ['..' filesep 'results' filesep ...
+    '2015_11_06_compareForecast_compareR.mat'];
 
 %% Set-up // workers
 poolobj = gcp('nocreate');
@@ -38,7 +39,7 @@ lossTypes = {@lossMse, @lossMape, unitLossPfem, ...
 
 forecastTypeStrings = {'MSE SARMA', 'MAPE SARMA', 'PFEM SARMA',...
     'PEMD SARMA', 'MSE FFNN', 'MAPE FFNN', 'PFEM FFNN', 'PEMD FFNN',...
-    'NP', 'R AUTO.ARIMA', 'R ETS'};
+    'NP', 'R ETS'};
 
 forecastMetrics = {'MSE', 'MAPE', 'PFEM', 'PEMD'};
 
@@ -138,15 +139,13 @@ parfor instance = 1:Sim.nInstances
         forecastValues{instance}(NPidx, ii, :) = ...
             tempForecast(1:testLength);
         
-        % 'R forecasts':
-        ARIMAidx = find(ismember(forecastTypeStrings, 'R AUTO.ARIMA'));
+        % 'R forecast':
         ETSidx = find(ismember(forecastTypeStrings, 'R ETS'));
         
-        [tmpArima, tmpEts] = getAutomatedForecastR(historicData,...
-            trainControl);
+        [tmpEts] = getAutomatedForecastR(historicData, trainControl);
         
-        forecastValues{instance}([ARIMAidx, ETSidx], ii, ...
-            1:trainControl.minimiseOverFirst) = [tmpArima'; tmpEts'];
+        forecastValues{instance}(ETSidx, ii, ...
+            1:trainControl.minimiseOverFirst) = tmpEts';
         
         % Compute error metrics (for each test, and method):
         for eachMethod = 1:nMethods

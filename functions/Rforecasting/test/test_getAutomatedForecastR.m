@@ -22,17 +22,17 @@ trainControl.seasonality = (2*pi)/interval;
 trainControl.horizon = trainControl.seasonality;
 trainControl.minimiseOverFirst = trainControl.seasonality;
 
-[forecastArima, forecastEts] = getAutomatedForecastR(...
+[forecastEts] = getAutomatedForecastR(...
     historicData, trainControl);
 
-figure(1);
+fig_1 = figure(1);
 plot(plotTrainIdxs, historicData(plotTrainIdxs), 'k', ...
-    plotTestIdxs, forecastArima, 'r', ...
     plotTestIdxs, forecastEts, 'g', ...
     plotTestIdxs, sin(testTimes), 'b');
 
-legend('train data', 'R auto.arima', 'R ETS', 'actual test');
+legend('train data', 'R ETS', 'actual test');
 
+print(fig_1, '-dpdf', 'test_singleForecast.pdf');
 
 %% Check that function works in parrallel (i.e. no file collisions)
 nParrallel = 4;
@@ -40,23 +40,23 @@ historicData = repmat(sin(trainTimes), [nParrallel, 1]);
 historicData = historicData + ...
     (rand(size(historicData))-0.5)*noiseMultiplier;
 
-allForecastsArima = zeros(nParrallel, length(testIdxs));
 allForecastsEts = zeros(nParrallel, length(testIdxs));
 parfor iParrallel = 1:nParrallel
-    [allForecastsArima(iParrallel, :), allForecastsEts(iParrallel, :)] =...
-        getAutomatedForecastR(historicData(iParrallel, :), trainControl);
+    [allForecastsEts(iParrallel, :)] = getAutomatedForecastR(...
+        historicData(iParrallel, :), trainControl);
 end
 
-figure(2);
+fig_2 = figure(2);
 for iParrallel = 1:nParrallel
     
     subplot(2,2,iParrallel);
     
     plot(plotTrainIdxs, historicData(iParrallel, plotTrainIdxs), 'k', ...
-        plotTestIdxs, allForecastsArima(iParrallel, :), 'r', ...
         plotTestIdxs, allForecastsEts(iParrallel, :), 'g', ...
         plotTestIdxs, sin(testTimes), 'b');
     
-    legend('train data', 'R auto.arima', 'R ETS', 'actual test');
+    legend('train data', 'R ETS', 'actual test');
     
 end
+
+print(fig_2, '-dpdf', 'test_multipleForecast.pdf');
