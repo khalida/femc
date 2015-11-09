@@ -6,6 +6,8 @@
 
 %% Load Config (includes seeding rng)
 Config
+Sim.nCustomers = [10, 1000];
+Sim.nInstances = Sim.nAggregates*length(Sim.nCustomers);
 
 %% Add path to the common functions (& any subfolders therein)
 [parentFold, ~, ~] = fileparts(pwd);
@@ -14,7 +16,7 @@ addpath(genpath(commonFunctionFolder), '-BEGIN');
 
 % if updateMex, compileMexes; end;
 saveFileName = ['..' filesep 'results' filesep ...
-    '2015_11_06_compareForecast_compareR.mat'];
+    '2015_11_08_compareForecast_compareR.mat'];
 
 %% Set-up // workers
 poolobj = gcp('nocreate');
@@ -75,10 +77,10 @@ for instance = 1:Sim.nInstances
 end
 
 % Allocate half-hour-of-day indexes
-hourNumbers = mod((1:size(demandData, 1))', k);
-hourNumbersTrain = hourNumbers(1:trainLength);
-trainControl.hourNumbersTrain = hourNumbersTrain;
-hourNumbersTest = zeros(testLength, nTests);
+hourNumber = mod((1:size(demandData, 1))', k);
+hourNumberTrain = hourNumber(1:trainLength);
+trainControl.hourNumberTrain = hourNumberTrain;
+hourNumberTest = zeros(testLength, nTests);
 
 % Test Data
 actualValuesAll = zeros(Sim.nInstances, testLength, nTests);
@@ -97,7 +99,7 @@ for nCustIdx = 1:length(Sim.nCustomers)
         for ii = 1:nTests
             testIdx = (trainLength+ii):(trainLength+ii+testLength-1);
             actualValuesAll(instance, :, ii) = allDemandValues(instance, testIdx)';
-            hourNumbersTest(:, ii) = hourNumbers(testIdx);
+            hourNumberTest(:, ii) = hourNumber(testIdx);
         end
     end
 end
@@ -105,6 +107,7 @@ end
 % Produce the forecasts
 tic;
 parfor instance = 1:Sim.nInstances
+% for instance = 1:Sim.nInstances
   
     y = allDemandValues(instance, :)';
     
@@ -171,6 +174,12 @@ parfor instance = 1:Sim.nInstances
     disp('Instance Done:');
     disp(instance);
     disp('==========');
+    
+    % DEBUG
+    %disp('==========');
+    %disp('tempMetrics:');
+    %disp(tempMetrics);
+    %disp('==========');
 end
 
 toc;

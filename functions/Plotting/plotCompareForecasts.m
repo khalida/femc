@@ -178,11 +178,12 @@ if savePlots
     
     % [Absolute MAPE plot, Rel. MSE BoxPlot, Rel PFEM BoxPlot,...
     % Rel PEMD BoxPlot]
-    figureNums = [102 301 303 304];
+    figureNums = [102 301 303 304 101];
     fileNames = {['..' filesep 'results' filesep 'absoluteMapePlot.pdf'], ...
-        ['..' filesep 'results' filesep 'relativeMseBoxPlot'], ...
-        ['..' filesep 'results' filesep 'relativePfemBoxPlot'], ...
-        ['..' filesep 'results' filesep 'relativePemdBoxPlot']};
+        ['..' filesep 'results' filesep 'relativeMseBoxPlot.pdf'], ...
+        ['..' filesep 'results' filesep 'relativePfemBoxPlot.pdf'], ...
+        ['..' filesep 'results' filesep 'relativePemdBoxPlot.pdf'], ...
+        ['..' filesep 'results' filesep 'absoluteMsePlot.pdf']};
     
     for figNumIdx = 1:length(figureNums)
         figNum = figureNums(figNumIdx);
@@ -191,7 +192,7 @@ if savePlots
         set(gcf, 'PaperSize', myPaperSize); %Keep the same paper size
         
         % Create vertical lines separating the groups on the box plots:
-        if figNum~=102
+        if figNum~=102 && figNum~=101
             set(gca, 'XGrid', 'off');
             origYlims = get(gca, 'ylim');
             for xpos = [1.5 2.5 3.5]
@@ -216,11 +217,18 @@ if savePlots
             %             yTickLabel = arrayfun(@(x) sprintf('%3.1f',x),yTick,...
             %                 'uniformoutput', false);
             %             set(gca, 'yTickLabel', yTickLabel);
-        else
+        end
+        
+        if figNum==102
             % Set limits for Absolute MAPE plot
-            
-            %ylim([1e-2 3e0]);
-            %xlim([3e2 7e5]);
+            ylim([1e-2 3e0]);
+            xlim([3e2 7e5]);
+        end
+        
+        if figNum==101
+           % Refinements for Absolute MSE plot
+            ylim([5e-2 1e4]);
+            xlim([3e2 7e5]);
         end
         
         saveas(gcf, fileNames{figNumIdx}, 'pdf');

@@ -30,6 +30,11 @@ else
     warning(['meanForecastEts.csv not found, folder: ' pwd]);
 end
 
+%% Check that forecastEts is expected length
+if length(forecastEts) ~= trainControl.minimiseOverFirst
+    warning('ETS forecast not of correct length!');
+end
+
 %% Return to original directory & attempt to destroy temporary directory
 cd(originalDir);
 [status, message, id] = rmdir(tmpName, 's');
