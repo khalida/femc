@@ -80,6 +80,7 @@ parfor instance = 1:nInstances
         runControl.godCast = true;
         runControl.MPC = MPC;
         runControl.MPC.setPoint = false;
+        runControl.skipRun = false;
         
         [ runningPeak, ~, forecastUsed ] = mpcController( [], godCast,...
             demandValuesSelection, batteryCapacity, maximumChargeRate, ...

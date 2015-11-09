@@ -13,420 +13,420 @@
 
 /* Variable Definitions */
 static emlrtMCInfo emlrtMCI = { 10, 1, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m" };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m"
+};
 
 static emlrtRTEInfo emlrtRTEI = { 4, 21, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m" };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m"
+};
 
 static emlrtRTEInfo c_emlrtRTEI = { 15, 1, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m" };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m"
+};
 
 static emlrtBCInfo emlrtBCI = { -1, -1, 26, 41, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo b_emlrtBCI = { -1, -1, 26, 9, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo c_emlrtBCI = { -1, -1, 35, 41, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo d_emlrtBCI = { -1, -1, 36, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo e_emlrtBCI = { -1, -1, 35, 9, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo emlrtDCI = { 13, 18, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtDCInfo b_emlrtDCI = { 13, 18, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 4 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  4 };
 
 static emlrtBCInfo f_emlrtBCI = { -1, -1, 69, 9, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo g_emlrtBCI = { -1, -1, 69, 41, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo h_emlrtBCI = { -1, -1, 70, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo i_emlrtBCI = { -1, -1, 71, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo j_emlrtBCI = { -1, -1, 72, 23, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo c_emlrtDCI = { 72, 23, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo k_emlrtBCI = { -1, -1, 73, 36, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo d_emlrtDCI = { 73, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo l_emlrtBCI = { -1, -1, 74, 36, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo e_emlrtDCI = { 74, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo m_emlrtBCI = { -1, -1, 75, 36, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo f_emlrtDCI = { 75, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo n_emlrtBCI = { -1, -1, 61, 9, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo o_emlrtBCI = { -1, -1, 61, 41, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo p_emlrtBCI = { -1, -1, 62, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo q_emlrtBCI = { -1, -1, 63, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo r_emlrtBCI = { -1, -1, 64, 23, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo g_emlrtDCI = { 64, 23, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo s_emlrtBCI = { -1, -1, 65, 36, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo h_emlrtDCI = { 65, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo t_emlrtBCI = { -1, -1, 66, 36, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo i_emlrtDCI = { 66, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo u_emlrtBCI = { -1, -1, 67, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo j_emlrtDCI = { 67, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo v_emlrtBCI = { -1, -1, 53, 9, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo w_emlrtBCI = { -1, -1, 53, 41, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo x_emlrtBCI = { -1, -1, 54, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo y_emlrtBCI = { -1, -1, 55, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo ab_emlrtBCI = { -1, -1, 56, 23, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo k_emlrtDCI = { 56, 23, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo bb_emlrtBCI = { -1, -1, 57, 36, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo l_emlrtDCI = { 57, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo cb_emlrtBCI = { -1, -1, 58, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo m_emlrtDCI = { 58, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo db_emlrtBCI = { -1, -1, 59, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo n_emlrtDCI = { 59, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo eb_emlrtBCI = { -1, -1, 44, 9, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo fb_emlrtBCI = { -1, -1, 44, 41, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo gb_emlrtBCI = { -1, -1, 45, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo hb_emlrtBCI = { -1, -1, 46, 26, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo ib_emlrtBCI = { -1, -1, 47, 23, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo o_emlrtDCI = { 47, 23, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo jb_emlrtBCI = { -1, -1, 48, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo p_emlrtDCI = { 48, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo kb_emlrtBCI = { -1, -1, 49, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo q_emlrtDCI = { 49, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo lb_emlrtBCI = { -1, -1, 50, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo r_emlrtDCI = { 50, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo mb_emlrtBCI = { -1, -1, 37, 26, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo nb_emlrtBCI = { -1, -1, 38, 23, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo s_emlrtDCI = { 38, 23, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo ob_emlrtBCI = { -1, -1, 39, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo t_emlrtDCI = { 39, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo pb_emlrtBCI = { -1, -1, 40, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo u_emlrtDCI = { 40, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo qb_emlrtBCI = { -1, -1, 41, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo v_emlrtDCI = { 41, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo rb_emlrtBCI = { -1, -1, 27, 26, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo sb_emlrtBCI = { -1, -1, 28, 26, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo tb_emlrtBCI = { -1, -1, 29, 23, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo w_emlrtDCI = { 29, 23, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo ub_emlrtBCI = { -1, -1, 30, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo x_emlrtDCI = { 30, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo vb_emlrtBCI = { -1, -1, 31, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo y_emlrtDCI = { 31, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo wb_emlrtBCI = { -1, -1, 32, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo ab_emlrtDCI = { 32, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo xb_emlrtBCI = { -1, -1, 17, 9, "forecast",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo yb_emlrtBCI = { -1, -1, 17, 41, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo ac_emlrtBCI = { -1, -1, 18, 26, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo bc_emlrtBCI = { -1, -1, 19, 26, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtBCInfo cc_emlrtBCI = { -1, -1, 20, 23, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo bb_emlrtDCI = { 20, 23, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo dc_emlrtBCI = { -1, -1, 21, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo cb_emlrtDCI = { 21, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo ec_emlrtBCI = { -1, -1, 22, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo db_emlrtDCI = { 22, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtBCInfo fc_emlrtBCI = { -1, -1, 23, 36, "demand",
   "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 0 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  0 };
 
 static emlrtDCInfo eb_emlrtDCI = { 23, 36, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m", 1 };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m",
+  1 };
 
 static emlrtRSInfo emlrtRSI = { 10, "forecastSarmaHyndmanMex",
-  "C:\\LocalData\\Documents\\Documents\\PhD\\21_Projects\\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\\functions\\forecastingSARM"
-  "A\\forecastSarmaHyndmanMex.m" };
+  "C:\\Users\\Khalid Abdulla\\Documents\\PhD\\femc\\functions\\forecastingSARMA\\forecastSarmaHyndmanMex.m"
+};
 
 /* Function Declarations */
 static void error(const emlrtStack *sp, const mxArray *b, emlrtMCInfo *location);

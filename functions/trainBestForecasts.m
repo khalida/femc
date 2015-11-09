@@ -86,6 +86,6 @@ end
 Sim.timeTaken = timeTaken;
 Sim.timeForecastTrain = toc;
 
-disp('Time to end Forecast Training:'); disp(Sim.timeFcastTrain);
+disp('Time to end Forecast Training:'); disp(Sim.timeForecastTrain);
 
 end

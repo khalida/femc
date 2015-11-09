@@ -5,7 +5,7 @@ Sim.nCustomers = [1, 5, 25, 125];
 Sim.nAggregates = 2;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
 Sim.nProc = min(Sim.nInstances, 4);
-Sim.nStochasticForecasts = 10;        % 100;
+Sim.nStochasticForecasts = 50;        % 100;
 Sim.relativeSizeError = 0.5;
 
 %% Battery Properties

@@ -5,7 +5,7 @@ function [ Sim, results ] = testBestForecasts( pars, allDemandValues,...
             % metrics with paraemters selected using stochstic process.
 
 %% Pre-Allocation
-Sim.hourNumbersTest = Sim.hourNumbers(Sim.testIdxs, :);
+Sim.hourNumberTest = Sim.hourNumber(Sim.testIdxs, :);
 
 peakReductions = cell(Sim.nInstances, 1);
 peakPowers = cell(Sim.nInstances, 1);
@@ -34,7 +34,7 @@ nInstances = Sim.nInstances;
 nMethods = Sim.nMethods;
 nTrainMethods = Sim.nTrainMethods;
 allMethodStrings = Sim.allMethodStrings;
-hourNumbersTest = Sim.hourNumbersTest;
+hourNumberTest = Sim.hourNumberTest;
 stepsPerHour = Sim.stepsPerHour;
 
 testingTic = tic;
@@ -80,7 +80,7 @@ parfor instance = 1:nInstances
             [ runningPeak ] = mpcControllerForecastFree( ...
                 pars{instance, methodType}, demandValuesTest,...
                 batteryCapacity, maximumChargeRate, loadPattern,...
-                hourNumbersTest, stepsPerHour, MPC);
+                hourNumberTest, stepsPerHour, MPC);
             
             exitFlag = 1;
             
@@ -107,7 +107,7 @@ parfor instance = 1:nInstances
             [runningPeak, exitFlag, fcUsed] = mpcController( ...
                 pars{instance, methodType}, godCastValues, ...
                 demandValuesTest, batteryCapacity, maximumChargeRate,...
-                loadPattern, hourNumbersTest, stepsPerHour, k, runControl);
+                loadPattern, hourNumberTest, stepsPerHour, k, runControl);
             
             % Compute the performance of the forecast by all metrics
             isForecastFree = strcmp(thisMethodString, 'forecastFree');
