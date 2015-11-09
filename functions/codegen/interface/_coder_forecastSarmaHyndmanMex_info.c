@@ -43,8 +43,8 @@ static void info_helper(const mxArray **info)
   const mxArray *rhs7 = NULL;
   const mxArray *lhs7 = NULL;
   emlrtAddField(*info, emlrt_marshallOut(
-    "[E]C:/LocalData/Documents/Documents/PhD/21_Projects/2015_10_17_Forecast_Error_Metric_Customisation_MATLAB/functions/forecastingS"
-    "ARMA/forecastSarmaHyndmanMex.m"), "context", 0);
+    "[E]C:/Users/Khalid Abdulla/Documents/PhD/femc/functions/forecastingSARMA/forecastSarmaHyndmanMex.m"),
+                "context", 0);
   emlrtAddField(*info, emlrt_marshallOut("all"), "name", 0);
   emlrtAddField(*info, emlrt_marshallOut("logical"), "dominantType", 0);
   emlrtAddField(*info, emlrt_marshallOut(

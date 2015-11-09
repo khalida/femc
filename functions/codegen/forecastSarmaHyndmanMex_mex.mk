@@ -1,4 +1,4 @@
-START_DIR = C:\LOCALD~1\DOCUME~1\DOCUME~1\PhD\21_PRO~1\2015_1~1\FUNCTI~1\FORECA~2
+START_DIR = C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\FORECA~2
 
 MATLAB_ROOT = C:\PROGRA~1\MATLAB\R2014b
 MAKEFILE = forecastSarmaHyndmanMex_mex.mk
@@ -56,8 +56,8 @@ SYS_INCLUDE = $(MATLAB_INCLUDES)
 # Additional includes
 
 SYS_INCLUDE += /I "$(START_DIR)"
-SYS_INCLUDE += /I "C:\LocalData\Documents\Documents\PhD\21_Projects\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\functions\codegen"
-SYS_INCLUDE += /I "C:\LocalData\Documents\Documents\PhD\21_Projects\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\functions\codegen\interface"
+SYS_INCLUDE += /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen"
+SYS_INCLUDE += /I "C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen\INTERF~1"
 SYS_INCLUDE += /I "$(MATLAB_ROOT)\extern\include"
 SYS_INCLUDE += /I "."
 
@@ -90,7 +90,7 @@ CPPFLAGS =  $(CFLAGS)
 %.$(OBJEXT) : $(START_DIR)/%.c
 	$(CC) $(CFLAGS) "$<"
 
-%.$(OBJEXT) : C:\LocalData\Documents\Documents\PhD\21_Projects\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\functions\codegen/%.c
+%.$(OBJEXT) : C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen/%.c
 	$(CC) $(CFLAGS) "$<"
 
 %.$(OBJEXT) : interface/%.c
@@ -101,7 +101,7 @@ CPPFLAGS =  $(CFLAGS)
 %.$(OBJEXT) : $(START_DIR)/%.cpp
 	$(CC) $(CPPFLAGS) "$<"
 
-%.$(OBJEXT) : C:\LocalData\Documents\Documents\PhD\21_Projects\2015_10_17_Forecast_Error_Metric_Customisation_MATLAB\functions\codegen/%.cpp
+%.$(OBJEXT) : C:\Users\KHALID~1\DOCUME~1\PhD\femc\FUNCTI~1\codegen/%.cpp
 	$(CC) $(CPPFLAGS) "$<"
 
 %.$(OBJEXT) : interface/%.cpp

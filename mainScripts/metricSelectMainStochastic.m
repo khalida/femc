@@ -4,10 +4,10 @@ timeStart = clock;
 disp(timeStart);
 Config;
 
-%% Source files for Common Functions
+%% Add path to the common functions (& any subfolders therein)
 [parentFold, ~, ~] = fileparts(pwd);
 commonFunctionFolder = [parentFold filesep 'functions'];
-addpath(commonFunctionFolder, '-BEGIN');
+addpath(genpath(commonFunctionFolder), '-BEGIN');
 
 %% Update compiled MEX Files (generally not required)
 if updateMex, compileMexes; end;
@@ -48,10 +48,6 @@ if makeForecast
     % Add bestPfem and bestPemd forecast types - only the parameter values
     % selected for each instance will be trained
     
-    % Remove the parametrised loss-types
-    Sim.lossTypes = Sim.lossTypes(setdiff((1:Sim.nTrainMethods),...
-        [Pfem.range Pemd.range]));
-    
     Sim.lossTypesStrings = Sim.lossTypesStrings(...
         setdiff((1:Sim.nTrainMethods), [Pfem.range Pemd.range]));
     
@@ -61,14 +57,14 @@ if makeForecast
     % Add bestPFEM, bestEMD
     if Pfem.num > 0
         Sim.lossTypesStrings = [Sim.lossTypesStrings {'bestPfemSelected'}];
-        Sim.allMethodStrings = [Sim.lossTypesStrings {'bestPfemSelected'}];
+        Sim.allMethodStrings = [Sim.allMethodStrings {'bestPfemSelected'}];
     else
         bestPfemIdx = zeros(Sim.nInstances, 1);
     end
     
     if Pemd.num > 0
         Sim.lossTypesStrings = [Sim.lossTypesStrings {'bestPemdSelected'}];
-        Sim.allMethodStrings = [Sim.lossTypesStrings {'bestPemdSelected'}];
+        Sim.allMethodStrings = [Sim.allMethodStrings {'bestPemdSelected'}];
     else
         bestPemdIdx = zeros(Sim.nInstances, 1);
     end
@@ -83,10 +79,10 @@ if makeForecast
         trainControl, k, bestPfemIdx, bestPemdIdx);
     
     % Save intermediate file
-    save(Sim.intermediateFileName, '-v7.3');
+    save([Sim.intermediateFileName(1:(end-4)) 'Stochastic.mat'], '-v7.3');
 else
     disp('======= LOADING FORECAST =======');
-    load(Sim.intermediateFileName);
+    load([Sim.intermediateFileName(1:(end-4)) 'Stochastic.mat']);
     makeForecast = false;
     disp('======= done =======');
 end
@@ -101,7 +97,7 @@ plotResultsStochasticSelection(Sim, results);
 
 %%
 disp('======= SAVING =======');
-save(Sim.finalFileName, '-v7.3');
+save([Sim.finalFileName(1:(end-4)) 'Stochastic.mat'], '-v7.3');
 
 overAllTime = toc(overAllTic);
 disp('Total Time Taken: ');

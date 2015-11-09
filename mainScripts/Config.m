@@ -5,7 +5,7 @@ Sim.nCustomers = [5, 125];
 Sim.nAggregates = 2;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
 Sim.nProc = min(Sim.nInstances, 4);
-Sim.nStochasticForecasts = 10;        % 100;
+Sim.nStochasticForecasts = 50;        % 100;
 Sim.relativeSizeError = 0.5;
 
 %% Battery Properties
@@ -61,14 +61,14 @@ Sim.additionalMethods = {'forecastFree', 'naivePeriodic', 'godCast',...
     'setPoint'};
 
 %% MPC options
-MPC.secondWeight = 1e-4;% 1e-4;    % of degeneracy preventing Objective
+MPC.secondWeight = 0;% 1e-4;    % of degeneracy preventing Objective
 MPC.knowCurrentDemandNow = false;  % Is current demand known to controller?
 MPC.clipNegativeFcast = true;
 MPC.iterationFactor = 1.0;		% To apply to default maximum iterations
-MPC.rewardMargin = true;		% Reward margin from creating a new peak?
+MPC.rewardMargin = false;		% Reward margin from creating a new peak?
 MPC.SPrecourse = true;			% whether or not to allow setPoint recourse
 MPC.billingPeriodDays = 7;
-MPC.resetPeakToMean = true;
+MPC.resetPeakToMean = false;
 MPC.maxParForTypes = 4;
 MPC.chargeWhenCan = false;
 MPC.suppressOutput = trainControl.suppressOutput;
