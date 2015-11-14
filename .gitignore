@@ -7,3 +7,5 @@
 *.RData
 .Rproj.user
 *.csv
+*.mexw64
+*.mexa64
