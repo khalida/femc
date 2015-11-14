@@ -15,8 +15,8 @@ Sim.forecastSelectionIdxs = (1:(Sim.stepsPerHour*Sim.nHoursSelect)) + ...
 Sim.testIdxs = (1:(Sim.stepsPerHour*Sim.nHoursTest)) + ...
     Sim.forecastSelectionIdxs(end);
 
-Sim.hourNumbersSelection = Sim.hourNumbers(Sim.forecastSelectionIdxs, :);
-Sim.hourNumbersTest = Sim.hourNumbers(Sim.testIdxs, :);
+Sim.hourNumberSelection = Sim.hourNumber(Sim.forecastSelectionIdxs, :);
+Sim.hourNumberTest = Sim.hourNumber(Sim.testIdxs, :);
 
 % Sim time (& range) for forecast selection and testing
 simRangeSelection = [0 Sim.nHoursSelect - 1/Sim.stepsPerHour];
@@ -40,7 +40,7 @@ pfemRange = Pfem.range; pemdRange = Pemd.range;
 lossTypesStrings = Sim.lossTypesStrings;
 lossTypes = Sim.lossTypes;
 
-hourNumbersSelection = Sim.hourNumbersSelection;
+hourNumberSelection = Sim.hourNumberSelection;
 stepsPerHour = Sim.stepsPerHour;
 stepsPerDay = Sim.stepsPerDay;
 nInstances = Sim.nInstances;
@@ -102,7 +102,7 @@ for instance = 1:nInstances
         [runningPeak, exitFlag, fcUsed] = mpcController( ...
             simRangeSelection, pars{instance, forecastType}, ...
             godCastValues, demandValuesSelection, batteryCapacity, ...
-            maximumChargeRate, loadPattern, hourNumbersSelection, ...
+            maximumChargeRate, loadPattern, hourNumberSelection, ...
             stepsPerHour, k, runControl);
         
         % Extract simulation results
@@ -181,7 +181,7 @@ end
 nMethods = Sim.nMethods;
 nTrainMethods = Sim.nTrainMethods;
 lossTypesStrings = Sim.lossTypesStrings;
-hourNumbersTest = Sim.hourNumbersTest;
+hourNumberTest = Sim.hourNumberTest;
 stepsPerHour = Sim.stepsPerHour;
 
 testingTic = tic;
@@ -244,7 +244,7 @@ for instance = 1:nInstances
             [ runningPeak ] = mpcControllerForecastFree( simRangeTest,...
                 pars{instance, forecastTypeIn}, demandValuesTest,...
                 batteryCapacity, maximumChargeRate, loadPatternTrain,...
-                hourNumbersTest, stepsPerHour, MPC);
+                hourNumberTest, stepsPerHour, MPC);
         else
             % Implement a normal forecast-driven or set-point controller
             
@@ -276,7 +276,7 @@ for instance = 1:nInstances
                 simRangeTest, pars{instance, min(forecastType, ...
                 nTrainMethods)}, godCastValues, demandValuesTest, ...
                 batteryCapacity, maximumChargeRate, loadPattern, ...
-                hourNumbersTest, stepsPerHour, k, runControl); %#ok<PFBNS>
+                hourNumberTest, stepsPerHour, k, runControl); %#ok<PFBNS>
         end
         
         % Extract simulation results

@@ -52,10 +52,10 @@ for instance = 1:nInstances
 end
 
 % Allocate half-hour-of-day indexes
-hourNumbers = mod((1:size(demandData, 1))', k);
-hourNumbersTrain = hourNumbers(1:trainLength);
-trainControl.hourNumbersTrain = hourNumbersTrain;
-hourNumbersTest = zeros(testLength, nTests);
+hourNumber = mod((1:size(demandData, 1))', k);
+hourNumberTrain = hourNumber(1:trainLength);
+trainControl.hourNumberTrain = hourNumberTrain;
+hourNumberTest = zeros(testLength, nTests);
 
 % Test Data
 actualValuesAll = zeros(nInstances, testLength, nTests);
@@ -73,7 +73,7 @@ for nCustIdx = 1:length(nCustomers)
             testIdx = (trainLength+iTest):(trainLength+iTest+testLength-1);
             actualValuesAll(instance, :, iTest) = ...
                 allDemandValues(instance, testIdx)';
-            hourNumbersTest(:, iTest) = hourNumbers(testIdx);
+            hourNumberTest(:, iTest) = hourNumber(testIdx);
         end
     end
 end

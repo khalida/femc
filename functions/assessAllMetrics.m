@@ -16,8 +16,8 @@ Sim.trainIdxs = (1:(Sim.stepsPerHour*Sim.nHoursTrain)) + ...
     Sim.forecastSelectionIdxs(end);
 Sim.testIdxs = (1:(Sim.stepsPerHour*Sim.nHoursTest)) + Sim.trainIdxs(end);
 
-hourNumbers = mod((1:size(allDemandValues{1}, 1))', k);
-hourNumbersSelect = hourNumbers(Sim.forecastSelectionIdxs, :);
+hourNumber = mod((1:size(allDemandValues{1}, 1))', k);
+hourNumberSelect = hourNumber(Sim.forecastSelectionIdxs, :);
 
 %% Extract local variables to save parfor comms overhead
 nInstances = Sim.nInstances;
@@ -84,7 +84,7 @@ parfor instance = 1:nInstances
         
         [ runningPeak, ~, forecastUsed ] = mpcController( [], godCast,...
             demandValuesSelection, batteryCapacity, maximumChargeRate, ...
-            loadPattern, hourNumbersSelect, stepsPerHour, k, runControl);
+            loadPattern, hourNumberSelect, stepsPerHour, k, runControl);
         
         % Extract simulation results
         stochasticForecastPerformance(instance, eachForecast) = ...

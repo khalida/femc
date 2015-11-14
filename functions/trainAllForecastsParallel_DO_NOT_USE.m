@@ -82,10 +82,10 @@ timeTaken = cell(Sim.nInstances, 1);
 pars = cell(Sim.nInstances, Sim.nTrainMethods+1);
 
 Sim.trainIdxs = 1:(Sim.stepsPerHour*Sim.nHoursTrain);
-Sim.hourNumbers = mod((1:size(allDemandValues{1}, 1))', k);
-Sim.hourNumbersTrain = Sim.hourNumbers(Sim.trainIdxs, :);
+Sim.hourNumber = mod((1:size(allDemandValues{1}, 1))', k);
+Sim.hourNumberTrain = Sim.hourNumber(Sim.trainIdxs, :);
 
-trainControl.hourNumbersTrain = Sim.hourNumbersTrain;
+trainControl.hourNumberTrain = Sim.hourNumberTrain;
 
 % Extract data to local variables for efficiency:
 nInstances = Sim.nInstances;
@@ -97,7 +97,7 @@ stepsPerHour = Sim.stepsPerHour;
 batteryCapacityRatio = Sim.batteryCapacityRatio;
 nHoursTrain = Sim.nHoursTrain;
 batteryChargingFactor = Sim.batteryChargingFactor;  % ratio of charge rate to batt_cap
-hourNumbersTrain = Sim.hourNumbersTrain;
+hourNumberTrain = Sim.hourNumberTrain;
 nTrainShuffles = Sim.nTrainShuffles;
 nDaysSwap = Sim.nDaysSwap;
 nHidden = Sim.nHidden;
@@ -154,7 +154,7 @@ for instance = 1:nInstances
             simRangeTrain = [0 nHoursTrain - ...
                 hoursPerDay*nDaysInitialization - 1/stepsPerHour];
             
-            hourNumbersTrainOnly = hourNumbersTrain(setdiff(trainIdxs,...
+            hourNumberTrainOnly = hourNumberTrain(setdiff(trainIdxs,...
                 initializationIdxs)); %#ok<PFBNS>
             
             runControl = [];
@@ -164,7 +164,7 @@ for instance = 1:nInstances
             [ featureVectors, decisionVectors] = ...
                 mpcGenerateForecastFreeExamples( simRangeTrain, godCast,...
                 demandValuesTrainOnly, batteryCapacity, maxChargingRate,...
-                loadPatternInitialization, hourNumbersTrainOnly, ...
+                loadPatternInitialization, hourNumberTrainOnly, ...
                 stepsPerHour, k, MPC);
             
             allFeatureVectors = zeros(size(featureVectors, 1), length(...
@@ -197,7 +197,7 @@ for instance = 1:nInstances
                     mpcGenerateForecastFreeExamples( simRangeTrain, ...
                     godCast, newDemandValuesTrain, batteryCapacity, ...
                     maxChargingRate, loadPatternInitialization, ...
-                    hourNumbersTrainOnly, stepsPerHour, k, MPC);
+                    hourNumberTrainOnly, stepsPerHour, k, MPC);
                 
                 allFeatureVectors(:, offset + ...
                     (1:length(demandValuesTrainOnly))) = featureVectors;

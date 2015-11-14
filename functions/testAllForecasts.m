@@ -16,8 +16,8 @@ Sim.forecastSelectionIdxs = (1:(Sim.stepsPerHour*Sim.nHoursSelect)) + ...
 Sim.testIdxs = (1:(Sim.stepsPerHour*Sim.nHoursTest)) + ...
     Sim.forecastSelectionIdxs(end);
 
-Sim.hourNumbersSelection = Sim.hourNumbers(Sim.forecastSelectionIdxs, :);
-Sim.hourNumbersTest = Sim.hourNumbers(Sim.testIdxs, :);
+Sim.hourNumberSelection = Sim.hourNumber(Sim.forecastSelectionIdxs, :);
+Sim.hourNumberTest = Sim.hourNumber(Sim.testIdxs, :);
 
 peakReductions = cell(Sim.nInstances, 1);
 peakPowers = cell(Sim.nInstances, 1);
@@ -47,7 +47,7 @@ pemdRange = Pemd.range;
 lossTypes = Sim.lossTypes;
 allMethodStrings = Sim.allMethodStrings;
 
-hourNumbersSelection = Sim.hourNumbersSelection;
+hourNumberSelection = Sim.hourNumberSelection;
 stepsPerHour = Sim.stepsPerHour;
 stepsPerDay = Sim.stepsPerDay;
 nInstances = Sim.nInstances;
@@ -121,7 +121,7 @@ for iRun = 1:nRuns
             [runningPeak, exitFlag, forecastUsed] = mpcController( ...
                 pars{instance, iForecastType}, godCastValues,...
                 demandValuesSelection, batteryCapacity, ...
-                maximumChargeRate, loadPattern, hourNumbersSelection, ...
+                maximumChargeRate, loadPattern, hourNumberSelection, ...
                 stepsPerHour, k, runControl);
             
             %% Extract simulation results
@@ -204,7 +204,7 @@ end
 nMethods = Sim.nMethods;
 nTrainMethods = Sim.nTrainMethods;
 allMethodStrings = Sim.allMethodStrings;
-hourNumbersTest = Sim.hourNumbersTest;
+hourNumberTest = Sim.hourNumberTest;
 stepsPerHour = Sim.stepsPerHour;
 
 testingTic = tic;
@@ -261,7 +261,7 @@ parfor instance = 1:nInstances
             [ runningPeak ] = mpcControllerForecastFree( ...
                 pars{instance, methodType}, demandValuesTest,...
                 batteryCapacity, maximumChargeRate, loadPatternTrain,...
-                hourNumbersTest, stepsPerHour, MPC);
+                hourNumberTest, stepsPerHour, MPC);
             
             runControl.skipRun = false;
         else
@@ -304,7 +304,7 @@ parfor instance = 1:nInstances
             [runningPeak, exitFlag, forecastUsed] = mpcController( ...
                 pars{instance, iForecastType}, godCastValues,...
                 demandValuesTest, batteryCapacity, maximumChargeRate, ...
-                loadPattern, hourNumbersTest, stepsPerHour, k,...
+                loadPattern, hourNumberTest, stepsPerHour, k,...
                 runControl); %#ok<PFBNS>
         end
         

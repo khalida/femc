@@ -18,10 +18,10 @@ for instance = 1:Sim.nInstances
 end
 
 Sim.trainIdxs = 1:(Sim.stepsPerHour*Sim.nHoursTrain);
-Sim.hourNumbers = mod((1:size(allDemandValues{1}, 1))', k);
-Sim.hourNumbersTrain = Sim.hourNumbers(Sim.trainIdxs, :);
+Sim.hourNumber = mod((1:size(allDemandValues{1}, 1))', k);
+Sim.hourNumberTrain = Sim.hourNumber(Sim.trainIdxs, :);
 
-trainControl.hourNumbersTrain = Sim.hourNumbersTrain;
+trainControl.hourNumberTrain = Sim.hourNumberTrain;
 
 % Extract local data from structures for efficiency in parFor loop
 % communication
