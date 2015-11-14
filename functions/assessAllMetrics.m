@@ -71,8 +71,8 @@ parfor instance = 1:nInstances
     thisStochMetrics = zeros(1, nStochasticForecasts, nTrainMethods);
     
     for eachForecast = 1:nStochasticForecasts
-        godCast = godCastOriginal + (rand(size(godCastOriginal))-0.5).*...
-            (relativeSizeError*meanDemand);
+        godCast = max(0, godCastOriginal + (rand(size(godCastOriginal))-0.5).*...
+            (relativeSizeError*meanDemand));
         
         % Set forecast type to godCast (and not Naive or Set-Point)
         runControl = [];
