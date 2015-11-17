@@ -3,7 +3,7 @@ function [ Pfem, Pemd, Sim, pars ] = trainAllForecasts( Pfem, Pemd, MPC,...
 
 % trainAllForecasts: Train parameters for all trained forecasts. Run
 %   through each instance and each error metric and output parameters
-%   of trained NN forecasts.
+%   of trained forecasts.
 
 tic;
 
@@ -20,6 +20,20 @@ end
 Sim.trainIdxs = 1:(Sim.stepsPerHour*Sim.nHoursTrain);
 Sim.hourNumber = mod((1:size(allDemandValues{1}, 1))', k);
 Sim.hourNumberTrain = Sim.hourNumber(Sim.trainIdxs, :);
+
+% Set default model type if not set already:
+Sim = setDefaultValues(Sim, {'forecastModels', 'FFNN'});
+
+if strcmp(Sim.forecastModels, 'FFNN')
+    trainHandle = @trainFfnnMultipleStarts;
+    disp('== USING FFNN MODELS ===');
+elseif strcmp(Sim.forecastModels, 'SARMA')
+    trainHandle = @trainSarma;
+    disp('== USING SARMA MODELS ===');
+else
+    error('Selected Sim.forecastModels not implemented');
+end
+                
 
 trainControl.hourNumberTrain = Sim.hourNumberTrain;
 
@@ -59,13 +73,14 @@ parfor instance = 1:nInstances
                 
             case 'setPoint'
                 continue;
-                                
+                
                 % Otherwise assume we have a forecast to train
             otherwise
                 tempTic = tic;
-                pars{instance, methodTypeIdx} = ...
-                    trainFfnnMultipleStarts( demandValuesTrain, ...
-                    lossTypes{methodTypeIdx}, trainControl); %#ok<PFBNS>
+                pars{instance, methodTypeIdx} = trainHandle(...
+                    demandValuesTrain, lossTypes{methodTypeIdx}, ...
+                    trainControl); %#ok<PFBNS>
+                
                 timeTaken{instance}(methodTypeIdx) = toc(tempTic);
         end
     end

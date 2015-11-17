@@ -13,6 +13,7 @@ bestPemdIdx = zeros(Sim.nInstances, 1);
 
 Sim.forecastSelectionIdxs = (1:(Sim.stepsPerHour*Sim.nHoursSelect)) + ...
     Sim.trainIdxs(end);
+
 Sim.testIdxs = (1:(Sim.stepsPerHour*Sim.nHoursTest)) + ...
     Sim.forecastSelectionIdxs(end);
 
@@ -33,6 +34,8 @@ for instance = 1:Sim.nInstances
     allKWhs(instance) = mean(allDemandValues{instance});
 end
 
+Sim = setDefaultValues(Sim, {'forecastModels', 'FFNN'});
+
 %% Run Models for Forecast selection
 
 % Extract data required from Sim structure for efficiency of parfor
@@ -46,6 +49,7 @@ pfemRange = Pfem.range;
 pemdRange = Pemd.range;
 lossTypes = Sim.lossTypes;
 allMethodStrings = Sim.allMethodStrings;
+forecastModels = Sim.forecastModels;
 
 hourNumberSelection = Sim.hourNumberSelection;
 stepsPerHour = Sim.stepsPerHour;
@@ -105,6 +109,7 @@ for iRun = 1:nRuns
             
             runControl = [];
             runControl.MPC = MPC;
+            runControl.forecastModels = forecastModels;
             
             if strcmp(allMethodStrings{iForecastType},...
                     'setPoint'); %#ok<PFBNS>
@@ -246,6 +251,7 @@ parfor instance = 1:nInstances
         
         runControl = [];
         runControl.MPC = MPC;
+        runControl.forecastModels = forecastModels;
         thisMethodString = allMethodStrings{methodType}; %#ok<PFBNS>
         
         if strcmp(thisMethodString, 'forecastFree')
