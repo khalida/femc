@@ -1,34 +1,34 @@
 %% Global Configuration File
 
 %% Instances
-Sim.nCustomers = [1, 5, 25, 125];
+Sim.nCustomers = [5, 125];
 Sim.nAggregates = 2;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
-Sim.nProc = min(Sim.nInstances, 4);
-Sim.nStochasticForecasts = 50;        % 100;
-Sim.relativeSizeError = 0.5;
+Sim.nProc = min(Sim.nInstances, 2);
+Sim.nStochasticForecasts = 5;        % 100;
+Sim.relativeSizeError = 1.0;
 
 %% Battery Properties
 Sim.batteryCapacityRatio = 0.05;    % as fraction of daily average demand
 Sim.batteryChargingFactor = 1;      % ratio of charge rate to capacity
 
 %% Simulation Duration and properties
-Sim.nDaysTrain = 50;       %200;   % days of historic demand data
-Sim.nDaysSelect = 14;       %56;    % to select forecast parameters
-Sim.nDaysTest = 14;         %56;    % days to run simulation for
+Sim.nDaysTrain = 200;       %200;   % days of historic demand data
+Sim.nDaysSelect = 56;       %56;    % to select forecast parameters
+Sim.nDaysTest = 56;         %56;    % days to run simulation for
 Sim.stepsPerHour = 2;       % Half-hourly data
 Sim.hoursPerDay = 24;
 k = 48;                 % horizon & seasonality (assumed same)
 
 %% Forecast training options
-trainControl.nHidden = 13; %50;
+trainControl.nHidden = 5; %50;
 trainControl.suppressOutput = true;
 trainControl.nStart = 1; %3;
-trainControl.mseEpochs = 250; %1000; % No. of MSE epochs for pre-training
+trainControl.mseEpochs = 100; %1000; % No. of MSE epochs for pre-training
 trainControl.minimiseOverFirst = 48;  % # of fcast steps to minimise over
-trainControl.batchSize = 250; %1000;
-trainControl.maxTime = 4; %15;       % maximum training time in mins
-trainControl.maxEpochs = 250; %1000; % maximum No. of epochs
+trainControl.batchSize = 100; %1000;
+trainControl.maxTime = 2; %15;       % maximum training time in mins
+trainControl.maxEpochs = 100; %1000; % maximum No. of epochs
 trainControl.trainRatio = 0.9;        % to train each net on
 trainControl.nLags = k;
 trainControl.horizon = k;
@@ -39,15 +39,15 @@ trainControl.useHyndmanModel = false;
 trainControl.seasonality = k;
 
 % Forecast-free parameters
-Sim.nTrainShuffles = 2; %5;     % # of shuffles to consider
-Sim.nDaysSwap = 6; %25         % pairs of days to swap per shuffle
-Sim.nHidden = 60; %250;        % For the fcast free controller FFNN
+Sim.nTrainShuffles = 1; %5;     % # of shuffles to consider
+Sim.nDaysSwap = 3; %25         % pairs of days to swap per shuffle
+Sim.nHidden = 25; %250;        % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
-Pfem.alphas = [0.25, 1, 4];     % 2
-Pfem.betas = [0.25, 1, 4];      % 2
+Pfem.alphas = [1, 4];     % 2
+Pfem.betas = [1, 4];      % 2
 Pfem.gammas = [1, 4];       % 2
-Pfem.deltas = [0, 1, 2];        % 1
+Pfem.deltas = [1];        % 1
 
 % EMD Parameter Gridsearch points
 Pemd.as = 10;% [10, 40, 160];       % 10

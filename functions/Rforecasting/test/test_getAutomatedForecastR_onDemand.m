@@ -1,6 +1,6 @@
 %% Train and test 'R forecast' and plot performance VS NP forecast
 
-clear all; close all; clc;
+clearvars; close all; clc;
 
 % Start the clock!
 tic;
@@ -108,7 +108,8 @@ for ii =  1:length(nCustomers)
         figure();
         plot(MSEs_NP, 'r');
         plot(MSEs_Rets, 'y');
-        disp(['nCust: ', nCust, ', eachAgg: ', eachAgg, ', DONE!']);
+        disp(['nCust: ', num2str(nCust), ', eachAgg: ',...
+            num2str(eachAgg), ', DONE!']);
     end
 end
 

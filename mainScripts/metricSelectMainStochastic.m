@@ -10,7 +10,7 @@ commonFunctionFolder = [parentFold filesep 'functions'];
 addpath(genpath(commonFunctionFolder), '-BEGIN');
 
 %% Update compiled MEX Files (generally not required)
-if updateMex, compileMexes; end;
+% if updateMex, compileMexes; end;
 
 %% Read in DATA
 load(dataFileWithPath);
