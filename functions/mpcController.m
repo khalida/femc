@@ -52,8 +52,8 @@ for idx = 1:nIdxs;
         forecast = ones(size(demandDelays)).*demandNow;
     else
         % Produce forecast from input net
-        trainControl.suppressOutput = runControl.MPC.suppressOutput;
-        forecast = forecastHandle( pars, demandDelays, trainControl);
+        forecast = forecastHandle( pars, demandDelays, ...
+            runControl.MPC.trainControl);
     end
     
     forecastUsed(:, idx) = forecast;

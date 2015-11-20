@@ -11,7 +11,7 @@ addpath(genpath(commonFunctionFolder), '-BEGIN');
 
 %% Delete old and compile new mex files
 % if updateMex, compileMexes; end;
-% makeForecast = false;
+makeForecast = false;
 
 %% Extract useful demand data only
 if makeForecast
@@ -57,6 +57,7 @@ end
 
 %% Test All Forecasts:
 disp('======= FORECAST SELECTION / TESTING =======');
+MPC.trainControl = trainControl;
 [ Sim, results ] = testAllForecasts( pars, allDemandValues, Sim, ...
     Pemd, Pfem, MPC, k);
 

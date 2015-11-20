@@ -83,6 +83,7 @@ parfor instance = 1:nInstances
                 
                 timeTaken{instance}(methodTypeIdx) = toc(tempTic);
         end
+        disp([allMethodStrings{methodTypeIdx} ' training done!']);
     end
 end
 

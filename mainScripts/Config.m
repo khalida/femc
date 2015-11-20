@@ -45,16 +45,16 @@ Sim.nDaysSwap = 25; %25         % pairs of days to swap per shuffle
 Sim.nHidden = 250; %250;        % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
-Pfem.alphas = [0.25, 1, 4];     % 2
-Pfem.betas = [0.25, 1, 4];      % 2
-Pfem.gammas = [1, 4, 16];       % 2
-Pfem.deltas = [0, 1, 2];        % 1
+Pfem.alphas = [1, 4];     % 2
+Pfem.betas = [1, 4];      % 2
+Pfem.gammas = [1, 4];       % 2
+Pfem.deltas = [0, 1];        % 1
 
 % EMD Parameter Gridsearch points
-Pemd.as = [10, 40, 160];       % 10
-Pemd.bs = [0.5, 1, 2];         % 0.5
-Pemd.cs = [0.5, 1, 2];         % 0.5
-Pemd.ds = [1, 2, 4];           % 4
+Pemd.as = [10];       % 10
+Pemd.bs = [0.5];         % 0.5
+Pemd.cs = [0.5];         % 0.5
+Pemd.ds = [4];           % 4
 
 % Other loss functions to consider, and additional control methods:
 otherLossHandles = {@lossMse, @lossMape};
