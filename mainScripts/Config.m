@@ -4,16 +4,10 @@
 Sim.nCustomers = [5, 125];
 Sim.nAggregates = 2;
 Sim.nInstances = length(Sim.nCustomers) * Sim.nAggregates;
-<<<<<<< HEAD
-Sim.nProc = min(Sim.nInstances, 2);
-Sim.nStochasticForecasts = 5;        % 100;
-Sim.relativeSizeError = 1.0;
-=======
 Sim.nProc = min(Sim.nInstances, 4);
 Sim.nStochasticForecasts = 50;        % 100;
 Sim.relativeSizeError = 0.5;
 Sim.forecastModels = 'SARMA';         % 'SARMA', 'FFNN'
->>>>>>> d76d698f8e00ca933946ab7571d457e35149a3ae
 
 %% Battery Properties
 Sim.batteryCapacityRatio = 0.05;    % as fraction of daily average demand
@@ -28,16 +22,6 @@ Sim.hoursPerDay = 24;
 k = 48;                 % horizon & seasonality (assumed same)
 
 %% Forecast training options
-<<<<<<< HEAD
-trainControl.nHidden = 5; %50;
-trainControl.suppressOutput = true;
-trainControl.nStart = 1; %3;
-trainControl.mseEpochs = 100; %1000; % No. of MSE epochs for pre-training
-trainControl.minimiseOverFirst = 48;  % # of fcast steps to minimise over
-trainControl.batchSize = 100; %1000;
-trainControl.maxTime = 2; %15;       % maximum training time in mins
-trainControl.maxEpochs = 100; %1000; % maximum No. of epochs
-=======
 trainControl.nHidden = 50; %50;
 trainControl.suppressOutput = true;
 trainControl.nStart = 3; %3;
@@ -46,7 +30,6 @@ trainControl.minimiseOverFirst = 48;  % # of fcast steps to minimise over
 trainControl.batchSize = 1000; %1000;
 trainControl.maxTime = 15; %15;       % maximum training time in mins
 trainControl.maxEpochs = 1000; %1000; % maximum No. of epochs
->>>>>>> d76d698f8e00ca933946ab7571d457e35149a3ae
 trainControl.trainRatio = 0.9;        % to train each net on
 trainControl.nLags = k;
 trainControl.horizon = k;
@@ -57,27 +40,21 @@ trainControl.useHyndmanModel = false;
 trainControl.seasonality = k;
 
 % Forecast-free parameters
-<<<<<<< HEAD
-Sim.nTrainShuffles = 1; %5;     % # of shuffles to consider
-Sim.nDaysSwap = 3; %25         % pairs of days to swap per shuffle
-Sim.nHidden = 25; %250;        % For the fcast free controller FFNN
-=======
 Sim.nTrainShuffles = 5; %5;     % # of shuffles to consider
 Sim.nDaysSwap = 25; %25         % pairs of days to swap per shuffle
 Sim.nHidden = 250; %250;        % For the fcast free controller FFNN
->>>>>>> d76d698f8e00ca933946ab7571d457e35149a3ae
 
 % PFEM Parameter Gridsearch points
-Pfem.alphas = [1, 4];     % 2
-Pfem.betas = [1, 4];      % 2
-Pfem.gammas = [1, 4];       % 2
-Pfem.deltas = [1];        % 1
+Pfem.alphas = [0.25, 1, 4];     % 2
+Pfem.betas = [0.25, 1, 4];      % 2
+Pfem.gammas = [1, 4, 16];       % 2
+Pfem.deltas = [0, 1, 2];        % 1
 
 % EMD Parameter Gridsearch points
-Pemd.as = 10;% [10, 40, 160];       % 10
-Pemd.bs = 0.5;% [0.5, 1, 2];         % 0.5
-Pemd.cs = 0.5;% [0.5, 1, 2];         % 0.5
-Pemd.ds = 4;% [1, 2, 4];           % 4
+Pemd.as = [10, 40, 160];       % 10
+Pemd.bs = [0.5, 1, 2];         % 0.5
+Pemd.cs = [0.5, 1, 2];         % 0.5
+Pemd.ds = [1, 2, 4];           % 4
 
 % Other loss functions to consider, and additional control methods:
 otherLossHandles = {@lossMse, @lossMape};
