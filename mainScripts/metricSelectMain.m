@@ -13,11 +13,10 @@ addpath(genpath(commonFunctionFolder), '-BEGIN');
 % if updateMex, compileMexes; end;
 % makeForecast = false;
 
-%% Read in DATA
-load(dataFileWithPath);
-
 %% Extract useful demand data only
 if makeForecast
+    %% Read in DATA
+    load(dataFileWithPath);
     customerIdxs = cell(Sim.nInstances, 1);
     allDemandValues = cell(Sim.nInstances, 1);
     dataLengthRequired = (Sim.nDaysTrain + Sim.nDaysSelect +...
@@ -64,7 +63,7 @@ disp('======= FORECAST SELECTION / TESTING =======');
 %% Do Plotting
 disp('======= PLOTTING =======');
 
-plotAllResultsEdward(Sim, results, Pemd, Pfem);
+plotAllResultsMetricSelect(Sim, results, Pemd, Pfem);
 
 %% Save Results
 disp('======= SAVING =======');

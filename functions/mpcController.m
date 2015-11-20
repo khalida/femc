@@ -1,4 +1,4 @@
-function [ runningPeak, exitFlag, forecastUsed ] = mpcController( net, ...
+function [ runningPeak, exitFlag, forecastUsed ] = mpcController( pars, ...
     godCast, demand, batteryCapacity, maximumChargeRate, loadPattern, ...
     hourNum, stepsPerHour, k, runControl)
 
@@ -7,10 +7,19 @@ function [ runningPeak, exitFlag, forecastUsed ] = mpcController( net, ...
 
 % Set default MPC values if not given:
 runControl = setDefaultValues(runControl, {'MPC', 'default',...
-    'skipRun', false});
+    'skipRun', false, 'forecastModels', 'FFNN'});
 runControl.MPC = setDefaultValues(runControl.MPC,...
     {'SPrecourse', false, 'resetPeakToMean', false,...
     'billingPeriodDays', 1});
+
+% Select forecasting function handle
+if strcmp(runControl.forecastModels, 'FFNN')
+    forecastHandle = @forecastFfnn;
+elseif strcmp(runControl.forecastModels, 'SARMA')
+    forecastHandle = @forecastSarma;
+else
+    error('Selected runControl.forecastModels not implemented');
+end
 
 %% Initializations
 demandDelays = loadPattern;
@@ -44,8 +53,7 @@ for idx = 1:nIdxs;
     else
         % Produce forecast from input net
         trainControl.suppressOutput = runControl.MPC.suppressOutput;
-        forecast = forecastFfnn( net, demandDelays, ...
-            trainControl);
+        forecast = forecastHandle( pars, demandDelays, trainControl);
     end
     
     forecastUsed(:, idx) = forecast;

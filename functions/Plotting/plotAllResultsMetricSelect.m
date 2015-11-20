@@ -1,6 +1,6 @@
-function plotAllResultsEdward( Sim, results, Pemd, Pfem)
+function plotAllResultsMetricSelect( Sim, results, Pemd, Pfem)
 
-% plotAllResultsEdward: Plot outputs from 'trainAllForecasts' and
+% plotAllResultsMetricSelect: Plot outputs from 'trainAllForecasts' and
 % 'testAllFcasts' functions.
 
 % Expand fields (of data structures)
