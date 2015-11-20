@@ -8,6 +8,7 @@
 Config
 Sim.nCustomers = [10, 1000];
 Sim.nInstances = Sim.nAggregates*length(Sim.nCustomers);
+trainControl.minimiseOverFirst = 1;
 
 %% Add path to the common functions (& any subfolders therein)
 [parentFold, ~, ~] = fileparts(pwd);
@@ -93,9 +94,12 @@ for nCustIdx = 1:length(Sim.nCustomers)
         customers = Sim.nCustomers(nCustIdx);
         customerIdxs = ...
             randsample(size(demandData, 2), customers);
+        
         allDemandValues(instance, :) = ...
             sum(demandData(:, customerIdxs), 2);
+        
         allKWhs(instance) = mean(allDemandValues(instance, :));
+        
         for ii = 1:nTests
             testIdx = (trainLength+ii):(trainLength+ii+testLength-1);
             actualValuesAll(instance, :, ii) = allDemandValues(instance, testIdx)';
@@ -130,8 +134,10 @@ parfor instance = 1:Sim.nInstances
         actual = actualValuesAll(instance, ...
             1:trainControl.minimiseOverFirst, ii)'; %#ok<PFBNS>
         for eachMethod = 1:nTrainedMethods
-            tempForecast = forecastHandles{eachMethod}(pars{instance}{eachMethod},...
+            tempForecast = ...
+                forecastHandles{eachMethod}(pars{instance}{eachMethod},...
                 historicData, trainControl); %#ok<PFBNS>
+            
             forecastValues{instance}(eachMethod, ii, :) = ...
                 tempForecast(1:testLength);
         end
