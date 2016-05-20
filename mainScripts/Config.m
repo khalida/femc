@@ -14,41 +14,41 @@ Sim.batteryCapacityRatio = 0.05;    % as fraction of daily average demand
 Sim.batteryChargingFactor = 1;      % ratio of charge rate to capacity
 
 %% Simulation Duration and properties
-Sim.nDaysTrain = 200;       %200;   % days of historic demand data
-Sim.nDaysSelect = 56;       %56;    % to select forecast parameters
-Sim.nDaysTest = 56;         %56;    % days to run simulation for
+Sim.nDaysTrain = 10;       %200;   % days of historic demand data
+Sim.nDaysSelect = 5;       %56;    % to select forecast parameters
+Sim.nDaysTest = 5;         %56;    % days to run simulation for
 Sim.stepsPerHour = 2;       % Half-hourly data
 Sim.hoursPerDay = 24;
 k = 48;                 % horizon & seasonality (assumed same)
 
 %% Forecast training options
-trainControl.nHidden = 50; %50;
+trainControl.nHidden = 5; %50;
 trainControl.suppressOutput = true;
-trainControl.nStart = 3; %3;
-trainControl.mseEpochs = 1000; %1000; % No. of MSE epochs for pre-training
+trainControl.nStart = 1; %3;
+trainControl.mseEpochs = 10; %1000; % No. of MSE epochs for pre-training
 trainControl.minimiseOverFirst = 48;  % # of fcast steps to minimise over
-trainControl.batchSize = 1000; %1000;
-trainControl.maxTime = 15; %15;       % maximum training time in mins
-trainControl.maxEpochs = 1000; %1000; % maximum No. of epochs
+trainControl.batchSize = 10; %1000;
+trainControl.maxTime = 1; %15;       % maximum training time in mins
+trainControl.maxEpochs = 10; %1000; % maximum No. of epochs
 trainControl.trainRatio = 0.9;        % to train each net on
 trainControl.nLags = k;
 trainControl.horizon = k;
-trainControl.performanceDifferenceThreshold = 0.02;
-trainControl.nBestToCompare = 3;
-trainControl.nDaysPreviousTrainSarma = 20;
+trainControl.performanceDifferenceThreshold = 0.1;
+trainControl.nBestToCompare = 1;
+trainControl.nDaysPreviousTrainSarma = 10;
 trainControl.useHyndmanModel = false;
 trainControl.seasonality = k;
 
 % Forecast-free parameters
-Sim.nTrainShuffles = 5; %5;     % # of shuffles to consider
-Sim.nDaysSwap = 25; %25         % pairs of days to swap per shuffle
-Sim.nHidden = 250; %250;        % For the fcast free controller FFNN
+Sim.nTrainShuffles = 1; %5;     % # of shuffles to consider
+Sim.nDaysSwap = 1; %25         % pairs of days to swap per shuffle
+Sim.nHidden = 10; %250;        % For the fcast free controller FFNN
 
 % PFEM Parameter Gridsearch points
-Pfem.alphas = [1, 4];     % 2
-Pfem.betas = [1, 4];      % 2
-Pfem.gammas = [1, 4];       % 2
-Pfem.deltas = [0, 1];        % 1
+Pfem.alphas = [2];     % 2
+Pfem.betas = [2];      % 2
+Pfem.gammas = [2];       % 2
+Pfem.deltas = [1];        % 1
 
 % EMD Parameter Gridsearch points
 Pemd.as = [10];       % 10
@@ -68,7 +68,7 @@ MPC.clipNegativeFcast = true;
 MPC.iterationFactor = 1.0;		% To apply to default maximum iterations
 MPC.rewardMargin = false;% true;		% Reward margin from creating a new peak?
 MPC.SPrecourse = true;			% whether or not to allow setPoint recourse
-MPC.billingPeriodDays = 7;
+MPC.billingPeriodDays = 1;
 MPC.resetPeakToMean = false;
 MPC.maxParForTypes = 4;
 MPC.chargeWhenCan = false;

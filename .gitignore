@@ -6,7 +6,17 @@
 *.txt
 *.RData
 .Rproj.user
+.Rproj.user/
 *.csv
 *.mexw64
 *.mexa64
 *.zip
+*.pdf
+*.asv
+tmp/
+*.fig
+*.jpg
+*.eps
+*.png
+*.tiff
+results/
