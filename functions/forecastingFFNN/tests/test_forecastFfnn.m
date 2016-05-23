@@ -21,17 +21,17 @@ testValues = dataValues(testIdxs);
 [trainFeatureVectors, trainResponseVectors] = ...
     computeFeatureResponseVectors(trainValues,periodLength,periodLength);
 
-trainControl.suppressOutput = false;
-trainControl.nHidden = 10;
-trainControl.mseEpochs = 1000;
-trainControl.minimiseOverFirst = 1;
-trainControl.maxTime = 5;
-trainControl.maxEpochs = 200;
+cfg.fc.suppressOutput = false;
+cfg.fc.nHidden = 10;
+cfg.fc.mseEpochs = 1000;
+cfg.fc.minimiseOverFirst = 1;
+cfg.fc.maxTime = 5;
+cfg.fc.maxEpochs = 200;
 
 net = trainFfnn( trainFeatureVectors, trainResponseVectors, @lossMse, ...
-    trainControl);
+    cfg.fc);
 
-testResponses = forecastFfnn(net, trainValues, trainControl);
+testResponses = forecastFfnn(cfg, net, trainValues);
 
 mseError = lossMse(testValues(1:periodLength, :), testResponses);
 meanMseError = mean(mseError);

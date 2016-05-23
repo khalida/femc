@@ -12,13 +12,13 @@ percentThreshold = 0.2;
 [demand, periodLength] = getNoisySinusoid();
 demand = demand + 10;
 
-trainControl.suppressOutput = suppressOutput;
-trainControl.useHyndmanModel = true;
-trainControl.minimiseOverFirst = periodLength;
-trainControl.nDaysPreviousTrainSarma = 20;
-trainControl.performanceDifferenceThreshold = 0.02;
-trainControl.nBestToCompare = 3;
-trainControl.nLags = periodLength;
+cfg.fc.suppressOutput = suppressOutput;
+cfg.fc.useHyndmanModel = true;
+cfg.fc.minimiseOverFirst = periodLength;
+cfg.fc.nDaysPreviousTrainSarma = 20;
+cfg.fc.performanceDifferenceThreshold = 0.02;
+cfg.fc.nBestToCompare = 3;
+cfg.fc.nLags = periodLength;
 
 demandTrain = demand(1:(end-periodLength));
 demandTest = demand((end-periodLength+1):end);
@@ -26,10 +26,9 @@ demandTest = demand((end-periodLength+1):end);
 
 %% Test Hyndman model:
 tic;
-[ parametersHyndman ] = trainSarma( demandTrain, @lossMse, trainControl);
+[ parametersHyndman ] = trainSarma( cfg, demandTrain, @lossMse);
 hyndmanTrainTime = toc;
-forecastHyndman = forecastSarma(parametersHyndman, demandTrain, ...
-    trainControl);
+forecastHyndman = forecastSarma(cfg, parametersHyndman, demandTrain);
 
 %% Numerical pass-fail:
 absolutePercentageErrorsHyndman = abs(forecastHyndman(:) - ...
@@ -45,10 +44,9 @@ disp(['hyndman training time [s] = ' num2str(hyndmanTrainTime)]);
 %% Test Sevlian et. al model:
 trainControl.useHyndmanModel = false;
 tic;
-[ parametersSevlian ] = trainSarma( demandTrain, @lossMse, trainControl);
+[ parametersSevlian ] = trainSarma(cfg, demandTrain, @lossMse);
 sevlianTrainTime = toc;
-forecastSevlian = forecastSarma(parametersSevlian, demandTrain, ...
-    trainControl);
+forecastSevlian = forecastSarma(cfg, parametersSevlian, demandTrain);
 absolutePercentageErrorsSevlian = abs(forecastSevlian(:) - ...
     demandTest) ./ abs(demandTest);
 

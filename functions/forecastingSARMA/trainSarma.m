@@ -5,12 +5,12 @@
 %               minimise that loss function.
 
 %% Train SARMA model
-function parametersOut = trainSarma( demand, lossType, trainControl)
+function parametersOut = trainSarma(cfg, demand, lossType)
 
 % INPUTS
 % demand:       time history of demands on which to train the model [T x 1]
 % lossType:     is a handle to the loss function
-% trainControl: is a structure with various train control parameters
+% cfg.fc: is a structure with various train control parameters
 
 % OUTPUTS
 % parametersOut: are the optimal parameters found by the training
@@ -27,16 +27,16 @@ upperBound = 1 - eps;
 % No. of random initializations to try, increased if results differ
 nInitializations = 3;
 maxInitializations = 20;
-k = trainControl.nLags;
+k = cfg.fc.nLags;
 
-% Set some default values in trainControl (if not already set)
-trainControl = setDefaultValues(trainControl, ...
+% Set some default values in cfg.fc (if not already set)
+cfg.fc = setDefaultValues(cfg.fc, ...
     {'nDaysPreviousTrainSarma', 20});
 
 % Limit training length to 20-days
 % (based on testing with aggregations of 20 customers)
-if length(demand) > (trainControl.nDaysPreviousTrainSarma*k)
-    demand = demand((end-trainControl.nDaysPreviousTrainSarma*k +...
+if length(demand) > (cfg.fc.nDaysPreviousTrainSarma*k)
+    demand = demand((end-cfg.fc.nDaysPreviousTrainSarma*k +...
         1):end);
 end
 
@@ -50,8 +50,8 @@ allLoss = zeros(nInitializations, 1);
 allLowerBounds = lowerBound.*ones(size(allParametersInitial(1,:)));
 allUpperBounds = upperBound.*ones(size(allParametersInitial(1,:)));
 
-% Handle trainControl settings, set to default values when not specified
-trainControl = setDefaultValues( trainControl,...
+% Handle cfg.fc settings, set to default values when not specified
+cfg.fc = setDefaultValues( cfg.fc,...
     {'suppressOutput', false, 'performanceDifferenceThreshold', 0.02, ...
     'nBestToCompare', 3, 'useHyndmanModel', false});
 
@@ -60,21 +60,21 @@ for iInit = 1:nInitializations;
     thisParametersInitial = allParametersInitial(iInit, :);
     
     %% Minimise the selected loss function
-    if(~trainControl.suppressOutput)
+    if(~cfg.fc.suppressOutput)
         options = optimoptions(@fmincon,'Display', 'iter');
     else
         options = optimoptions(@fmincon,'Display', 'off');
     end
     
     % Set any custom parameters which are selected
-    if isfield(trainControl, 'TolFun'),
-        options.TolFun = trainControl.TolFun; end
-    if isfield(trainControl, 'TolCon');
-        options.TolCon = trainControl.TolCon; end
-    if isfield(trainControl, 'TolX');
-        options.TolX = trainControl.TolX; end
-    if isfield(trainControl, 'TolProjCGAbs');
-        options.TolProjCGAbs = trainControl.TolProjCGAbs; end
+    if isfield(cfg.fc, 'TolFun'),
+        options.TolFun = cfg.fc.TolFun; end
+    if isfield(cfg.fc, 'TolCon');
+        options.TolCon = cfg.fc.TolCon; end
+    if isfield(cfg.fc, 'TolX');
+        options.TolX = cfg.fc.TolX; end
+    if isfield(cfg.fc, 'TolProjCGAbs');
+        options.TolProjCGAbs = cfg.fc.TolProjCGAbs; end
     
     [allParametersFinal(iInit, :), allLoss(iInit, :)] = fmincon(...
         @deParameterizedLossSarma, thisParametersInitial, ...
@@ -87,10 +87,10 @@ end
 % and associated parameters in subsequent columns
 resultsMatrix = [allLoss, allParametersFinal];
 resultsMatrix = sortrows(resultsMatrix, 1);
-bestLoss = resultsMatrix(1:trainControl.nBestToCompare, 1);
+bestLoss = resultsMatrix(1:cfg.fc.nBestToCompare, 1);
 percentageDifference = (max(bestLoss) - min(bestLoss))./min(bestLoss);
 outsideTolerance = percentageDifference > ...
-    trainControl.performanceDifferenceThreshold;
+    cfg.fc.performanceDifferenceThreshold;
 
 while outsideTolerance && size(resultsMatrix, 1) < maxInitializations
     numRows = size(resultsMatrix, 1);
@@ -101,7 +101,7 @@ while outsideTolerance && size(resultsMatrix, 1) < maxInitializations
             (upperBound-lowerBound)*rand(1, nParameters);
         
         %% Minimise the selected loss function
-        if(~trainControl.suppressOutput)
+        if(~cfg.fc.suppressOutput)
             options = optimoptions(@fmincon,'Display', 'iter');
         else
             options = optimoptions(@fmincon,'Display', 'off');
@@ -114,17 +114,17 @@ while outsideTolerance && size(resultsMatrix, 1) < maxInitializations
     end
     
     resultsMatrix = sortrows(resultsMatrix, 1);
-    bestLoss = resultsMatrix(1:trainControl.nBestToCompare, 1);
+    bestLoss = resultsMatrix(1:cfg.fc.nBestToCompare, 1);
     percentageDifference = (max(bestLoss) - min(bestLoss))./min(bestLoss);
     outsideTolerance = percentageDifference > ...
-        trainControl.performanceDifferenceThreshold;
+        cfg.fc.performanceDifferenceThreshold;
 end
 
 % Select best model (will be at top as resultsMatrix has been sorted)
 bestLoss = resultsMatrix(1, 1);
 bestParameters = resultsMatrix(1, 2:end);
 
-if(~trainControl.suppressOutput); disp(bestLoss); end
+if(~cfg.fc.suppressOutput); disp(bestLoss); end
 
 % If we have run into maximum number if initializations
 % display the losses of all initializations:
@@ -136,7 +136,7 @@ end
 %% Loss function for selected loss type,
 % as a function of only the current parameter settings
     function [loss] = deParameterizedLossSarma (parameters)
-        allLosses = lossSarma(parameters, demand, lossType, k, trainControl);
+        allLosses = lossSarma(cfg, parameters, demand, lossType);
         loss = mean(allLosses);
     end
 

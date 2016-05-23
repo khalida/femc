@@ -1,8 +1,10 @@
 function plotCompareForecasts(allMetrics, allKWhs, forecastTypeStrings,...
-    forecastMetrics, nCustomers, savePlots)
+    forecastMetrics, cfg)
 
 % For each type of loss plot the performance of the forecasts on the
 % test data
+nCustomers = cfg.sim.nCustomers;
+savePlots = cfg.plt.savePlots;
 
 % Plotting options:
 myPaperPosition = [-0.75 -0.25 19 15];
@@ -179,11 +181,11 @@ if savePlots
     % [Absolute MAPE plot, Rel. MSE BoxPlot, Rel PFEM BoxPlot,...
     % Rel PEMD BoxPlot]
     figureNums = [102 301 303 304 101];
-    fileNames = {['..' filesep 'results' filesep 'absoluteMapePlot.pdf'], ...
-        ['..' filesep 'results' filesep 'relativeMseBoxPlot.pdf'], ...
-        ['..' filesep 'results' filesep 'relativePfemBoxPlot.pdf'], ...
-        ['..' filesep 'results' filesep 'relativePemdBoxPlot.pdf'], ...
-        ['..' filesep 'results' filesep 'absoluteMsePlot.pdf']};
+    fileNames = {[cfg.sav.resultsDir filesep 'absoluteMapePlot.pdf'], ...
+        [cfg.sav.resultsDir filesep 'relativeMseBoxPlot.pdf'], ...
+        [cfg.sav.resultsDir filesep 'relativePfemBoxPlot.pdf'], ...
+        [cfg.sav.resultsDir filesep 'relativePemdBoxPlot.pdf'], ...
+        [cfg.sav.resultsDir filesep 'absoluteMsePlot.pdf']};
     
     for figNumIdx = 1:length(figureNums)
         figNum = figureNums(figNumIdx);
@@ -232,7 +234,7 @@ if savePlots
         end
         
         saveas(gcf, fileNames{figNumIdx}, 'pdf');
-        
+        plotAsTikz([fileNames{figNumIdx}((1:(end-3))) 'tikz']);
     end
 end
 

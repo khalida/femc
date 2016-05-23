@@ -3,8 +3,7 @@
 % date: 21/10/2015
 % brief: Produce k-step forecast using pre-trained SARMA model
 
-function [ forecast ] = forecastSarma(parameters, demand, ...
-    trainControl)
+function [ forecast ] = forecastSarma(cfg, parameters, demand)
 %forecastSarma k-Step forecast using SARMA(3,0)x(1,0)
 
 % INPUTS
@@ -14,6 +13,8 @@ function [ forecast ] = forecastSarma(parameters, demand, ...
 
 % OUTPUTS
 % forecast:      [k x 1] array of point forecast values
+
+trainControl = cfg.fc;
 
 suppressOutput = trainControl.suppressOutput;
 useHyndmanModel = trainControl.useHyndmanModel;

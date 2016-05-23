@@ -1,10 +1,10 @@
-function plotAllResultsMetricSelect( Sim, results, Pemd, Pfem)
+function plotAllResultsMetricSelect(cfg, results)
 
 % plotAllResultsMetricSelect: Plot outputs from 'trainAllForecasts' and
 % 'testAllFcasts' functions.
 
 % Expand fields (of data structures)
-allKWhs = results.allKWhs;
+meanKWhs = results.meanKWhs;
 peakReductionsTrialFlattened = results.peakReductionsTrialFlattened;
 smallestExitFlag = results.smallestExitFlag;
 peakReductions = results.peakReductions;
@@ -13,16 +13,16 @@ lossTestResults = results.lossTestResults;
 bestPfemForecast = results.bestPfemForecast;
 bestPemdForecast = results.bestPemdForecast;
 
-nDaysTrain = Sim.nDaysTrain;
-nDaysTest = Sim.nDaysTest;
-nDaysSelect = Sim.nDaysSelect;
+nDaysTrain = cfg.sim.nDaysTrain;
+nDaysTest = cfg.sim.nDaysTest;
+nDaysSelect = cfg.sim.nDaysSelect;
 
-allMethodStrings = Sim.allMethodStrings;
-nMethods = Sim.nMethods;
-nInstances = Sim.nInstances;
-nAggregates = Sim.nAggregates;
-nCustomers = Sim.nCustomers;
-nTrainMethods = Sim.nTrainMethods;
+allMethodStrings = cfg.fc.allMethodStrings;
+nMethods = cfg.sim.nMethods;
+nInstances = cfg.sim.nInstances;
+nAggregates = cfg.sim.nAggregates;
+nCustomers = cfg.sim.nCustomers;
+nTrainMethods = cfg.fc.nTrainMethods;
 
 %% 1) Plot all individual peak reduction ratios VS Aggregation Size
 % With subplots for absolute and relative performance
@@ -31,11 +31,11 @@ fig_1 = figure();
 
 % Absolute Peak Reduction Ratios
 subplot(1, 2, 1);
-plot(allKWhs(:), peakReductionsTrialFlattened', '.', 'markers', 20);
+plot(meanKWhs(:), peakReductionsTrialFlattened', '.', 'markers', 20);
 hold on;
 % Plot warning circles about optimality
 warnPeakReductions = peakReductionsTrialFlattened(smallestExitFlag < 1);
-extendedKWhs = repmat(allKWhs(:)', [nMethods, 1]);
+extendedKWhs = repmat(meanKWhs(:)', [nMethods, 1]);
 warnkWhs = extendedKWhs(smallestExitFlag < 1);
 if (isempty(warnkWhs))
     warnkWhs = -1;
@@ -62,7 +62,7 @@ peakReductionsRelative = peakReductions./repmat(...
 peakReductionsRelativeTrialFlattened = reshape(peakReductionsRelative,...
     [nMethods, nInstances]);
 
-plot(allKWhs(:), peakReductionsRelativeTrialFlattened', '.', 'markers', 20)
+plot(meanKWhs(:), peakReductionsRelativeTrialFlattened', '.', 'markers', 20)
 hold on
 % Plot warning circles about optimality
 warnPeakReductions = peakReductionsRelativeTrialFlattened(...
@@ -77,22 +77,26 @@ legend([allMethodStrings, {'Some intervals not solved to optimality'}],...
     'Location', 'best', 'Orientation', 'vertical', 'Interpreter', 'none');
 
 hold off;
-print(fig_1, '-dpdf', ['..' filesep 'results' filesep ...
-    'allPrrResults.pdf']);
+print(fig_1, '-dpdf', [cfg.sav.resultsDir filesep 'allPrrResults.pdf']);
 
 %% 2) Plot Absolute PRR against aggregation size (as means +/- error bars)
 
 fig_2 = figure();
 
-selectedForecasts = setdiff(1:nMethods, [Pfem.range, Pemd.range]);
+selectedForecasts = setdiff(1:nMethods, [cfg.fc.Pfem.range, ...
+    cfg.fc.Pemd.range]);
+
 selectedForecastLabels = allMethodStrings(selectedForecasts);
 meanPeakReductions = ...    % nCustomers X forecastTypes
     squeeze(mean(peakReductions(selectedForecasts, :, :), 2));
+
 stdPeakReductions = ...
     squeeze(std(peakReductions(selectedForecasts, :, :),[], 2));
-meanKWhs = mean(allKWhs, 1); % nCustomers X 1
+
+meanKWhs = mean(meanKWhs, 1); % nCustomers X 1
 errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
     meanPeakReductions',stdPeakReductions','.-', 'markers', 20);
+
 xlabel('Mean Load [kWh/interval]');
 ylabel('Mean PRR, with +/- 1.0 std. dev.');
 legend(selectedForecastLabels, 'Interpreter', 'none',...
@@ -100,7 +104,7 @@ legend(selectedForecastLabels, 'Interpreter', 'none',...
 grid on;
 hold off;
 
-print(fig_2, '-dpdf', ['..' filesep 'results' filesep ...
+print(fig_2, '-dpdf', [cfg.sav.resultsDir filesep ...
     'absolutePrrVsAggregationSize.pdf']);
 
 
@@ -121,7 +125,7 @@ legend(selectedForecastLabels, 'Interpreter', 'none',...
 grid on;
 hold off;
 
-print(fig_3, '-dpdf', ['..' filesep 'results' filesep ...
+print(fig_3, '-dpdf', [cfg.sav.resultsDir filesep ...
     'relativePrrVsAggregationSize.pdf']);
 
 %% 4) BoxPlots of Rel/Abs PRR for each Method (across all instances)
@@ -145,7 +149,7 @@ boxplot(peakReductionsRelativeFlattened', 'labels', ...
 ylabel('Mean PRR relative to perfect forecast');
 grid on;
 
-print(fig_4, '-dpdf', ['..' filesep 'results' filesep ...
+print(fig_4, '-dpdf', [cfg.sav.resultsDir filesep ...
     'allPrrResultsBoxPlot.pdf']);
 
 %% 5) Plots showing performace of each Forecast Against the different
@@ -162,14 +166,14 @@ for eachNcust = 1:length(nCustomers)
     for eachAgg = 1:nAggregates;
         instance = instance + 1;
         
-        if Pfem.num > 0
+        if cfg.fc.Pfem.num > 0
             for eachMethod = 1:nMethods
                 lossTestResults(eachMethod, eachAgg, eachNcust, ...
                     nTrainMethods+1) = lossTestResults(eachMethod, eachAgg, ...
                     eachNcust, bestPfemForecast(instance));
             end
         end
-        if Pemd.num > 0
+        if cfg.fc.Pemd.num > 0
             for eachMethod = 1:nMethods
                 lossTestResults(eachMethod, eachAgg, eachNcust, ...
                     nTrainMethods+2) = lossTestResults(eachMethod, eachAgg, ...
@@ -185,10 +189,10 @@ lossTestResultsStdOverTrials = squeeze(std(lossTestResults, [], 2));
 % Find indexes of metrics to plot
 % TODO: Sort this out: currently a bit of hack!)
 metricsToPlotStrings = {'lossMse', 'lossMape'};
-if Pfem.num > 0
+if cfg.fc.Pfem.num > 0
     metricsToPlotStrings = [metricsToPlotStrings, {'bestPfemSelected'}];
 end
-if Pemd.num > 0
+if cfg.fc.Pemd.num > 0
     metricsToPlotStrings = [metricsToPlotStrings, {'bestPemdSelected'}];
 end
 
@@ -232,7 +236,7 @@ for eachMetricIdxIdx = 1:length(metricsToPlotIdx)
     title(metricsToPlotStrings{eachMetricIdxIdx}, 'Interpreter', 'none');
 end
 
-print(fig_5, '-dpdf', ['..' filesep 'results' filesep...
+print(fig_5, '-dpdf', [cfg.sav.resultsDir filesep...
     'allForecastPerformances.pdf']);
 
 end

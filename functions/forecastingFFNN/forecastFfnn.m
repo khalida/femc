@@ -4,7 +4,7 @@
 % brief: Given a neural network and some new inputs for a fcast origin,
 %       create a new forecast.
 
-function [ forecast ] = forecastFfnn( net, demand, trainControl )
+function [ forecast ] = forecastFfnn( cfg, net, demand)
 
 % INPUT:
 % net: MATLAB trained neural network object
@@ -13,6 +13,8 @@ function [ forecast ] = forecastFfnn( net, demand, trainControl )
 
 % OUPUT:
 % forecast: output forecast [nResponses x nObservations]
+
+trainControl = cfg.fc;
 
 suppressOutput = trainControl.suppressOutput;
 

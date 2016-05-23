@@ -1,36 +1,35 @@
 % file: compareForecasts.m
 % auth: Khalid Abdulla
-% date: 6/11/2015
+% date: 20/05/2016
 % brief: Evaluate various forecast models trained on various
 %           error metrics (over a number of aggregation levels)
+clearvars; close all; clc;
 
 %% Load Config (includes seeding rng)
-Config
-Sim.nCustomers = [10, 1000];
-Sim.nInstances = Sim.nAggregates*length(Sim.nCustomers);
-trainControl.minimiseOverFirst = 1;
+cfg = Config(pwd);
+cfg.sim.nCustomers = [1, 10, 100, 1000];
+cfg.sim.nInstances = cfg.sim.nAggregates*length(cfg.sim.nCustomers);
+cfg.fc.minimiseOverFirst = 48;
 
 %% Add path to the common functions (& any subfolders therein)
-[parentFold, ~, ~] = fileparts(pwd);
-commonFunctionFolder = [parentFold filesep 'functions'];
-addpath(genpath(commonFunctionFolder), '-BEGIN');
+LoadFunctions;
 
 % if updateMex, compileMexes; end;
 saveFileName = ['..' filesep 'results' filesep ...
-    '2015_11_08_compareForecast_compareR.mat'];
+    '2016_05_20_compareForecast_compareR.mat'];
 
 %% Set-up // workers
 poolobj = gcp('nocreate');
 delete(poolobj);
-poolObj = parpool('local', Sim.nProc);
+poolObj = parpool('local', cfg.sim.nProc);
 
 %% Read in DATA
-load(dataFileWithPath); % demandData is [nTimestamp x nMeters] array
+load(cfg.sim.dataFileWithPath); % demandData is [nTimestamp x nMeters]
 
 %% Forecast parameters
-trainLength = Sim.nDaysTrain*Sim.stepsPerHour*Sim.hoursPerDay;
-testLength = k;
-nTests = (Sim.nDaysTest-1)*testLength + 1;
+trainLength = cfg.sim.nDaysTrain*cfg.sim.stepsPerHour*cfg.sim.hoursPerDay;
+testLength = cfg.sim.k;
+nTests = (cfg.sim.nDaysTest-1)*testLength + 1;
 
 %% Forecast Models & Error Metrics
 unitLossPfem = @(t, y) lossPfem(t, y, [2, 2, 2, 1]);
@@ -63,35 +62,35 @@ nMetrics = length(forecastMetrics);
 nTrainedMethods = length(lossTypes);
 
 % Set up 'instances matrix'
-allDemandValues = zeros(Sim.nInstances, size(demandData, 1));
-allKWhs = zeros(Sim.nInstances, 1);
+allDemandValues = zeros(cfg.sim.nInstances, size(demandData, 1));
+allKWhs = zeros(cfg.sim.nInstances, 1);
 
 % Cell array of forecast parameters
 % Done as cellArrays of arrays to prevent issues with //-isation
-pars = cell(1, Sim.nInstances);
-forecastValues = cell(Sim.nInstances, 1);
-allMetrics = cell(Sim.nInstances, 1);
-for instance = 1:Sim.nInstances
+pars = cell(1, cfg.sim.nInstances);
+forecastValues = cell(cfg.sim.nInstances, 1);
+allMetrics = cell(cfg.sim.nInstances, 1);
+for instance = 1:cfg.sim.nInstances
     pars{instance} = cell(length(trainingHandles));
     forecastValues{instance} = zeros(nMethods, nTests, testLength);
     allMetrics{instance} = zeros(nMethods, length(forecastMetrics));
 end
 
 % Allocate half-hour-of-day indexes
-hourNumber = mod((1:size(demandData, 1))', k);
+hourNumber = mod((1:size(demandData, 1))', cfg.sim.k);
 hourNumberTrain = hourNumber(1:trainLength);
-trainControl.hourNumberTrain = hourNumberTrain;
+cfg.fc.hourNumberTrain = hourNumberTrain;
 hourNumberTest = zeros(testLength, nTests);
 
 % Test Data
-actualValuesAll = zeros(Sim.nInstances, testLength, nTests);
+actualValuesAll = zeros(cfg.sim.nInstances, testLength, nTests);
 
 % Prepare data for all instances
 instance = 0;
-for nCustIdx = 1:length(Sim.nCustomers)
-    for trial = 1:Sim.nAggregates
+for nCustIdx = 1:length(cfg.sim.nCustomers)
+    for trial = 1:cfg.sim.nAggregates
         instance = instance + 1;
-        customers = Sim.nCustomers(nCustIdx);
+        customers = cfg.sim.nCustomers(nCustIdx);
         customerIdxs = ...
             randsample(size(demandData, 2), customers);
         
@@ -102,7 +101,9 @@ for nCustIdx = 1:length(Sim.nCustomers)
         
         for ii = 1:nTests
             testIdx = (trainLength+ii):(trainLength+ii+testLength-1);
-            actualValuesAll(instance, :, ii) = allDemandValues(instance, testIdx)';
+            actualValuesAll(instance, :, ii) = ...
+                allDemandValues(instance, testIdx)';
+            
             hourNumberTest(:, ii) = hourNumber(testIdx);
         end
     end
@@ -110,8 +111,8 @@ end
 
 % Produce the forecasts
 tic;
-parfor instance = 1:Sim.nInstances
-% for instance = 1:Sim.nInstances
+parfor instance = 1:cfg.sim.nInstances
+% for instance = 1:cfg.sim.nInstances
   
     y = allDemandValues(instance, :)';
     
@@ -121,8 +122,8 @@ parfor instance = 1:Sim.nInstances
     %% Train forecast parameters
     for ii = 1:nTrainedMethods
         disp(forecastTypeStrings{ii}); %#ok<PFBNS>
-        pars{instance}{ii} = trainingHandles{ii}(yTrain, lossTypes{ii},...
-            trainControl); %#ok<PFBNS>
+        pars{instance}{ii} = trainingHandles{ii}(cfg, yTrain,...
+            lossTypes{ii}); %#ok<PFBNS>
     end
     
     %% Make forecasts, for the nTests (and every forecast type)
@@ -132,11 +133,11 @@ parfor instance = 1:Sim.nInstances
     
     for ii = 1:nTests
         actual = actualValuesAll(instance, ...
-            1:trainControl.minimiseOverFirst, ii)'; %#ok<PFBNS>
+            1:cfg.fc.minimiseOverFirst, ii)'; %#ok<PFBNS>
         for eachMethod = 1:nTrainedMethods
             tempForecast = ...
-                forecastHandles{eachMethod}(pars{instance}{eachMethod},...
-                historicData, trainControl); %#ok<PFBNS>
+                forecastHandles{eachMethod}(cfg, ...
+                pars{instance}{eachMethod}, historicData); %#ok<PFBNS>
             
             forecastValues{instance}(eachMethod, ii, :) = ...
                 tempForecast(1:testLength);
@@ -144,17 +145,17 @@ parfor instance = 1:Sim.nInstances
         
         % Naive periodic forecast
         NPidx = find(ismember(forecastTypeStrings, 'NP'));
-        tempForecast = historicData((end-k+1):end);
+        tempForecast = historicData((end-cfg.sim.k+1):end);
         forecastValues{instance}(NPidx, ii, :) = ...
             tempForecast(1:testLength);
         
         % 'R forecast':
         ETSidx = find(ismember(forecastTypeStrings, 'R ETS'));
         
-        [tmpEts] = getAutomatedForecastR(historicData, trainControl);
+        [tmpEts] = getAutomatedForecastR(historicData, cfg.fc);
         
         forecastValues{instance}(ETSidx, ii, ...
-            1:trainControl.minimiseOverFirst) = tmpEts';
+            1:cfg.fc.minimiseOverFirst) = tmpEts';
         
         % Compute error metrics (for each test, and method):
         for eachMethod = 1:nMethods
@@ -162,7 +163,7 @@ parfor instance = 1:Sim.nInstances
                 tempMetrics(eachMethod, ii, eachError) = ...
                     lossTypes{eachError}(actual, ...
                     squeeze(forecastValues{instance}(eachMethod, ii, ...
-                    1:trainControl.minimiseOverFirst)));
+                    1:cfg.fc.minimiseOverFirst)));
             end
         end
         
@@ -191,14 +192,14 @@ end
 toc;
 
 
-%% Reshape data to be grouped by  nCusteromers
+%% Reshape data to be grouped by  nCustomers
 % Done using loop to avoid transposition confusion
-allMetricsArray = zeros(Sim.nAggregates, length(Sim.nCustomers), ...
+allMetricsArray = zeros(cfg.sim.nAggregates, length(cfg.sim.nCustomers), ...
     nMethods, length(forecastMetrics));
 
 instance = 0;
-for nCustIdx = 1:length(Sim.nCustomers)
-    for trial = 1:Sim.nAggregates
+for nCustIdx = 1:length(cfg.sim.nCustomers)
+    for trial = 1:cfg.sim.nAggregates
         instance = instance + 1;
         for iMethod = 1:nMethods
             for metric = 1:nMetrics
@@ -209,11 +210,11 @@ for nCustIdx = 1:length(Sim.nCustomers)
     end
 end
 
-allKWhs = reshape(allKWhs, [Sim.nAggregates, length(Sim.nCustomers)]);
+allKWhs = reshape(allKWhs, [cfg.sim.nAggregates, length(cfg.sim.nCustomers)]);
 
 clearvars poolObj;
 save(saveFileName);
 
 %% Produce Plots
 plotCompareForecasts(allMetricsArray, allKWhs, forecastTypeStrings,...
-    forecastMetrics, Sim.nCustomers, true);
+    forecastMetrics, cfg);

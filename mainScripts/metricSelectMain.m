@@ -1,34 +1,33 @@
-%% Load Running Configuration
-tic;
-timeStart = clock;
-disp(timeStart);
-Config;
+%% Tidy Up
+clearvars; close all; clc;
 
-%% Add path to the common functions (& any subfolders therein)
-[parentFold, ~, ~] = fileparts(pwd);
-commonFunctionFolder = [parentFold filesep 'functions'];
-addpath(genpath(commonFunctionFolder), '-BEGIN');
+%% Load Running Configuration
+cfg = Config(pwd);
+
+%% Load Functions
+LoadFunctions;
 
 %% Delete old and compile new mex files
-% if updateMex, compileMexes; end;
-% makeForecast = false;
+% if cfg.updateMex, compileMexes; end;
+% cfg.makeForecast = false;
 
 %% Extract useful demand data only
-if makeForecast
+if cfg.makeForecast
     %% Read in DATA
-    load(dataFileWithPath);
-    customerIdxs = cell(Sim.nInstances, 1);
-    allDemandValues = cell(Sim.nInstances, 1);
-    dataLengthRequired = (Sim.nDaysTrain + Sim.nDaysSelect +...
-        Sim.nDaysTest)*Sim.stepsPerHour*Sim.hoursPerDay;
+    load(cfg.sim.dataFileWithPath); % demandData is [nTimestamp x nMeters]
+    customerIdxs = cell(cfg.sim.nInstances, 1);
+    allDemandValues = cell(cfg.sim.nInstances, 1);
+    dataLengthRequired = (cfg.sim.nDaysTrain + cfg.sim.nDaysSelect +...
+        cfg.sim.nDaysTest)*cfg.sim.stepsPerHour*cfg.sim.hoursPerDay;
     
     instance = 0;
-    for nCustomerIdx = 1:length(Sim.nCustomers)
-        for trial = 1:Sim.nAggregates
+    for nCustomerIdx = 1:length(cfg.sim.nCustomers)
+        for trial = 1:cfg.sim.nAggregates
             instance = instance + 1;
-            customers = Sim.nCustomers(nCustomerIdx);
+            customers = cfg.sim.nCustomers(nCustomerIdx);
             customerIdxs{instance} = ...
                 randsample(size(demandData, 2), customers);
+            
             allDemandValues{instance} = ...
                 sum(demandData(1:dataLengthRequired,...
                 customerIdxs{instance}), 2);
@@ -40,35 +39,30 @@ if makeForecast
 end
 
 %% Train All Forecasts (or load intermediate file)
-if makeForecast
+if cfg.makeForecast
     disp('======= FORECAST TRAINING =======');
-    [ Pfem, Pemd, Sim, pars ] = ...
-        trainAllForecasts( Pfem, Pemd, MPC, Sim, allDemandValues,...
-        trainControl, k);
+    [ cfg, pars ] = trainAllForecasts(cfg, allDemandValues);
     
     % Save intermediate file
-    save(Sim.intermediateFileName, '-v7.3');
+    save(cfg.sav.intermediateFileName, '-v7.3');
 else
     disp('======= LOADING FORECAST =======');
-    load(Sim.intermediateFileName);
+    load(cfg.sav.intermediateFileName);
     makeForecast = false;
     disp('======= done =======');
 end
 
 %% Test All Forecasts:
 disp('======= FORECAST SELECTION / TESTING =======');
-MPC.trainControl = trainControl;
-[ Sim, results ] = testAllForecasts( pars, allDemandValues, Sim, ...
-    Pemd, Pfem, MPC, k);
+[ cfg, results ] = testAllForecasts( cfg, pars, allDemandValues);
 
 %% Do Plotting
 disp('======= PLOTTING =======');
-
-plotAllResultsMetricSelect(Sim, results, Pemd, Pfem);
+plotAllResultsMetricSelect(cfg, results);
 
 %% Save Results
 disp('======= SAVING =======');
-save(Sim.finalFileName, '-v7.3');
+save(cfg.sav.finalFileName, '-v7.3');
 
 overAllTime = toc;
 disp('Total Time Taken: ');

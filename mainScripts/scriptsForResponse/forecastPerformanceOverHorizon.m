@@ -54,7 +54,7 @@ end
 % Allocate half-hour-of-day indexes
 hourNumber = mod((1:size(demandData, 1))', k);
 hourNumberTrain = hourNumber(1:trainLength);
-trainControl.hourNumberTrain = hourNumberTrain;
+cfg.fc.hourNumberTrain = hourNumberTrain;
 hourNumberTest = zeros(testLength, nTests);
 
 % Test Data
@@ -78,22 +78,22 @@ for nCustIdx = 1:length(nCustomers)
     end
 end
 
-%% Set-up trainControl parameters
-trainControl.nHidden = 50;
-trainControl.suppressOutput = true;
-trainControl.nStart = 3;
-trainControl.mseEpochs = 1000;
-trainControl.minimiseOverFirst = 48;
-trainControl.batchSize = 1000;
-trainControl.maxTime = 15;
-trainControl.maxEpochs = 1000;
-trainControl.trainRatio = 0.9;
-trainControl.nLags = k;
-trainControl.horizon = k;
-trainControl.performanceDifferenceThreshold = 0.02;
-trainControl.nBestToCompare = 3;
-trainControl.nDaysPreviousTrainSarma = 20;
-trainControl.useHyndmanModel = false;
+%% Set-up cfg.fc parameters
+cfg.fc.nHidden = 50;
+cfg.fc.suppressOutput = true;
+cfg.fc.nStart = 3;
+cfg.fc.mseEpochs = 1000;
+cfg.fc.minimiseOverFirst = 48;
+cfg.fc.batchSize = 1000;
+cfg.fc.maxTime = 15;
+cfg.fc.maxEpochs = 1000;
+cfg.fc.trainRatio = 0.9;
+cfg.fc.nLags = k;
+cfg.fc.horizon = k;
+cfg.fc.performanceDifferenceThreshold = 0.02;
+cfg.fc.nBestToCompare = 3;
+cfg.fc.nDaysPreviousTrainSarma = 20;
+cfg.fc.useHyndmanModel = false;
 
 %% Produce & evaluate the forecasts
 tic;
@@ -108,8 +108,8 @@ parfor instance = 1:nInstances
     yTrain = y(1:trainLength);
     
     %% Train forecast parameters
-    sarmaPars = trainSarma(yTrain, @lossMse, trainControl);
-    ffnnPars = trainFfnnMultipleStarts(yTrain, @lossMse, trainControl);
+    sarmaPars = trainSarma(yTrain, @lossMse, cfg.fc); %#ok<*PFBNS>
+    ffnnPars = trainFfnnMultipleStarts(yTrain, @lossMse, cfg.fc);
     
     %% Make forecasts, for the nTests
     % Array in which to accumulate historic data
@@ -117,13 +117,13 @@ parfor instance = 1:nInstances
     
     for iTest = 1:nTests
         actual = actualValuesAll(instance, ...
-            1:trainControl.minimiseOverFirst, iTest); %#ok<PFBNS>
+            1:cfg.fc.minimiseOverFirst, iTest); 
         
         forecastValues{instance}(1, iTest, :) = ...
-            forecastSarma(sarmaPars, historicData, trainControl);
+            forecastSarma(cfg, sarmaPars, historicData);
         
         forecastValues{instance}(2, iTest, :) = ...
-            forecastFfnn(ffnnPars, historicData, trainControl);
+            forecastFfnn(cfg, ffnnPars, historicData);
         
         forecastValues{instance}(3, iTest, :) = ...
             historicData((end-k+1):end);

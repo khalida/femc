@@ -1,7 +1,6 @@
 %% Loss function for selected lossType, given current parameter settings
 
-function [loss] = lossSarma (parameterValues, demand, lossType, k,...
-    trainControl)
+function [loss] = lossSarma (cfg, parameterValues, demand, lossType)
 
 % parameters:   current values of forecast parameters
 % demand:       historic time series on which to base loss
@@ -14,30 +13,30 @@ function [loss] = lossSarma (parameterValues, demand, lossType, k,...
 % First find featureVectors (to feed to SARMA forecaster), and
 % responseVectors (actual performance)
 
-if ~trainControl.useHyndmanModel
+if ~cfg.fc.useHyndmanModel
     [ featureVectors, responseVectors ] = ...
-        computeFeatureResponseVectors( demand, k,...
-        k);
+        computeFeatureResponseVectors( demand, cfg.sim.k,...
+        cfg.sim.k);
 else
     [ featureVectors, responseVectors ] = ...
-        computeFeatureResponseVectors( demand, k+3,...
-        k);
+        computeFeatureResponseVectors( demand, cfg.sim.k+3,...
+        cfg.sim.k);
 end
 
 nObservations = size(featureVectors, 2);
-forecasts = zeros(nObservations, k);
+forecasts = zeros(nObservations, cfg.sim.k);
 
 parameters.coefficients = parameterValues;
-parameters.k = k;
+parameters.k = cfg.sim.k;
 
 for iObservation = 1:nObservations
-    forecasts(iObservation,:) = forecastSarma(parameters, ...
-        featureVectors(:, iObservation), trainControl);
+    forecasts(iObservation,:) = forecastSarma(cfg, parameters, ...
+        featureVectors(:, iObservation));
 end
 
 % loss functions expect [nDimensions x nObservations], as produced by
 % computeFeatureResponseVectors
-loss = lossType(responseVectors(1:trainControl.minimiseOverFirst, :),...
-    forecasts(:, 1:trainControl.minimiseOverFirst)');
+loss = lossType(responseVectors(1:cfg.fc.minimiseOverFirst, :),...
+    forecasts(:, 1:cfg.fc.minimiseOverFirst)');
 
 end

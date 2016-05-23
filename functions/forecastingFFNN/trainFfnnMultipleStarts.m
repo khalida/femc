@@ -3,8 +3,7 @@
 % date: 21/10/2015
 % brief: run trainFfnn multiple times and return best performing model
 
-function bestNet = trainFfnnMultipleStarts( demand, lossType,...
-    trainControl )
+function bestNet = trainFfnnMultipleStarts(cfg, demand, lossType)
 
 % INPUTS
 % demand:       is the time-history of demands on which to train the model
@@ -14,6 +13,8 @@ function bestNet = trainFfnnMultipleStarts( demand, lossType,...
 
 % OUTPUTS
 % bestNet:      best NN found
+
+trainControl = cfg.fc;
 
 trainRatio = trainControl.trainRatio;
 
@@ -48,8 +49,8 @@ allForecasts = cell(1, nStart);
 for iStart = 1:nStart
     allNets{1, iStart} = trainFfnn( featureVectorsTrain,...
         responseVectorsTrain, lossType, trainControl);
-    allForecasts{1, iStart} = forecastFfnn(allNets{1, iStart},...
-        featureVectorsTest, trainControl);
+    allForecasts{1, iStart} = forecastFfnn(cfg, allNets{1, iStart},...
+        featureVectorsTest);
     
     performance(1, iStart) = mean(lossType(responseVectorsTest( ...
         1:trainControl.minimiseOverFirst, :), ...

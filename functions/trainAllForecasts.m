@@ -1,5 +1,5 @@
-function [ Pfem, Pemd, Sim, pars ] = trainAllForecasts( Pfem, Pemd, MPC,...
-    Sim, allDemandValues, trainControl, k)
+function [ cfg, pars ] = ...
+    trainAllForecasts( cfg, allDemandValues)
 
 % trainAllForecasts: Train parameters for all trained forecasts. Run
 %   through each instance and each error metric and output parameters
@@ -8,42 +8,39 @@ function [ Pfem, Pemd, Sim, pars ] = trainAllForecasts( Pfem, Pemd, MPC,...
 tic;
 
 %% Pre-Allocation
-timeTaken = cell(Sim.nInstances, 1);
+timeTaken = cell(cfg.sim.nInstances, 1);
 
 % Parameters for the trained forecasts, and the forecast-free controller
-pars = cell(Sim.nInstances, Sim.nMethods);
+pars = cell(cfg.sim.nInstances, cfg.fc.nMethods);
 
-for instance = 1:Sim.nInstances
-    timeTaken{instance} = zeros(Sim.nMethods,1);
+for instance = 1:cfg.sim.nInstances
+    timeTaken{instance} = zeros(cfg.fc.nMethods,1);
 end
 
-Sim.trainIdxs = 1:(Sim.stepsPerHour*Sim.nHoursTrain);
-Sim.hourNumber = mod((1:size(allDemandValues{1}, 1))', k);
-Sim.hourNumberTrain = Sim.hourNumber(Sim.trainIdxs, :);
+cfg.sim.trainIdxs = 1:(cfg.sim.stepsPerHour*cfg.sim.nHoursTrain);
+cfg.sim.hourNumber = mod((1:size(allDemandValues{1}, 1))', cfg.sim.k);
+cfg.sim.hourNumberTrain = cfg.sim.hourNumber(cfg.sim.trainIdxs, :);
 
 % Set default model type if not set already:
-Sim = setDefaultValues(Sim, {'forecastModels', 'FFNN'});
+cfg.fc = setDefaultValues(cfg.fc, {'forecastModels', 'FFNN'});
 
-if strcmp(Sim.forecastModels, 'FFNN')
+if strcmp(cfg.fc.forecastModels, 'FFNN')
     trainHandle = @trainFfnnMultipleStarts;
     disp('== USING FFNN MODELS ===');
-elseif strcmp(Sim.forecastModels, 'SARMA')
+elseif strcmp(cfg.fc.forecastModels, 'SARMA')
     trainHandle = @trainSarma;
     disp('== USING SARMA MODELS ===');
 else
-    error('Selected Sim.forecastModels not implemented');
+    error('Selected cfg.fc.forecastModels not implemented');
 end
                 
-
-trainControl.hourNumberTrain = Sim.hourNumberTrain;
-
 % Extract local data from structures for efficiency in parFor loop
 % communication
-nInstances = Sim.nInstances;
-nMethods = Sim.nMethods;
-lossTypes = Sim.lossTypes;
-trainIdxs = Sim.trainIdxs;
-allMethodStrings  = Sim.allMethodStrings;
+nInstances = cfg.sim.nInstances;
+nMethods = cfg.fc.nMethods;
+lossTypes = cfg.fc.lossTypes;
+trainIdxs = cfg.sim.trainIdxs;
+allMethodStrings  = cfg.fc.allMethodStrings;
 
 %% Train Models
 poolobj = gcp('nocreate');
@@ -57,14 +54,7 @@ parfor instance = 1:nInstances
     for methodTypeIdx = 1:nMethods
         switch allMethodStrings{methodTypeIdx} %#ok<PFBNS>
             
-            case 'forecastFree'
-                tempTic = tic;
-                pars{instance, methodTypeIdx} = ...
-                    trainForecastFreeController( demandValuesTrain, Sim,...
-                    trainControl, MPC);
-                timeTaken{instance}(methodTypeIdx) = toc(tempTic);
-                
-                % Skip if method doesn't need training
+            % Skip if method doesn't need training
             case 'naivePeriodic'
                 continue;
                 
@@ -74,12 +64,12 @@ parfor instance = 1:nInstances
             case 'setPoint'
                 continue;
                 
-                % Otherwise assume we have a forecast to train
+            % Otherwise we have a forecast to train
             otherwise
                 tempTic = tic;
-                pars{instance, methodTypeIdx} = trainHandle(...
-                    demandValuesTrain, lossTypes{methodTypeIdx}, ...
-                    trainControl); %#ok<PFBNS>
+                
+                pars{instance, methodTypeIdx} = trainHandle(cfg, ...
+                    demandValuesTrain, lossTypes{methodTypeIdx}); %#ok<PFBNS>
                 
                 timeTaken{instance}(methodTypeIdx) = toc(tempTic);
         end
@@ -90,9 +80,9 @@ end
 poolobj = gcp('nocreate');
 delete(poolobj);
 
-Sim.timeTaken = timeTaken;
-Sim.timeForecastTrain = toc;
+cfg.sim.timeTaken = timeTaken;
+cfg.sim.timeForecastTrain = toc;
 
-disp('Time to end forecast training:'); disp(Sim.timeForecastTrain);
+disp('Time to end forecast training:'); disp(cfg.sim.timeForecastTrain);
 
 end
