@@ -28,7 +28,7 @@ cfg.sav.resultsDir = [parentFold filesep 'results' filesep timeString];
 mkdir(cfg.sav.resultsDir);
 
 %% Instances
-cfg.sim.nCustomers = [1, 5]; % [1, 5, 25, 125];
+cfg.sim.nCustomers = [1, 5, 25, 125]; % [1, 5, 25, 125];
 cfg.sim.nAggregates = 2;
 cfg.sim.nInstances = length(cfg.sim.nCustomers) * cfg.sim.nAggregates;
 cfg.sim.nProc = min(cfg.sim.nInstances, 4);
@@ -41,7 +41,7 @@ cfg.sim.batteryCapacityRatio = 0.05;    % fraction of daily avg demand
 cfg.sim.batteryChargingFactor = 1;      % ratio of charge rate:capacity
 
 %% Simulation Duration and properties
-cfg.sim.nDaysTrain = 10;       %200;   % days of historic demand data
+cfg.sim.nDaysTrain = 200;       %200;   % days of historic demand data
 cfg.sim.nDaysSelect = 56;      %56;    % to select forecast parameters
 cfg.sim.nDaysTest = 56;        %56;    % days to run simulation for
 cfg.sim.stepsPerHour = 2;      % Half-hourly data
@@ -50,14 +50,14 @@ cfg.sim.k = 48;                % horizon & seasonality (assumed same)
 cfg.sim.horizon = cfg.sim.k;
 
 %% Forecast training options
-cfg.fc.nHidden = 5; %50;
+cfg.fc.nHidden = 50; %50;
 cfg.fc.suppressOutput = true;
-cfg.fc.nStart = 1; %3;
-cfg.fc.mseEpochs = 10; %1000; % No. of MSE epochs for pre-training
+cfg.fc.nStart = 3; %3;
+cfg.fc.mseEpochs = 1000; %1000; % No. of MSE epochs for pre-training
 cfg.fc.minimiseOverFirst = 48;  % # of fcast steps to minimise over
 cfg.fc.batchSize = 1000; %1000;
-cfg.fc.maxTime = 0.5; %15;       % maximum training time in mins
-cfg.fc.maxEpochs = 10; %1000; % maximum No. of epochs
+cfg.fc.maxTime = 15; %15;       % maximum training time in mins
+cfg.fc.maxEpochs = 1000; %1000; % maximum No. of epochs
 cfg.fc.trainRatio = 0.8;        % to train each net on
 cfg.fc.nLags = cfg.sim.k;
 cfg.fc.horizon = cfg.sim.k;

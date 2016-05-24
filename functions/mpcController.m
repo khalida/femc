@@ -44,14 +44,14 @@ end
 runningPeak = zeros(nIdxs, 1);
 exitFlag = zeros(nIdxs, 1);
 forecastUsed = zeros(cfg.sim.horizon, nIdxs);
-if cfg.opt.setPointRecourse
+if cfg.opt.SPrecourse
     respVecs = zeros(2, nIdxs);         % [b0; peakPower]
 else
     respVecs = zeros(1, nIdxs);         % [b0]
 end
 
 % featVec = [demandDelay; stateOfCharge; (demandNow); peakSoFar];
-if cfg.opt.knowDemandNow
+if cfg.opt.knowCurrentDemandNow
     nFeatures = cfg.fc.nLags + 3;
 else
     nFeatures = cfg.fc.nLags + 2;
@@ -97,7 +97,7 @@ for idx = 1:nIdxs;
         titleString = 'MFFC';
         
         % Select forecast function handle
-        switch cfg.fc.modelType
+        switch cfg.fc.forecastModels
             case 'FFNN'
                 forecastHandle = @forecastFfnn;
                 
@@ -105,7 +105,7 @@ for idx = 1:nIdxs;
                 forecastHandle = @forecastSarma;
                 
             otherwise
-                error('Selected cfg.fc.modelType not implemented');
+                error('Selected cfg.fc.forecastModels not implemented');
         end
         
         forecast = forecastHandle(cfg, trainedModel, demandDelays);
@@ -134,7 +134,7 @@ for idx = 1:nIdxs;
     
     
     % Implement set point recourse, if selected
-    if cfg.opt.setPointRecourse
+    if cfg.opt.SPrecourse
         
         % Check if opt action combined with actual demand exceeds expected
         % peak, & rectify if so:
@@ -175,7 +175,7 @@ for idx = 1:nIdxs;
     battery.chargeBy(energyToBatteryNow);
     respVecs(1, idx) = energyToBatteryNow;
     
-    if cfg.opt.setPointRecourse
+    if cfg.opt.SPrecourse
         respVecs(2, idx) = peakForecastEnergy;
     end
     
@@ -189,7 +189,7 @@ for idx = 1:nIdxs;
     end
     
     % If we've reached end of billing period, resent the peak tracker
-    if daysPassed == cfg.sim.billingPeriodDays
+    if daysPassed == cfg.opt.billingPeriodDays
         daysPassed = 0;
         
         if cfg.opt.resetPeakToMean

@@ -4,8 +4,11 @@ function [ peakReductionRatio ] = extractSimulationResults( ...
 % extractSimulationResults: Extract peak reduction from simulation data
 
 if ~isequal(size(gridPower), size(demandValues))
-    error('gridPower and demandValues should have the same size');
+    warning('gridPower and demandValues should have the same size');
 end
+nPeriods = floor(length(gridPower)/billingIntervals)*billingIntervals;
+gridPower = gridPower(1:nPeriods);
+demandValues = demandValues(1:nPeriods);
 
 gridBillingPeriodColumns = reshape(gridPower, [billingIntervals, ...
     length(gridPower)/(billingIntervals)]);

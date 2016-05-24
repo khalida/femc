@@ -80,8 +80,8 @@ for iRun = 1:nRuns
     poolobj = gcp('nocreate');
     delete(poolobj);
     
-    parfor instance = 1:nInstances
-        
+    for instance = 1:nInstances
+%     parfor instance = 1:nInstances
         % Battery properties
         batteryCapacity = meanKWhs(instance)*batteryCapacityRatio*...
             stepsPerDay;
@@ -98,11 +98,8 @@ for iRun = 1:nRuns
         loadPattern = mean(reshape(demandValuesTrain, [cfg.sim.k,...
             length(demandValuesTrain)/cfg.sim.k]), 2); %#ok<*PFBNS>
         
-        godCastValues = zeros(length(testIdxs), cfg.sim.k);
-        for jj = 1:cfg.sim.k
-            godCastValues(:, jj) = ...
-                circshift(demandValuesSelection, -[jj-1, 0]);
-        end
+        godCastValues = createGodCast(demandValuesSelection, ...
+            cfg.sim.horizon);
         
         %% For each parametrized method run simulation
         for iForecastType = theseForecasts
@@ -239,10 +236,7 @@ parfor instance = 1:nInstances
         [cfg.sim.k, length(demandValuesSelection)/cfg.sim.k]), 2);
     
     % Create godCast forecasts
-    godCastValues = zeros(length(testIdxs), cfg.sim.k);
-    for jj = 1:cfg.sim.k
-        godCastValues(:, jj) = circshift(demandValuesTest, -[jj-1, 0]);
-    end
+    godCastValues = createGodCast(demandValuesTest, cfg.sim.horizon);
     
     %% Test performance of all methods
     

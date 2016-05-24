@@ -15,7 +15,7 @@ function [energyToBattery, exitFlag] = controllerOptimizer(cfg, ...
 % energyToBattery:  [kWh] batt charge energy during horizon [horizon x 1]
 % exitFlag:         Status flag of the linear program solver (1 is good)
 
-if cfg.fc.clipNegative
+if cfg.opt.clipNegativeFcast
     forecast = max(forecast, 0);
 end
 
@@ -25,7 +25,7 @@ if horizon ~= cfg.sim.horizon
     error('Forecast not of correct horizon length');
 end
 
-if cfg.opt.knowDemandNow 
+if cfg.opt.knowCurrentDemandNow 
     forecast(1) = demandNow;
 end
 

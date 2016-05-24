@@ -66,22 +66,22 @@ classdef Battery < handle
             ltdCharge = kWhCharge;
             
             % Check for charge rate constraint violation:
-            if kWhCharge > this.maxChargeEnergy
+            if ltdCharge > this.maxChargeEnergy
                 ltdCharge = this.maxChargeEnergy;
             end
             
             % Check for discharge rate constraint violation:
-            if kWhCharge < -this.maxChargeEnergy
+            if ltdCharge < -this.maxChargeEnergy
                 ltdCharge = -this.maxChargeEnergy;
             end
             
             % Check for upper SoC violation
-            if kWhCharge + this.SoC > this.capacity
+            if ltdCharge + this.SoC > this.capacity
                 ltdCharge = this.capacity - this.SoC;
             end
             
             % Check for lower SoC violation
-            if kWhCharge + this.SoC < 0
+            if ltdCharge + this.SoC < 0
                 ltdCharge = -this.SoC;
             end
         end
