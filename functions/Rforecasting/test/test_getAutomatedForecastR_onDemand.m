@@ -6,7 +6,7 @@ clearvars; close all; clc;
 tic;
 
 % === RUNNING OPTIONS ===
-nCustomers = [1, 10, 100, 1000];
+nCustomers = [1, 10];
 nAggregates = 2;
 dataFile = '../../../data/demand_3639.csv';
 S = 48*1;

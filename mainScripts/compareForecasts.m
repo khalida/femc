@@ -15,8 +15,7 @@ cfg.fc.minimiseOverFirst = 48;
 LoadFunctions;
 
 % if updateMex, compileMexes; end;
-saveFileName = ['..' filesep 'results' filesep ...
-    '2016_05_20_compareForecast_compareR.mat'];
+saveFileName = [cfg.sav.resultsDir filesep 'compareForecast_compareR.mat'];
 
 %% Set-up // workers
 poolobj = gcp('nocreate');
