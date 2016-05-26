@@ -5,8 +5,9 @@
 *.mat
 *.txt
 *.RData
-.Rproj.user
+*.Rproj
 .Rproj.user/
+*.Rhistory
 *.csv
 *.mexw64
 *.mexa64
