@@ -42,7 +42,6 @@ cfg.fc = setDefaultValues(cfg.fc, {'forecastModels', 'FFNN'});
 % Extract data required from cfg.sim structure for efficiency of parfor
 % communications
 batteryCapacityRatio = cfg.sim.batteryCapacityRatio;
-batteryChargingFactor = cfg.sim.batteryChargingFactor;
 trainIdxs = cfg.sim.trainIdxs;
 forecastSelectionIdxs = cfg.sim.forecastSelectionIdxs;
 testIdxs = cfg.sim.testIdxs;
@@ -80,8 +79,8 @@ for iRun = 1:nRuns
     poolobj = gcp('nocreate');
     delete(poolobj);
     
-    for instance = 1:nInstances
-%     parfor instance = 1:nInstances
+%     for instance = 1:nInstances
+    parfor instance = 1:nInstances
         % Battery properties
         batteryCapacity = meanKWhs(instance)*batteryCapacityRatio*...
             stepsPerDay;
@@ -186,14 +185,16 @@ end
 %% Extend relevant variables to accomodate the 2 'new' forecasts
 % If they exist:
 
-if Pfem.num > 0
-    cfg.sim.allMethodStrings = [allMethodStrings, {'bestPfemSelected'}];
+if cfg.fc.Pfem.num > 0
+    cfg.fc.allMethodStrings = [cfg.fc.allMethodStrings,...
+        {'bestPfemSelected'}];
 end
-if Pemd.num > 0
-    cfg.sim.allMethodStrings = [cfg.sim.allMethodStrings, {'bestPemdSelected'}];
+if cfg.fc.Pemd.num > 0
+    cfg.fc.allMethodStrings = [cfg.fc.allMethodStrings,...
+        {'bestPemdSelected'}];
 end
 
-cfg.fc.nMethods = length(cfg.sim.allMethodStrings);
+cfg.fc.nMethods = length(cfg.fc.allMethodStrings);
 
 for instance = 1:nInstances
     peakReductions{instance} = zeros(cfg.fc.nMethods,1);
@@ -208,8 +209,6 @@ end
 nMethods = cfg.fc.nMethods;
 nTrainMethods = cfg.fc.nTrainMethods;
 allMethodStrings = cfg.sim.allMethodStrings;
-hourNumberTest = cfg.sim.hourNumberTest;
-stepsPerHour = cfg.sim.stepsPerHour;
 
 testingTic = tic;
 
@@ -223,7 +222,6 @@ parfor instance = 1:nInstances
     
     %% Battery properties
     batteryCapacity = meanKWhs(instance)*batteryCapacityRatio*stepsPerDay;
-    maximumChargeRate = batteryChargingFactor*batteryCapacity;
     
     % Separate data for parameter selection and testing
     demandValuesSelection = allDemandValues{instance}(...
@@ -281,10 +279,12 @@ parfor instance = 1:nInstances
             runControl.skipRun = false;
         end
         
-        [runningPeak, exitFlag, forecastUsed] = mpcController( ...
-            pars{instance, iForecastType}, godCastValues,...
-            demandValuesTest, batteryCapacity, maximumChargeRate, ...
-            loadPattern, hourNumberTest, stepsPerHour, cfg.sim.k,...
+        % Create a battery and run optimal control:
+        battery = Battery(cfg, batteryCapacity);
+        
+        [ runningPeak, exitFlag, forecastUsed, ~, ~, ~ ] = ...
+            mpcController(cfg, pars{instance, iForecastType}, ...
+            godCastValues, demandValuesTest, loadPattern, battery, ...
             runControl);
         
         if ~runControl.skipRun

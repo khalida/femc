@@ -20,3 +20,4 @@ tmp/
 *.png
 *.tiff
 results/
+functions/codegen/

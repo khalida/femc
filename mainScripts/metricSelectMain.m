@@ -8,7 +8,7 @@ cfg = Config(pwd);
 LoadFunctions;
 
 %% Delete old and compile new mex files
-% if cfg.updateMex, compileMexes; end;
+if cfg.updateMex, compileMexes; end;
 % cfg.makeForecast = false;
 
 %% Extract useful demand data only

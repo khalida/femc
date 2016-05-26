@@ -18,7 +18,7 @@ nDaysTest = cfg.sim.nDaysTest;
 nDaysSelect = cfg.sim.nDaysSelect;
 
 allMethodStrings = cfg.fc.allMethodStrings;
-nMethods = cfg.sim.nMethods;
+nMethods = cfg.fc.nMethods;
 nInstances = cfg.sim.nInstances;
 nAggregates = cfg.sim.nAggregates;
 nCustomers = cfg.sim.nCustomers;
@@ -78,6 +78,7 @@ legend([allMethodStrings, {'Some intervals not solved to optimality'}],...
 
 hold off;
 print(fig_1, '-dpdf', [cfg.sav.resultsDir filesep 'allPrrResults.pdf']);
+plotAsTikz([cfg.sav.resultsDir filesep 'allPrrResults.tikz']);
 
 %% 2) Plot Absolute PRR against aggregation size (as means +/- error bars)
 
@@ -107,6 +108,10 @@ hold off;
 print(fig_2, '-dpdf', [cfg.sav.resultsDir filesep ...
     'absolutePrrVsAggregationSize.pdf']);
 
+plotAsTikz([cfg.sav.resultsDir filesep ...
+    'absolutePrrVsAggregationSize.tikz']);
+
+
 
 %% 3) Plot Relative PRR against aggregation size (as means +/- error bars)
 fig_3 = figure();
@@ -127,6 +132,9 @@ hold off;
 
 print(fig_3, '-dpdf', [cfg.sav.resultsDir filesep ...
     'relativePrrVsAggregationSize.pdf']);
+
+plotAsTikz([cfg.sav.resultsDir filesep ...
+    'relativePrrVsAggregationSize.tikz']);
 
 %% 4) BoxPlots of Rel/Abs PRR for each Method (across all instances)
 
@@ -151,6 +159,9 @@ grid on;
 
 print(fig_4, '-dpdf', [cfg.sav.resultsDir filesep ...
     'allPrrResultsBoxPlot.pdf']);
+
+plotAsTikz([cfg.sav.resultsDir filesep ...
+    'allPrrResultsBoxPlot.tikz']);
 
 %% 5) Plots showing performace of each Forecast Against the different
 % Error metrics (look at only BestPfem and BestPemd metrics to keep
@@ -210,10 +221,11 @@ end
 
 % Find indexes of forecasts to plot
 methodsNotToPlotStrings = {'forecastFree', 'setPoint'};
-methodsNotToPlotIdx = zeros(length(methodsNotToPlotStrings), 1);
+methodsNotToPlotIdx = [];
 for ii = 1:length(methodsNotToPlotStrings);
-    methodsNotToPlotIdx(ii) = find(ismember(allMethodStrings,...
-        methodsNotToPlotStrings{ii}));
+    methodsNotToPlotIdx = [methodsNotToPlotIdx, ...
+        find(ismember(allMethodStrings, ...
+        methodsNotToPlotStrings{ii}))]; %#ok<AGROW>
 end
 
 selectedForecasts = setdiff(1:nMethods, methodsNotToPlotIdx);
@@ -238,5 +250,8 @@ end
 
 print(fig_5, '-dpdf', [cfg.sav.resultsDir filesep...
     'allForecastPerformances.pdf']);
+
+plotAsTikz([cfg.sav.resultsDir filesep...
+    'allForecastPerformances.tikz']);
 
 end
