@@ -208,7 +208,7 @@ end
 % Extract data from Sim struct for efficiency in parfor communication
 nMethods = cfg.fc.nMethods;
 nTrainMethods = cfg.fc.nTrainMethods;
-allMethodStrings = cfg.sim.allMethodStrings;
+allMethodStrings = cfg.fc.allMethodStrings;
 
 testingTic = tic;
 
@@ -338,12 +338,17 @@ meanKWhsArray = zeros(cfg.sim.nAggregates, length(cfg.sim.nCustomers));
 lossTestResultsArray = zeros([nMethods, cfg.sim.nAggregates, ...
     length(cfg.sim.nCustomers), nTrainMethods]);
 
+bestPfemIdxArray = zeros(cfg.sim.nAggregates, length(cfg.sim.nCustomers));
+bestPemdIdxArray = bestPfemIdxArray;
+
 instance = 0;
 for nCustomerIdx = 1:length(cfg.sim.nCustomers)
     for trial = 1:cfg.sim.nAggregates
         
         instance = instance + 1;
         meanKWhsArray(trial, nCustomerIdx) = meanKWhs(instance, 1);
+        bestPfemIdxArray(trial, nCustomerIdx) = bestPfemIdx(instance);
+        bestPemdIdxArray(trial, nCustomerIdx) = bestPemdIdx(instance);
         
         for iMethod = 1:nMethods
             
@@ -355,6 +360,8 @@ for nCustomerIdx = 1:length(cfg.sim.nCustomers)
             
             smallestExitFlagArray(iMethod, trial, nCustomerIdx) = ...
                 smallestExitFlag{instance}(iMethod, 1);
+            
+            
             
             for metric = 1:nTrainMethods
                 
@@ -384,5 +391,7 @@ results.meanKWhs = meanKWhsArray;
 results.lossTestResults = lossTestResultsArray;
 results.bestPfemForecast = bestPfemIdx;
 results.bestPemdForecast = bestPemdIdx;
+results.bestPfemForecastArray = bestPfemIdxArray;
+results.bestPemdForecastArray = bestPemdIdxArray;
 
 end

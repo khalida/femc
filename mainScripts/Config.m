@@ -56,12 +56,12 @@ cfg.fc.nStart = 3; %3;
 cfg.fc.mseEpochs = 1000; %1000; % No. of MSE epochs for pre-training
 cfg.fc.minimiseOverFirst = 48;  % # of fcast steps to minimise over
 cfg.fc.batchSize = 1000; %1000;
-cfg.fc.maxTime = 20; %15;       % maximum training time in mins
+cfg.fc.maxTime = 45; %15;       % maximum training time in mins
 cfg.fc.maxEpochs = 1000; %1000; % maximum No. of epochs
 cfg.fc.trainRatio = 0.8;        % to train each net on
 cfg.fc.nLags = cfg.sim.k;
 cfg.fc.horizon = cfg.sim.k;
-cfg.fc.performanceDifferenceThreshold = 0.1;
+cfg.fc.performanceDifferenceThreshold = 0.05;
 cfg.fc.nBestToCompare = 1;
 cfg.fc.nDaysPreviousTrainSarma = 10;
 cfg.fc.useHyndmanModel = false;
@@ -69,7 +69,7 @@ cfg.fc.seasonality = cfg.sim.k;
 
 % PFEM Parameter Gridsearch points
 cfg.fc.Pfem.alphas = [1, 2];     % 2
-cfg.fc.Pfem.betas = [2];      % 2
+cfg.fc.Pfem.betas = 2; %[2];      % 2
 cfg.fc.Pfem.gammas = [1, 4];       % 2
 cfg.fc.Pfem.deltas = [0, 1];        % 1
 
@@ -77,7 +77,7 @@ cfg.fc.Pfem.deltas = [0, 1];        % 1
 cfg.fc.Pemd.as = [50, 200];       % 10
 cfg.fc.Pemd.bs = [0.5, 1];         % 0.5
 cfg.fc.Pemd.cs = [0.5, 1];         % 0.5
-cfg.fc.Pemd.ds = [5];           % 4
+cfg.fc.Pemd.ds = 5; %[5];           % 4
 
 % Other loss functions to consider, and additional control methods:
 cfg.fc.otherLossHandles = {@lossMse, @lossMape};
