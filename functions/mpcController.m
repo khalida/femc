@@ -85,7 +85,7 @@ for idx = 1:nIdxs;
         titleString = 'modelCast';
         
     elseif runControl.naivePeriodic
-        forecast = demandDelays(1:cfg.sim.horizon);
+        forecast = demandDelays((end-cfg.sim.horizon+1):end);
         titleString = 'NP';
         
     elseif runControl.setPoint

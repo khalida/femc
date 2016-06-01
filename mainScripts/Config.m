@@ -28,7 +28,7 @@ cfg.sav.resultsDir = [parentFold filesep 'results' filesep timeString];
 mkdir(cfg.sav.resultsDir);
 
 %% Instances
-cfg.sim.nCustomers = [25, 125]; % [1, 5, 25, 125];
+cfg.sim.nCustomers = [1, 5, 25, 125]; % [1, 5, 25, 125];
 cfg.sim.nAggregates = 2;
 cfg.sim.nInstances = length(cfg.sim.nCustomers) * cfg.sim.nAggregates;
 cfg.sim.nProc = min(cfg.sim.nInstances, 4);
@@ -51,7 +51,7 @@ cfg.sim.horizon = cfg.sim.k;
 
 %% Forecast training options
 cfg.fc.nHidden = 50; %50;
-cfg.fc.suppressOutput = true;
+cfg.fc.suppressOutput = false;
 cfg.fc.nStart = 3; %3;
 cfg.fc.mseEpochs = 1000; %1000; % No. of MSE epochs for pre-training
 cfg.fc.minimiseOverFirst = 48;  % # of fcast steps to minimise over
@@ -74,26 +74,26 @@ cfg.fc.Pfem.gammas = [1, 4];       % 2
 cfg.fc.Pfem.deltas = [0, 1];        % 1
 
 % EMD Parameter Gridsearch points
-cfg.fc.Pemd.as = [50, 200];       % 10
-cfg.fc.Pemd.bs = [0.5, 1];         % 0.5
+cfg.fc.Pemd.as = [10, 50];       % 10
+cfg.fc.Pemd.bs = [0.5, 1];         % 0.5  a*b must be >= d
 cfg.fc.Pemd.cs = [0.5, 1];         % 0.5
-cfg.fc.Pemd.ds = 5; %[5];           % 4
+cfg.fc.Pemd.ds = 4; %[5];           % 4
 
 % Other loss functions to consider, and additional control methods:
 cfg.fc.otherLossHandles = {@lossMse, @lossMape};
 cfg.fc.additionalMethods = {'naivePeriodic', 'godCast', 'setPoint'};
 
 %% (MPC) Optimization options
-cfg.opt.secondWeight = 0;% 1e-4;      % of degeneracy-preventing Objective
 cfg.opt.knowCurrentDemandNow = false; % Current demand known to optimizer?
 cfg.opt.clipNegativeFcast = true;
 cfg.opt.iterationFactor = 1.0;        % To apply to default max iterations
-cfg.opt.rewardMargin = true;          % Reward margin from new pk?
+cfg.opt.rewardMargin = false;         % Reward margin from new pk?
 cfg.opt.SPrecourse = true;            % use setPoint recourse?
 cfg.opt.billingPeriodDays = 7;
 cfg.opt.resetPeakToMean = true;
 cfg.opt.maxParForTypes = 4;
 cfg.opt.chargeWhenCan = false;
+cfg.opt.secondWeight = 0;% 1e-4;      % of charrge-encouraging Objective
 cfg.opt.suppressOutput = cfg.fc.suppressOutput;
 
 cfg.sim.visiblePlots = 'on';

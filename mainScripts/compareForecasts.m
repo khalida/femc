@@ -7,7 +7,7 @@ clearvars; close all; clc;
 
 %% Load Config (includes seeding rng)
 cfg = Config(pwd);
-cfg.sim.nCustomers = [1, 10, 100, 1000];
+cfg.sim.nCustomers = [1, 5, 25, 125];
 cfg.sim.nInstances = cfg.sim.nAggregates*length(cfg.sim.nCustomers);
 cfg.fc.minimiseOverFirst = 48;
 

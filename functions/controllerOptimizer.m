@@ -59,8 +59,8 @@ else
     % (this number is always non-negative)
     
     % Let variable x_(k+2) be the peak forecast power from the grid, minus
-    % the running peak (this number can be negative, and equales x_(k+1) if
-    % x_(k+1) is positive
+    % the running peak (this number can be negative, and equals x_(k+1) if
+    % x_(k+1) is positive)
     
     % Objective is  1) Minimise positive exceedance of running peak
     %               2) (Secondary) maximise negative exceedance of running
