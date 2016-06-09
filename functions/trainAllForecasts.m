@@ -1,28 +1,30 @@
-function [ cfg, pars ] = ...
-    trainAllForecasts( cfg, allDemandValues)
+function [ cfg, pars ] = trainAllForecasts( cfg, allDemandValues)
 
 % trainAllForecasts: Train parameters for all trained forecasts. Run
 %   through each instance and each error metric and output parameters
 %   of trained forecasts.
 
+% INPUT:
+% cfg:              stuct containing all running options
+% allDemandValues:  cellarray {nInstances,1}, with column vectors of demand
+
+% OUTPUT:
+% cfg:              struct with some updated fields
+% pars:             parameters of trained models
+
 tic;
 
 %% Pre-Allocation
-timeTaken = cell(cfg.sim.nInstances, 1);
+timeTakenForecast = cell(cfg.sim.nInstances, 1);
 
-% Parameters for the trained forecasts, and the forecast-free controller
+% Parameters of the trained forecasts
 pars = cell(cfg.sim.nInstances, cfg.fc.nMethods);
 
 for instance = 1:cfg.sim.nInstances
-    timeTaken{instance} = zeros(cfg.fc.nMethods,1);
+    timeTakenForecast{instance} = zeros(cfg.fc.nMethods,1);
 end
 
 cfg.sim.trainIdxs = 1:(cfg.sim.stepsPerHour*cfg.sim.nHoursTrain);
-cfg.sim.hourNumber = mod((1:size(allDemandValues{1}, 1))', cfg.sim.k);
-cfg.sim.hourNumberTrain = cfg.sim.hourNumber(cfg.sim.trainIdxs, :);
-
-% Set default model type if not set already:
-cfg.fc = setDefaultValues(cfg.fc, {'forecastModels', 'FFNN'});
 
 if strcmp(cfg.fc.forecastModels, 'FFNN')
     trainHandle = @trainFfnnMultipleStarts;
@@ -68,10 +70,11 @@ parfor instance = 1:nInstances
             otherwise
                 tempTic = tic;
                 
-                pars{instance, methodTypeIdx} = trainHandle(cfg, ...
-                    demandValuesTrain, lossTypes{methodTypeIdx}); %#ok<PFBNS>
+                pars{instance, methodTypeIdx} = ...
+                    trainHandle(cfg, demandValuesTrain, ...
+                    lossTypes{methodTypeIdx}); %#ok<PFBNS>
                 
-                timeTaken{instance}(methodTypeIdx) = toc(tempTic);
+                timeTakenForecast{instance}(methodTypeIdx) = toc(tempTic);
         end
         disp([allMethodStrings{methodTypeIdx} ' training done!']);
     end
@@ -80,9 +83,9 @@ end
 poolobj = gcp('nocreate');
 delete(poolobj);
 
-cfg.sim.timeTaken = timeTaken;
-cfg.sim.timeForecastTrain = toc;
+cfg.sim.timeTakenForecast = timeTakenForecast;
+cfg.sim.timeForecastTotal = toc;
 
-disp('Time to end forecast training:'); disp(cfg.sim.timeForecastTrain);
+disp('Time to end forecast training:'); disp(cfg.sim.timeForecastTotal);
 
 end

@@ -7,7 +7,7 @@ nCustomers = cfg.sim.nCustomers;
 savePlots = cfg.plt.savePlots;
 
 % Plotting options:
-myPaperPosition = [-0.75 -0.25 19 15];
+myPaperPosition = [0 0 17 14];
 myPaperSize = [17 14];
 
 fig = zeros(length(forecastMetrics), 1);
@@ -48,9 +48,12 @@ for ii = 1:length(forecastMetrics)
             find(ismember(forecastTypeStrings, 'MAPE FFNN')), ...
             find(ismember(forecastTypeStrings, 'R ETS')), ...
             find(ismember(forecastTypeStrings, 'NP'))];
+        
         fig(ii) = figure(100 + ii);
+        
         thisMetricMean = squeeze(mean(allMetrics(:, :,...
             selectedFcastsMAPE, ii), 1));
+        
         thisMetricStd = squeeze(std(allMetrics(:, :, ...
             selectedFcastsMAPE, ii), [], 1));
         
@@ -86,7 +89,7 @@ for ii = 1:length(forecastMetrics)
     end
     
     
-    %% For MSE also plot dabsolute performance of MSE SARMA, MSE FFNN, NP, R
+    %% For MSE also plot absolute performance of MSE SARMA, MSE FFNN, NP, R
     if strcmp('MSE', forecastMetrics{ii})
         
         selectedFcastsMSE = [...
@@ -129,23 +132,29 @@ for ii = 1:length(forecastMetrics)
     %% Produce set of normalised plots - where losses are divided by those
     % of NP for each instance (and error metric)
     refIndex = ismember(forecastTypeStrings,'NP');
+    
     allMetricsNormalized = allMetrics./repmat(...
         allMetrics(:,:,refIndex,:), [1, 1, nMethods, 1]);
     
     fig(ii) = figure(200 + ii);
     thisMetricMean = squeeze(mean(allMetricsNormalized(:, :, ...
         selectedFcasts(1:(end-1)), ii), 1));
+    
     thisMetricStd = squeeze(std(allMetricsNormalized(:, :,...
         selectedFcasts(1:(end-1)), ii), [], 1));
+    
     errorbar(repmat(whsMean, ([length(selectedFcasts(1:(end-1))), 1]))',...
         thisMetricMean, thisMetricStd,'.-', 'markers', 20);
+    
     ax = get(fig(ii), 'CurrentAxes');
     
     legend(forecastTypeStrings(selectedFcasts(1:(end-1))),...
         'Interpreter', 'none');
+    
     xlabel('Mean Aggregate Demand Per Interval [Wh]');
     ylabel([forecastMetrics{ii} ' relative to NP forecast'],...
         'Interpreter', 'none');
+    
     grid on;
     
     % Fix precision
@@ -167,7 +176,7 @@ for ii = 1:length(forecastMetrics)
     legend(forecastTypeStrings(selectedFcasts(1:(end-1))),...
         'Interpreter', 'none');
     
-    xlabel('No. of Househoulds');
+    xlabel('No. of Households');
     
     ylabel([forecastMetrics{ii} ' relative to NP forecast'],...
         'interpreter', 'none');
@@ -179,7 +188,7 @@ end
 if savePlots
     
     % [Absolute MAPE plot, Rel. MSE BoxPlot, Rel PFEM BoxPlot,...
-    % Rel PEMD BoxPlot]
+    % Rel PEMD BoxPlot, Abs MSE plot]
     figureNums = [102 301 303 304 101];
     fileNames = {[cfg.sav.resultsDir filesep 'absoluteMapePlot.pdf'], ...
         [cfg.sav.resultsDir filesep 'relativeMseBoxPlot.pdf'], ...

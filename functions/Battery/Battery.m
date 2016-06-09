@@ -15,13 +15,9 @@ classdef Battery < handle
         function obj = Battery(cfg, capacity)
             obj.cfg = cfg;
             obj.capacity = capacity;
-            obj.maxChargeRate = cfg.sim.batteryChargingFactor*...
-                capacity;
-            
+            obj.maxChargeRate = cfg.sim.batteryChargingFactor*capacity;
             obj.eps = cfg.sim.eps;
-            obj.maxChargeEnergy = obj.maxChargeRate/...
-                cfg.sim.stepsPerHour;
-            
+            obj.maxChargeEnergy = obj.maxChargeRate/cfg.sim.stepsPerHour;
             obj.SoC = 0.5*obj.capacity;
         end
         

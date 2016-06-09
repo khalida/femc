@@ -6,67 +6,57 @@
 function bestNet = trainFfnnMultipleStarts(cfg, demand, lossType)
 
 % INPUTS
-% demand:       is the time-history of demands on which to train the model
-%                divided into training and CV as required
-% lossType:     a handle to the loss function to train in order to minimise
-% trainControl: structure of train control parameters
+% cfg:          structure with all of the running options
+% demand:       time-history of demands on which to train the model
+% lossType:     a handle to the loss function to train to minimise
 
 % OUTPUTS
 % bestNet:      best NN found
 
-trainControl = cfg.fc;
-
-trainRatio = trainControl.trainRatio;
-
-% Set default values for optional train control pars
-trainControl = setDefaultValues(trainControl,...
-    {'nStart', 3, 'minimiseOverFirst', trainControl.horizon,...
-    'suppressOutput', true, 'nHidden', 50, 'mseEpochs', 1000});
-
 % Produce data formated for NN training
 [ featureVectors, responseVectors ] = ...
-    computeFeatureResponseVectors( demand, trainControl.nLags, ...
-    trainControl.horizon);
+    computeFeatureResponseVectors( demand, cfg.fc.nLags, cfg.sim.horizon);
 
 nObservations = size(featureVectors,2);
-nObservationsTrain = floor(nObservations*trainRatio);
+nObservationsTrain = floor(nObservations*cfg.fc.trainRatio);
 nObservationsTest = nObservations - nObservationsTrain;
 
 idxs = randperm(nObservations);
 idxsTrain = idxs(1:nObservationsTrain);
 idxsTest = idxs(nObservationsTrain+(1:nObservationsTest));
+
 featureVectorsTrain = featureVectors(:,idxsTrain);
-responseVectorsTrain = responseVectors(:,idxsTrain);
 featureVectorsTest = featureVectors(:,idxsTest);
+
+responseVectorsTrain = responseVectors(:,idxsTrain);
 responseVectorsTest = responseVectors(:,idxsTest);
 
-nStart = trainControl.nStart;
+performances = zeros(1, cfg.fc.nStart);
+allNets = cell(1, cfg.fc.nStart);
+allForecasts = cell(1, cfg.fc.nStart);
 
-performance = zeros(1, nStart);
-allNets = cell(1, nStart);
-allForecasts = cell(1, nStart);
-
-for iStart = 1:nStart
+for iStart = 1:cfg.fc.nStart
     allNets{1, iStart} = trainFfnn( featureVectorsTrain,...
-        responseVectorsTrain, lossType, trainControl);
+        responseVectorsTrain, lossType, cfg.fc);
+    
     allForecasts{1, iStart} = forecastFfnn(cfg, allNets{1, iStart},...
         featureVectorsTest);
     
-    performance(1, iStart) = mean(lossType(responseVectorsTest( ...
-        1:trainControl.minimiseOverFirst, :), ...
-        allForecasts{1, iStart}(1:trainControl.minimiseOverFirst, :)), 2);
+    performances(1, iStart) = mean(lossType(responseVectorsTest( ...
+        1:cfg.fc.minimiseOverFirst, :), ...
+        allForecasts{1, iStart}(1:cfg.fc.minimiseOverFirst, :)), 2);
 end
 
-[~, idxBest] = min(performance);
+[~, idxBest] = min(performances);
 
 % Output performance of each model if difference is > threshold
-percentageDifference = (max(performance) - min(performance)) / ...
-    min(performance);
+percentageDifference = (max(performances) - min(performances)) / ...
+    min(performances);
 
-if percentageDifference > trainControl.performanceDifferenceThreshold
+if percentageDifference > cfg.fc.perfDiffThresh
     
     disp(['Percentage Difference: ' num2str(100*percentageDifference)...
-        '. Performances: ' num2str(performance) ...
+        '. Performances: ' num2str(performances) ...
         '. Loss Fcn: ' func2str(lossType)]);
 end
 

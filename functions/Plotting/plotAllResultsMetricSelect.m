@@ -1,9 +1,16 @@
 function plotAllResultsMetricSelect(cfg, results)
 
 % plotAllResultsMetricSelect: Plot outputs from 'trainAllForecasts' and
-% 'testAllFcasts' functions.
+    % 'testAllFcasts' functions.
+    
+% INPUTS:
+% cfg:      structure of running options
+% results:  structure of results from simulations
 
-% Expand fields (of data structures)
+% OUTPUTS:
+% none - plot to screen, and saving of plots only.
+
+%% Etract results variables
 meanKWhs = results.meanKWhs;
 peakReductionsTrialFlattened = results.peakReductionsTrialFlattened;
 smallestExitFlag = results.smallestExitFlag;
@@ -23,6 +30,7 @@ nInstances = cfg.sim.nInstances;
 nAggregates = cfg.sim.nAggregates;
 nCustomers = cfg.sim.nCustomers;
 nTrainMethods = cfg.fc.nTrainMethods;
+
 
 %% 1) Plot all individual peak reduction ratios VS Aggregation Size
 % With subplots for absolute and relative performance
@@ -67,6 +75,9 @@ hold on
 % Plot warning circles about optimality
 warnPeakReductions = peakReductionsRelativeTrialFlattened(...
     smallestExitFlag < 1);
+if (isempty(warnPeakReductions))
+    warnPeakReductions = -1;
+end
 plot(warnkWhs, warnPeakReductions, 'ro', 'markers', 20);
 xlabel('Mean Load [kWh/interval]');
 ylabel(['Mean PRR relative to Perfect Forecast, ' num2str(nDaysTrain)...
@@ -79,6 +90,8 @@ legend([allMethodStrings, {'Some intervals not solved to optimality'}],...
 hold off;
 print(fig_1, '-dpdf', [cfg.sav.resultsDir filesep 'allPrrResults.pdf']);
 plotAsTikz([cfg.sav.resultsDir filesep 'allPrrResults.tikz']);
+
+
 
 %% 2) Plot Absolute PRR against aggregation size (as means +/- error bars)
 
@@ -118,15 +131,19 @@ fig_3 = figure();
 
 meanPeakReductionsRelative = ...    % nCustomers X forecastTypes
     squeeze(mean(peakReductionsRelative(selectedForecasts, :, :), 2));
+
 stdPeakReductionsRelative = ...
     squeeze(std(peakReductionsRelative(selectedForecasts, :, :),[], 2));
+
 errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
     meanPeakReductionsRelative',stdPeakReductionsRelative','.-',...
     'markers', 20);
+
 xlabel('Mean Load [kWh/interval]');
 ylabel('Mean relative PRR, with +/- 1.0 std. dev.');
 legend(selectedForecastLabels, 'Interpreter', 'none',...
     'Location', 'best', 'Orientation', 'vertical');
+
 grid on;
 hold off;
 
@@ -136,6 +153,8 @@ print(fig_3, '-dpdf', [cfg.sav.resultsDir filesep ...
 plotAsTikz([cfg.sav.resultsDir filesep ...
     'relativePrrVsAggregationSize.tikz']);
 
+
+
 %% 4) BoxPlots of Rel/Abs PRR for each Method (across all instances)
 
 fig_4 = figure();
@@ -143,8 +162,10 @@ fig_4 = figure();
 subplot(1, 2, 1);
 peakReductionsFlattened = ...
     squeeze(peakReductionsTrialFlattened(selectedForecasts, :));
+
 boxplot(peakReductionsFlattened', 'labels', selectedForecastLabels,...
     'plotstyle', 'compact');
+
 ylabel('Mean PRR []');
 grid on;
 
@@ -152,8 +173,10 @@ grid on;
 subplot(1, 2, 2);
 peakReductionsRelativeFlattened = ...
     squeeze(peakReductionsRelativeTrialFlattened(selectedForecasts, :));
+
 boxplot(peakReductionsRelativeFlattened', 'labels', ...
     selectedForecastLabels, 'plotstyle', 'compact');
+
 ylabel('Mean PRR relative to perfect forecast');
 grid on;
 
@@ -162,6 +185,8 @@ print(fig_4, '-dpdf', [cfg.sav.resultsDir filesep ...
 
 plotAsTikz([cfg.sav.resultsDir filesep ...
     'allPrrResultsBoxPlot.tikz']);
+
+
 
 %% 5) Plots showing performace of each Forecast Against the different
 % Error metrics (look at only BestPfem and BestPemd metrics to keep
@@ -220,7 +245,7 @@ for ii = 1:length(metricsToPlotStrings);
 end
 
 % Find indexes of forecasts to plot
-methodsNotToPlotStrings = {'forecastFree', 'setPoint'};
+methodsNotToPlotStrings = {'setPoint'};
 methodsNotToPlotIdx = [];
 for ii = 1:length(methodsNotToPlotStrings);
     methodsNotToPlotIdx = [methodsNotToPlotIdx, ...
@@ -232,7 +257,7 @@ selectedForecasts = setdiff(1:nMethods, methodsNotToPlotIdx);
 
 for eachMetricIdxIdx = 1:length(metricsToPlotIdx)
     eachMetricIdx = metricsToPlotIdx(eachMetricIdxIdx);
-    subplot(2, ceil(nTrainMethods/2), eachMetricIdxIdx);
+    subplot(1, length(metricsToPlotIdx), eachMetricIdxIdx);
     
     errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
         squeeze(lossTestResultsMeanOverTrials(selectedForecasts, :, ...

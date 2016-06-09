@@ -1,7 +1,7 @@
 % file: trainFfnn.m
 % auth: Khalid Abdulla
 % date: 21/10/2015
-% brief: Train a single FFNN forecast model.
+% brief: Train a single FFNN forecast model, to a given loss function
 
 function outputNet = trainFfnn( featureVectorTrain, responseVectorTrain,...
     lossType, trainControl)
@@ -21,6 +21,7 @@ hiddenLayerSize = trainControl.nHidden;
 
 trainFcn = 'trainscg';
 % trainFcn = 'traingd';
+
 outputNet = fitnet(hiddenLayerSize,trainFcn);
 
 % Choose Input and Output Pre/Post-Processing Functions
@@ -45,6 +46,7 @@ if isfield(trainControl, 'sigmaValue')
 
 if isfield(trainControl, 'lambdaValue')
     outputNet.trainParam.lambda = trainControl.lambdaValue; end
+
 
 %% MSE pre-training (done even if lossType is MSE)
 originalEpochs = outputNet.trainParam.epochs;
@@ -78,8 +80,8 @@ end
 outputNet.userdata.lossType = func2str(lossType);
 outputNet.userdata.minimiseOverFirst = trainControl.minimiseOverFirst;
 
-%% Train the Network
 
+%% Train the Network
 nObservations = size(featureVectorTrain, 2);
 
 if isfield(trainControl, 'batchSize')
@@ -129,7 +131,8 @@ outputNet.userdata.trainIndL = length(tr.trainInd(:));
 outputNet.userdata.trainStop = tr.stop;
 
 if strcmp(tr.stop, 'Maximum time elapsed.')
-    disp(['Warning: FFNN Training halted due to maximum time. Loss type: ' func2str(lossType)]);
+    disp(['Warning: FFNN Training halted due to maximum time. '...
+        'Loss type: ' func2str(lossType)]);
 end
 
 end

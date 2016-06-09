@@ -14,7 +14,7 @@ h = 48;
 nIndTrain = 48*200;
 nIndFcast = 48*7*4;
 trainControl.minimiseOverFirst = h;
-trainControl.seasonality = S;
+trainControl.season = S;
 
 % === Seed for repeatability ===
 rng(42);

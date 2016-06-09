@@ -2,32 +2,33 @@
 
 function [loss] = lossSarma (cfg, parameterValues, demand, lossType)
 
-% parameters:   current values of forecast parameters
-% demand:       historic time series on which to base loss
-% lossType:     handle to loss function
-% k:            horizon of forecast to evaluate
+% INPUT
+% cfg:              structure with all of the running options
+% parameterValues:  current values of forecast parameters
+% demand:           historic time series on which to base loss
+% lossType:         handle to loss function
 
 % For all time-steps in demand for which forecast can be evaluated, make a
-% forecast over k-steps, and compute the loss
+% forecast over cfg.sim.horizon steps ahead and compute the loss
 
 % First find featureVectors (to feed to SARMA forecaster), and
-% responseVectors (actual performance)
+% responseVectors (actual demand)
 
 if ~cfg.fc.useHyndmanModel
     [ featureVectors, responseVectors ] = ...
-        computeFeatureResponseVectors( demand, cfg.sim.k,...
-        cfg.sim.k);
+        computeFeatureResponseVectors( demand, cfg.fc.season,...
+        cfg.sim.horizon);
 else
     [ featureVectors, responseVectors ] = ...
-        computeFeatureResponseVectors( demand, cfg.sim.k+3,...
-        cfg.sim.k);
+        computeFeatureResponseVectors( demand, cfg.fc.season+3,...
+        cfg.sim.horizon);
 end
 
 nObservations = size(featureVectors, 2);
-forecasts = zeros(nObservations, cfg.sim.k);
+forecasts = zeros(nObservations, cfg.sim.horizon);
 
 parameters.coefficients = parameterValues;
-parameters.k = cfg.sim.k;
+parameters.k = cfg.fc.season;
 
 for iObservation = 1:nObservations
     forecasts(iObservation,:) = forecastSarma(cfg, parameters, ...

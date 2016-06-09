@@ -7,24 +7,22 @@ function [ forecast ] = forecastSarma(cfg, parameters, demand)
 %forecastSarma k-Step forecast using SARMA(3,0)x(1,0)
 
 % INPUTS
-% parameters:     Structure of parameters of SARMA model (including k and s)
+% cfgl:         Structure of settings
+% parameters:   Structure of parameters of SARMA model (incl seasonality k)
 % demand:         historic demand up to *but not including* forecast origin
-% trainControl:   Structure of settings
 
 % OUTPUTS
 % forecast:      [k x 1] array of point forecast values
 
-trainControl = cfg.fc;
+suppressOutput = cfg.fc.suppressOutput;
+useHyndmanModel = cfg.fc.useHyndmanModel;
 
-suppressOutput = trainControl.suppressOutput;
-useHyndmanModel = trainControl.useHyndmanModel;
-
-
-k = parameters.k;               % number of steps into future to forecast
+% TODO: for now seasonality and forecast horizon are assumed the same
+% ideally this assumption would be removed.
+k = parameters.k;                       % No. steps into future to forecast
 coefficients = parameters.coefficients; % model coefficients
 
 % TODO: Assumes order (3,0)x(1,0) would be better to generalise
-
 thetaValues = coefficients(1:3);
 phiValues = coefficients(4);
 

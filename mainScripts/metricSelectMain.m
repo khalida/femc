@@ -11,23 +11,27 @@ LoadFunctions;
 if cfg.updateMex, compileMexes; end;
 % cfg.makeForecast = false;
 
-%% Extract useful demand data only
+%% Load Data, and extract that data which is to be used
 if cfg.makeForecast
     %% Read in DATA
-    load(cfg.sim.dataFileWithPath); % demandData is [nTimestamp x nMeters]
+    load(cfg.sim.dataFileWithPath);
+    % Loads 'demandData' into workspace, a [nTimestamp x nMeters] matrix
     customerIdxs = cell(cfg.sim.nInstances, 1);
     allDemandValues = cell(cfg.sim.nInstances, 1);
     dataLengthRequired = (cfg.sim.nDaysTrain + cfg.sim.nDaysSelect +...
-        cfg.sim.nDaysTest)*cfg.sim.stepsPerHour*cfg.sim.hoursPerDay;
+        cfg.sim.nDaysTest)*cfg.sim.stepsPerDay;
     
     instance = 0;
     for nCustomerIdx = 1:length(cfg.sim.nCustomers)
         for trial = 1:cfg.sim.nAggregates
             instance = instance + 1;
             customers = cfg.sim.nCustomers(nCustomerIdx);
+            
+            % Select random aggregation of customers
             customerIdxs{instance} = ...
                 randsample(size(demandData, 2), customers);
             
+            % And sum their demands for each interval
             allDemandValues{instance} = ...
                 sum(demandData(1:dataLengthRequired,...
                 customerIdxs{instance}), 2);

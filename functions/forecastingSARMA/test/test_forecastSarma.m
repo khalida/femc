@@ -10,7 +10,7 @@ percentThreshold = 1e-3;
 [dataValues, periodLength] = getNoisySinusoid();
 
 trainControl.horizon = periodLength;
-trainControl.seasonality = periodLength;
+trainControl.season = periodLength;
 trainControl.suppressOutput = suppressOutput;
 trainControl.useHyndmanModel = true;
 trainControl.nLags = periodLength;

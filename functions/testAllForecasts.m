@@ -1,12 +1,22 @@
 function [ cfg, results ] = testAllForecasts( cfg, pars, allDemandValues)
 
 % testAllForecasts: Test the performance of all trained (and non-trained)
-% forecasts. First the parameterised forecasts are run to select the
-% best parameters. Then these best selected ones are compared to other
-% methods, on an unseen data-set.
+    % forecasts. First the parameterised forecasts are run to select the
+    % best parameters. Then these best selected ones are compared to other
+    % methods, on an unseen data-set.
+
+% INPUTS:
+% cfg:              structure of running options
+% pars:             trained forecast model parameters
+% allDemandValues   cellarray of demand values for customer aggregations
+
+% OUTPUTS:
+% cfg:              structure of running options with some updates
+% results:          structure of summary results
 
 %% Pre-Allocation
-% Index of the best forecasts for each instance (within cfg.sim.lossTypes)
+% Index of the best forecasts for each instance
+% (within cfg.sim.lossTypes vector)
 bestPfemIdx = zeros(cfg.sim.nInstances, 1);
 bestPemdIdx = zeros(cfg.sim.nInstances, 1);
 
@@ -15,11 +25,6 @@ cfg.sim.forecastSelectionIdxs = (1:...
 
 cfg.sim.testIdxs = (1:(cfg.sim.stepsPerHour*cfg.sim.nHoursTest)) + ...
     cfg.sim.forecastSelectionIdxs(end);
-
-cfg.sim.hourNumberSelection = ...
-    cfg.sim.hourNumber(cfg.sim.forecastSelectionIdxs, :);
-
-cfg.sim.hourNumberTest = cfg.sim.hourNumber(cfg.sim.testIdxs, :);
 
 peakReductions = cell(cfg.sim.nInstances, 1);
 peakPowers = cell(cfg.sim.nInstances, 1);
@@ -31,15 +36,16 @@ for instance = 1:cfg.sim.nInstances
     peakReductions{instance} = zeros(cfg.fc.nMethods,1);
     peakPowers{instance} = zeros(cfg.fc.nMethods,1);
     smallestExitFlag{instance} = zeros(cfg.fc.nMethods,1);
-    lossTestResults{instance} = zeros(cfg.fc.nMethods, cfg.fc.nTrainMethods);
+    lossTestResults{instance} = zeros(cfg.fc.nMethods,...
+        cfg.fc.nTrainMethods);
+    
     meanKWhs(instance) = mean(allDemandValues{instance});
 end
 
-cfg.fc = setDefaultValues(cfg.fc, {'forecastModels', 'FFNN'});
 
 %% Run Models for Forecast selection
 
-% Extract data required from cfg.sim structure for efficiency of parfor
+% Extract data required from cfg structure for efficiency of parfor
 % communications
 batteryCapacityRatio = cfg.sim.batteryCapacityRatio;
 trainIdxs = cfg.sim.trainIdxs;
@@ -50,15 +56,8 @@ pemdRange = cfg.fc.Pemd.range;
 lossTypes = cfg.fc.lossTypes;
 allMethodStrings = cfg.fc.allMethodStrings;
 forecastModels = cfg.fc.forecastModels;
-
-% hourNumberSelection = cfg.sim.hourNumberSelection;
-% stepsPerHour = cfg.sim.stepsPerHour;
 stepsPerDay = cfg.sim.stepsPerDay;
 nInstances = cfg.sim.nInstances;
-
-% Set any default values of cfg.opt structure that aren't already set:
-cfg.opt = setDefaultValues(cfg.opt, {'billingPeriodDays', 1, ...
-    'maxParForTypes', 4});
 
 forecastSelectionTic = tic;
 
@@ -94,8 +93,8 @@ for iRun = 1:nRuns
         peakLocalPower = max(demandValuesSelection);
         
         % Create 'historical load pattern' used for initialization etc.
-        loadPattern = mean(reshape(demandValuesTrain, [cfg.sim.k,...
-            length(demandValuesTrain)/cfg.sim.k]), 2); %#ok<*PFBNS>
+        loadPattern = mean(reshape(demandValuesTrain, [cfg.sim.horizon,...
+            length(demandValuesTrain)/cfg.sim.horizon]), 2); %#ok<*PFBNS>
         
         godCastValues = createGodCast(demandValuesSelection, ...
             cfg.sim.horizon);
@@ -121,24 +120,18 @@ for iRun = 1:nRuns
             % Create a battery and run optimal control:
             battery = Battery(cfg, batteryCapacity);
             
-            [ runningPeak, exitFlag, forecastUsed, ~, ~, ~ ] = ...
-                mpcController(cfg, pars{instance, iForecastType},...
-                godCastValues, demandValuesSelection, loadPattern,...
-                battery, runControl);
+            [ runningPeak, exitFlag, forecastUsed] = mpcController(cfg,...
+                pars{instance, iForecastType}, godCastValues,...
+                demandValuesSelection, loadPattern, battery, runControl);
             
             %% Extract simulation results
             peakReductions{instance}(iForecastType) = ...
                 extractSimulationResults(runningPeak',...
-                demandValuesSelection, cfg.sim.k*...
+                demandValuesSelection, cfg.sim.stepsPerDay*...
                 cfg.opt.billingPeriodDays);
             
             peakPowers{instance}(iForecastType) = peakLocalPower;
             smallestExitFlag{instance}(iForecastType) = min(exitFlag);
-            
-            if strcmp(allMethodStrings{iForecastType}, 'forecastFree');
-                error(['Should not have found forecastFree method ' ...
-                    'during parameter selection']);
-            end
             
             if strcmp(allMethodStrings{iForecastType}, 'setPoint');
                 error(['Should not have found setPoint method ' ...
@@ -199,9 +192,11 @@ cfg.fc.nMethods = length(cfg.fc.allMethodStrings);
 for instance = 1:nInstances
     peakReductions{instance} = zeros(cfg.fc.nMethods,1);
     peakPowers{instance} = zeros(cfg.fc.nMethods,1);
-    smallestExitFlag{instance} = zeros(cfg.fc.nMethods,1);
-    lossTestResults{instance} = zeros(cfg.fc.nMethods, cfg.fc.nTrainMethods);
+    smallestExitFlag{instance} = ones(cfg.fc.nMethods,1);
+    lossTestResults{instance} = zeros(cfg.fc.nMethods,...
+        cfg.fc.nTrainMethods);
 end
+
 
 %% Run Models for Performance Testing
 
@@ -226,15 +221,18 @@ parfor instance = 1:nInstances
     % Separate data for parameter selection and testing
     demandValuesSelection = allDemandValues{instance}(...
         forecastSelectionIdxs);
+    
     demandValuesTest = allDemandValues{instance}(testIdxs);
     peakLocalPower = max(demandValuesTest);
     
     % Create 'historical load pattern' used for initialization etc.
     loadPattern = mean(reshape(demandValuesSelection, ...
-        [cfg.sim.k, length(demandValuesSelection)/cfg.sim.k]), 2);
+        [cfg.fc.season, length(demandValuesSelection)/cfg.fc.season]), 2);
     
     % Create godCast forecasts
     godCastValues = createGodCast(demandValuesTest, cfg.sim.horizon);
+    
+    
     
     %% Test performance of all methods
     
@@ -245,7 +243,7 @@ parfor instance = 1:nInstances
         thisMethodString = allMethodStrings{methodType};
         
         %% Normal forecast-driven or set-point controller
-        
+
         % If we are using 'bestSelected' forecast then set forecast
         % index
         if strcmp(thisMethodString, 'bestPfemSelected')
@@ -268,11 +266,14 @@ parfor instance = 1:nInstances
         
         % If method is set-point then show it current demand
         if(runControl.setPoint)
-            runControl.knowCurrentDemandNow = true;
+            runControl.knowDemandNow = true;
+        else
+            runControl.knowDemandNow = cfg.opt.knowDemandNow;
         end
         
         % Check if forecast is in the set of {Pfem, Pemd} forecasts
         % in which case produce forecast but don't run simulation
+        % (only run test for the 'bestSelected' case).
         if ismember(methodType, [pfemRange, pemdRange])
             runControl.skipRun = true;
         else
@@ -282,10 +283,9 @@ parfor instance = 1:nInstances
         % Create a battery and run optimal control:
         battery = Battery(cfg, batteryCapacity);
         
-        [ runningPeak, exitFlag, forecastUsed, ~, ~, ~ ] = ...
-            mpcController(cfg, pars{instance, iForecastType}, ...
-            godCastValues, demandValuesTest, loadPattern, battery, ...
-            runControl);
+        [ runningPeak, exitFlag, forecastUsed] =  mpcController(cfg,...
+            pars{instance, iForecastType}, godCastValues,...
+            demandValuesTest, loadPattern, battery, runControl);
         
         if ~runControl.skipRun
             
@@ -296,18 +296,17 @@ parfor instance = 1:nInstances
             
             % Extract simulation results
             peakReductions{instance}(methodType) = ...
-                extractSimulationResults(runningPeak',...
-                demandValuesTest, cfg.sim.k*cfg.opt.billingPeriodDays);
+                extractSimulationResults(runningPeak',demandValuesTest, ...
+                cfg.sim.stepsPerDay*cfg.opt.billingPeriodDays);
             
             peakPowers{instance}(methodType) = peakLocalPower;
             smallestExitFlag{instance}(methodType) = min(exitFlag);
         end
         
         % Compute the performance of the forecast by all metrics
-        isForecastFree = strcmp(thisMethodString, 'forecastFree');
         isSetPoint = strcmp(thisMethodString, 'setPoint');
         
-        if (~isForecastFree && ~isSetPoint)
+        if ~isSetPoint
             for iMetric = 1:length(lossTypes)
                 lossTestResults{instance}(methodType, iMetric)...
                     = mean(lossTypes{iMetric}(godCastValues', ...
@@ -331,7 +330,9 @@ disp('Time for Testing Forecasts:'); disp(timeTesting);
 %% Convert to arrays from cellArrays
 % Use for loops to avoid the confusion of reshape statements
 
-peakPowersArray = zeros(nMethods, cfg.sim.nAggregates, length(cfg.sim.nCustomers));
+peakPowersArray = zeros(nMethods, cfg.sim.nAggregates,...
+    length(cfg.sim.nCustomers));
+
 peakReductionsArray = peakPowersArray;
 smallestExitFlagArray = peakPowersArray;
 meanKWhsArray = zeros(cfg.sim.nAggregates, length(cfg.sim.nCustomers));
@@ -361,8 +362,6 @@ for nCustomerIdx = 1:length(cfg.sim.nCustomers)
             smallestExitFlagArray(iMethod, trial, nCustomerIdx) = ...
                 smallestExitFlag{instance}(iMethod, 1);
             
-            
-            
             for metric = 1:nTrainMethods
                 
                 lossTestResultsArray(iMethod, trial, nCustomerIdx, ...
@@ -372,6 +371,7 @@ for nCustomerIdx = 1:length(cfg.sim.nCustomers)
         end
     end
 end
+
 
 %% Fromatting
 % Collapse Trial Dimension

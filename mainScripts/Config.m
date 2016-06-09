@@ -1,5 +1,3 @@
-function cfg = Config(pwd)
-
 %% Global Configuration File
 
 %% Save all configuration options in 'cfg' structure, divided into
@@ -8,6 +6,8 @@ function cfg = Config(pwd)
 % cfg.sim:  for simulation settings
 % cfg.plt:  for plotting settings
 % cfg.sav:  for saving settings
+
+function cfg = Config(pwd)
 
 %% Input Data file
 [parentFold, ~, ~] = fileparts(pwd);
@@ -18,7 +18,7 @@ cfg.sim.dataFileWithPath = ...
 timeStart = clock;
 disp('Time started: '); disp(timeStart);
 
-% Create timeString for folder in which to save data:
+% Create timeString for folder in which to save data YYYY_MM_DD_HHMM:
 timeString = [num2str(timeStart(1)), '_',...
     num2str(timeStart(2),'%0.2d'), '_', ...
     num2str(timeStart(3),'%0.2d'), '_', num2str(timeStart(4),'%0.2d'), ...
@@ -28,85 +28,82 @@ cfg.sav.resultsDir = [parentFold filesep 'results' filesep timeString];
 mkdir(cfg.sav.resultsDir);
 
 %% Instances
-cfg.sim.nCustomers = [1, 5, 25, 125]; % [1, 5, 25, 125];
-cfg.sim.nAggregates = 2;
+cfg.sim.nCustomers = [1, 5, 25, 125];   % [1, 5, 25, 125];
+cfg.sim.nAggregates = 6;
 cfg.sim.nInstances = length(cfg.sim.nCustomers) * cfg.sim.nAggregates;
 cfg.sim.nProc = min(cfg.sim.nInstances, 4);
-cfg.sim.nStochasticForecasts = 50;        % 100;
-cfg.sim.relativeSizeError = 0.5;
-cfg.fc.forecastModels = 'FFNN';         % 'SARMA', 'FFNN'
 
 %% Battery Properties
 cfg.sim.batteryCapacityRatio = 0.05;    % fraction of daily avg demand
 cfg.sim.batteryChargingFactor = 1;      % ratio of charge rate:capacity
 
 %% Simulation Duration and properties
-cfg.sim.nDaysTrain = 200;       %200;   % days of historic demand data
-cfg.sim.nDaysSelect = 56;      %56;    % to select forecast parameters
-cfg.sim.nDaysTest = 56;        %56;    % days to run simulation for
-cfg.sim.stepsPerHour = 2;      % Half-hourly data
+cfg.sim.nDaysTrain = 200;               % days of historic demand data
+cfg.sim.nDaysSelect = 56;               % to select forecast parameters
+cfg.sim.nDaysTest = 56;                 % days to run simulation for
+cfg.sim.stepsPerHour = 2;               % Half-hourly data
 cfg.sim.hoursPerDay = 24;
-cfg.sim.k = 48;                % horizon & seasonality (assumed same)
-cfg.sim.horizon = cfg.sim.k;
+cfg.sim.horizon = 48;                   % Forecast/control horizon
+cfg.sim.visiblePlots = 'on';
 
 %% Forecast training options
-cfg.fc.nHidden = 50; %50;
-cfg.fc.suppressOutput = false;
-cfg.fc.nStart = 3; %3;
-cfg.fc.mseEpochs = 1000; %1000; % No. of MSE epochs for pre-training
-cfg.fc.minimiseOverFirst = 48;  % # of fcast steps to minimise over
-cfg.fc.batchSize = 1000; %1000;
-cfg.fc.maxTime = 45; %15;       % maximum training time in mins
-cfg.fc.maxEpochs = 1000; %1000; % maximum No. of epochs
-cfg.fc.trainRatio = 0.8;        % to train each net on
-cfg.fc.nLags = cfg.sim.k;
-cfg.fc.horizon = cfg.sim.k;
-cfg.fc.performanceDifferenceThreshold = 0.05;
-cfg.fc.nBestToCompare = 1;
+cfg.fc.forecastModels = 'FFNN';         % 'SARMA', 'FFNN'
+cfg.fc.season = 48;                     % No. of intervals in a season
+cfg.fc.nHidden = 50;                    % Nodes in hidden layer
+cfg.fc.suppressOutput = true;
+cfg.fc.perfDiffThresh = 0.05;           % [%] Before warnings displayed
+cfg.fc.nStart = 2;                      % No. random initializations
+cfg.fc.nMaxSarmaStarts = 20;            % If best nStart not within thresh
 cfg.fc.nDaysPreviousTrainSarma = 10;
 cfg.fc.useHyndmanModel = false;
-cfg.fc.seasonality = cfg.sim.k;
+cfg.fc.mseEpochs = 1000;                % No. of MSE (pre-train) epochs
+cfg.fc.minimiseOverFirst = 1;          % No. fcast intervals to min. over
+% cfg.fc.batchSize = 1000;              % Optional, No. data-point in batch
+cfg.fc.maxTime = 45;                    % Max train time [min]
+cfg.fc.maxEpochs = 1000;                % Max No. of train epochs
+cfg.fc.trainRatio = 0.8;                % rest for early-stopping
+cfg.fc.nLags = cfg.fc.season;           % No. of univariate lags
 
 % PFEM Parameter Gridsearch points
-cfg.fc.Pfem.alphas = [1, 2];     % 2
-cfg.fc.Pfem.betas = 2; %[2];      % 2
-cfg.fc.Pfem.gammas = [1, 4];       % 2
-cfg.fc.Pfem.deltas = [0, 1];        % 1
+cfg.fc.Pfem.alphas = [1, 2];        % 2
+cfg.fc.Pfem.betas =  2;              % 2
+cfg.fc.Pfem.gammas = 2; %[1, 4];        % 2
+cfg.fc.Pfem.deltas = 1; %[0, 1];        % 1
 
 % EMD Parameter Gridsearch points
-cfg.fc.Pemd.as = [10, 50];       % 10
-cfg.fc.Pemd.bs = [0.5, 1];         % 0.5  a*b must be >= d
-cfg.fc.Pemd.cs = [0.5, 1];         % 0.5
-cfg.fc.Pemd.ds = 4; %[5];           % 4
+cfg.fc.Pemd.as = [10, 50];       	% 10
+cfg.fc.Pemd.bs = 0.5; %[0.5, 1];          % 0.5  a*b must be >= d
+cfg.fc.Pemd.cs = 0.5; %[0.5, 1];          % 0.5
+cfg.fc.Pemd.ds = 4;                 % 4
 
 % Other loss functions to consider, and additional control methods:
 cfg.fc.otherLossHandles = {@lossMse, @lossMape};
 cfg.fc.additionalMethods = {'naivePeriodic', 'godCast', 'setPoint'};
 
 %% (MPC) Optimization options
-cfg.opt.knowCurrentDemandNow = false; % Current demand known to optimizer?
+cfg.opt.knowDemandNow = false;      % Demand now known to controller?
 cfg.opt.clipNegativeFcast = true;
-cfg.opt.iterationFactor = 1.0;        % To apply to default max iterations
-cfg.opt.rewardMargin = false;         % Reward margin from new pk?
-cfg.opt.SPrecourse = true;            % use setPoint recourse?
+cfg.opt.iterationFactor = 1.0;      % To apply to default max iterations
+cfg.opt.rewardMargin = true;        % Reward margin from new pk?
+cfg.opt.setPointRecourse = true;    % use setPoint recourse?
 cfg.opt.billingPeriodDays = 7;
 cfg.opt.resetPeakToMean = true;
-cfg.opt.maxParForTypes = 4;
+cfg.opt.maxParForTypes = 8;         % Limit length of single parfor loop
 cfg.opt.chargeWhenCan = false;
-cfg.opt.secondWeight = 0;% 1e-4;      % of charrge-encouraging Objective
+cfg.opt.secondWeight = 0;           % Of secondary charge-encouraging obj.
 cfg.opt.suppressOutput = cfg.fc.suppressOutput;
 
-cfg.sim.visiblePlots = 'on';
 
 %% Misc.
-cfg.updateMex = true;
+cfg.updateMex = false;
 cfg.makeForecast = true;
-rng(42);
+rng(42);                            % Seed for repeatability
 cfg.plt.savePlots = true;
-cfg.sim.eps = 1e-10;
+cfg.sim.eps = 1e-8;                % Small No. to avoid rounding issues
 
 
 %% Produce Derived values (no new settings below this line)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cfg.sim.stepsPerDay = cfg.sim.stepsPerHour*cfg.sim.hoursPerDay;
 cfg.sim.nHoursTrain = cfg.sim.hoursPerDay*cfg.sim.nDaysTrain;
 cfg.sim.nHoursTest = cfg.sim.hoursPerDay*cfg.sim.nDaysTest;
@@ -118,19 +115,19 @@ for ii = 1:length(cfg.sim.nCustomers);
     %#ok<*AGROW>
 end
 
-if cfg.opt.knowCurrentDemandNow
-    CDstring = '_withCD';
+if cfg.opt.knowDemandNow
+    dnstring = '_withDN';
 else
-    CDstring = '_noCD';
+    dnstring = '_noDN';
 end
 
 cfg.sav.intermediateFileName = [cfg.sav.resultsDir filesep 'nCust_' ...
     nCustString '_batt_' num2str(100*cfg.sim.batteryCapacityRatio) ...
-    'pc__nAgg_' num2str(cfg.sim.nAggregates) CDstring '_intermediate.mat'];
+    'pc__nAgg_' num2str(cfg.sim.nAggregates) dnstring '_intermediate.mat'];
 
 cfg.sav.finalFileName = [cfg.sav.resultsDir filesep 'nCust_' nCustString...
     '_batt_' num2str(100*cfg.sim.batteryCapacityRatio) 'pc__nAgg_' ...
-    num2str(cfg.sim.nAggregates) CDstring '.mat'];
+    num2str(cfg.sim.nAggregates) dnstring '.mat'];
 
 %% Generate PFEM grid-serach rows
 cfg.fc.Pfem.num = length(cfg.fc.Pfem.alphas)*length(cfg.fc.Pfem.betas)*...

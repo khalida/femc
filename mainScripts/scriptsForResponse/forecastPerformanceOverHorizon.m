@@ -51,12 +51,6 @@ for instance = 1:nInstances
     meanMseValues{instance} = zeros(nMethods, testLength);
 end
 
-% Allocate half-hour-of-day indexes
-hourNumber = mod((1:size(demandData, 1))', k);
-hourNumberTrain = hourNumber(1:trainLength);
-cfg.fc.hourNumberTrain = hourNumberTrain;
-hourNumberTest = zeros(testLength, nTests);
-
 % Test Data
 actualValuesAll = zeros(nInstances, testLength, nTests);
 
@@ -73,7 +67,6 @@ for nCustIdx = 1:length(nCustomers)
             testIdx = (trainLength+iTest):(trainLength+iTest+testLength-1);
             actualValuesAll(instance, :, iTest) = ...
                 allDemandValues(instance, testIdx)';
-            hourNumberTest(:, iTest) = hourNumber(testIdx);
         end
     end
 end

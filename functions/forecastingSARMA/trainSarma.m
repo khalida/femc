@@ -8,12 +8,13 @@
 function parametersOut = trainSarma(cfg, demand, lossType)
 
 % INPUTS
+% cfg:          structure with running options
 % demand:       time history of demands on which to train the model [T x 1]
 % lossType:     is a handle to the loss function
-% cfg.fc: is a structure with various train control parameters
 
 % OUTPUTS
 % parametersOut: are the optimal parameters found by the training
+
 
 %% Select some initial parameters, and bounds
 % Assume model (3,0)x(1,0)
@@ -25,35 +26,27 @@ upperBound = 1 - eps;
 
 % Initialisation
 % No. of random initializations to try, increased if results differ
-nInitializations = 3;
-maxInitializations = 20;
+nInitializations = cfg.fc.nStart;
+maxInitializations = cfg.fc.nMaxSarmaStarts;
 k = cfg.fc.nLags;
 
-% Set some default values in cfg.fc (if not already set)
-cfg.fc = setDefaultValues(cfg.fc, ...
-    {'nDaysPreviousTrainSarma', 20});
-
-% Limit training length to 20-days
+% Limit training length to certain number of days
 % (based on testing with aggregations of 20 customers)
-if length(demand) > (cfg.fc.nDaysPreviousTrainSarma*k)
-    demand = demand((end-cfg.fc.nDaysPreviousTrainSarma*k +...
-        1):end);
+if length(demand) > (cfg.fc.nDaysPreviousTrainSarma*cfg.sim.stepsPerDay)
+    demand = demand((end-cfg.fc.nDaysPreviousTrainSarma*...
+        cfg.sim.stepsPerDay + 1):end);
 end
 
-nParameters = 4;  % theta_1, theta_2, theta_3, and phi_1
+nParameters = 4;  % theta_1, theta_2, theta_3, phi_1
 allParametersInitial = lowerBound + ...
     (upperBound-lowerBound)*rand(nInitializations, nParameters);
+
 allParametersFinal = zeros(nInitializations, nParameters);
 allLoss = zeros(nInitializations, 1);
 
 % Set bounds for each par
 allLowerBounds = lowerBound.*ones(size(allParametersInitial(1,:)));
 allUpperBounds = upperBound.*ones(size(allParametersInitial(1,:)));
-
-% Handle cfg.fc settings, set to default values when not specified
-cfg.fc = setDefaultValues( cfg.fc,...
-    {'suppressOutput', false, 'performanceDifferenceThreshold', 0.02, ...
-    'nBestToCompare', 3, 'useHyndmanModel', false});
 
 for iInit = 1:nInitializations;
     
@@ -83,19 +76,18 @@ for iInit = 1:nInitializations;
     
 end
 
-% Results matrix stores asscending loss in 1st column,
+% Results matrix stores ascending loss in 1st column,
 % and associated parameters in subsequent columns
 resultsMatrix = [allLoss, allParametersFinal];
 resultsMatrix = sortrows(resultsMatrix, 1);
-bestLoss = resultsMatrix(1:cfg.fc.nBestToCompare, 1);
+bestLoss = resultsMatrix(1:cfg.fc.nStart, 1);
 percentageDifference = (max(bestLoss) - min(bestLoss))./min(bestLoss);
-outsideTolerance = percentageDifference > ...
-    cfg.fc.performanceDifferenceThreshold;
+outsideTolerance = percentageDifference > cfg.fc.perfDiffThresh;
 
 while outsideTolerance && size(resultsMatrix, 1) < maxInitializations
     numRows = size(resultsMatrix, 1);
     
-    for iInit = numRows+(1:3);
+    for iInit = numRows+(1:nInitializations);
         
         thisParametersInitial = lowerBound + ...
             (upperBound-lowerBound)*rand(1, nParameters);
@@ -114,19 +106,18 @@ while outsideTolerance && size(resultsMatrix, 1) < maxInitializations
     end
     
     resultsMatrix = sortrows(resultsMatrix, 1);
-    bestLoss = resultsMatrix(1:cfg.fc.nBestToCompare, 1);
+    bestLoss = resultsMatrix(1:cfg.fc.nStart, 1);
     percentageDifference = (max(bestLoss) - min(bestLoss))./min(bestLoss);
-    outsideTolerance = percentageDifference > ...
-        cfg.fc.performanceDifferenceThreshold;
+    outsideTolerance = percentageDifference > cfg.fc.perfDiffThresh;
 end
 
 % Select best model (will be at top as resultsMatrix has been sorted)
 bestLoss = resultsMatrix(1, 1);
 bestParameters = resultsMatrix(1, 2:end);
 
-if(~cfg.fc.suppressOutput); disp(bestLoss); end
+if(~cfg.fc.suppressOutput); disp('Best SARMA loss:'); disp(bestLoss); end
 
-% If we have run into maximum number if initializations
+% If we have run into max No. of initializations,
 % display the losses of all initializations:
 if size(resultsMatrix, 1) >= maxInitializations
     warning('Maximim No. of SARMA initalisations reached, allLosses:');

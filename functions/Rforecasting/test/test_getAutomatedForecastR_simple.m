@@ -12,7 +12,7 @@ dataLenthTotal = dataLengthTrain + dataLengthTest;
 
 % === Train Control Structure: ===
 trainControl.minimiseOverFirst = period;
-trainControl.seasonality = period;
+trainControl.season = period;
 
 % === Seed for repeatability ===
 rng(42);

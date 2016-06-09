@@ -14,7 +14,7 @@ cd(tmpName);
 
 %% Write historic (& other info) as columns
 csvwrite('historicData.csv', dataValues(:));
-csvwrite('seasonality.csv', trainControl.seasonality);
+csvwrite('seasonality.csv', trainControl.season);
 csvwrite('intervalsToForecast.csv', trainControl.horizon);
 csvwrite('order.csv', order(:));
 csvwrite('seasonalOrder.csv', seasonalOrder(:));

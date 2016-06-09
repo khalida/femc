@@ -1,19 +1,19 @@
 function [energyToBattery, exitFlag] = controllerOptimizer(cfg, ...
     forecast, demandNow, battery, peakSoFar)
 
-% controllerOptimizer: Optimise the control given a forecast of demand
-%                       using linear program
+% controllerOptimizer: Optimize the control given a forecast of demand
+%                       using linear program (or SP heuristic).
 
 %% INPUTS:
 % cfg:              Structure of running options
-% forecast:         Demand forecast for next k steps [kWh]
+% forecast:         Demand forecast for next k intervals [kWh]
 % demandNow:        Actual demand for current interval [kWh]
-% battery:          Structure containing information about the batt [kWh]
+% battery:          Object containing information about the batt
 % peakSoFar:        Running peak demand in billing period [kWh]
 
 %% OUTPUTS:
 % energyToBattery:  [kWh] batt charge energy during horizon [horizon x 1]
-% exitFlag:         Status flag of the linear program solver (1 is good)
+% exitFlag:         Status flag of the linear program solver (1 is good!)
 
 if cfg.opt.clipNegativeFcast
     forecast = max(forecast, 0);
@@ -25,12 +25,11 @@ if horizon ~= cfg.sim.horizon
     error('Forecast not of correct horizon length');
 end
 
-if cfg.opt.knowCurrentDemandNow 
+if cfg.opt.knowDemandNow
     forecast(1) = demandNow;
 end
 
 %% Make setPoint decision; otherwise solve linear program
-% NB: respecting SoC limits is handled within mpcController()
 if cfg.opt.setPoint
     
     %% SET-POINT CONTROL
@@ -62,9 +61,8 @@ else
     % the running peak (this number can be negative, and equals x_(k+1) if
     % x_(k+1) is positive)
     
-    % Objective is  1) Minimise positive exceedance of running peak
-    %               2) (Secondary) maximise negative exceedance of running
-                            % peak (margin from positive exceedance)
+    % Objective is  1) Minimise (positive) exceedance of running peak
+    %               2) (Secondary) encourage charging behavior
     
     f = [zeros(horizon, 1); 1; 0];
     
@@ -111,7 +109,8 @@ else
     A = [A; eye(horizon, horizon), zeros(horizon, 1), ones(horizon, 1).*-1];
     b = [b; peakSoFar - forecast];
     
-    % 5. Constrain 1..k variables to be >= -forecast (don't allow expected export)
+    % 5. Constrain 1..k variables to be >= -forecast
+    % (don't allow expected export)
     % Require: x_(i) >= -forecast (for all i in 1:k)
     %          -x_(i)<= forecast (for all i in 1:k)
     A = [A; -eye(horizon, horizon), zeros(horizon, 2)];
@@ -126,7 +125,7 @@ else
     
     % 2. Power withdrawn from battery is bounded by
     %       -maximumChargeEnergy and forecast demand (no export allowed)
-    %       bound x_(k+1) below at 0; primary object is to not exceed peak
+    %       bound x_(k+1) below at 0; primary obj. is to not exceed peak
     %       Leave x_(k_2) unbounded below if we want to reward margin
     if cfg.opt.rewardMargin
         lb = [max(ones([horizon 1]).*-battery.maxChargeEnergy, -forecast);...
@@ -137,8 +136,8 @@ else
     end
     
     % Optimization running options
-    options = optimoptions(@linprog,'Display', 'off', ...
-        'Algorithm', 'dual-simplex');
+    options = optimoptions(@linprog,'Display', 'off'); %, ...
+        % 'Algorithm', 'dual-simplex');
     
     % options.MaxIter = ceil(cfg.opt.iterationFactor*options.MaxIter);
     

@@ -1,13 +1,12 @@
-function [ runningPeak, exitFlag, forecastUsed, respVecs, featVecs, ...
-    b0_raw ] = mpcController(cfg, trainedModel, godCast, demand, ...
-    demandDelays, battery, runControl)
+function [ runningPeak, exitFlag, forecastUsed] = mpcController(cfg,...
+    trainedModel, godCast, demand,demandDelays, battery, runControl)
 
 % mpcController: Simulate time series behaviour of MPC controller with a
-% given forecast model (or FF controller).
+% given forecast model.
 
 %% INPUTS:
 % cfg:          Structure with all the running parameters
-% trainedModel: Trained forecast (or FF controller) model
+% trainedModel: Trained forecast model
 % godCast:      Matrix of perfect foresight forecasts [nIdxs x horizon]
 % demand:       Vector of demand values [nIdxs x 1]
 % demandDelays: Vector of previous demand  values [nLags x 1]
@@ -18,18 +17,15 @@ function [ runningPeak, exitFlag, forecastUsed, respVecs, featVecs, ...
 % runningPeak:  Vector of peakSoFar values [nIdxs x 1]
 % exitFlag:     Vector of status flags (from linear program) [nIdxs x 1]
 % forecastUsed: Matrix of forecasts used [horizon x nIdxs]
-% respVecs:     Matrix of possible response vectors [nResp x nIdxs]
-% featVecs:     Matrix of possible feature vectors [nFeat x nIdxs]
-% b0_raw:       Unconstrained charge decisions from model [nIdxs x 1]
 
 
 %% Initializations
 battery.reset();
 
-% Create zero-size battery for case of sim with no battery
-if isfield(runControl, 'NB') && runControl.NB
-    battery = Battery(cfg, 0.0);
-end
+% Create zero-size battery for case of simulation with no battery
+% if isfield(runControl, 'NB') && runControl.NB
+%     battery = Battery(cfg, 0.0);
+% end
 
 nIdxs = size(godCast, 1);
 daysPassed = 0;
@@ -42,50 +38,26 @@ end
 
 %% Pre-Allocations
 runningPeak = zeros(nIdxs, 1);
-exitFlag = zeros(nIdxs, 1);
+exitFlag = ones(nIdxs, 1);
 forecastUsed = zeros(cfg.sim.horizon, nIdxs);
-if cfg.opt.SPrecourse
-    respVecs = zeros(2, nIdxs);         % [b0; peakPower]
-else
-    respVecs = zeros(1, nIdxs);         % [b0]
-end
-
-% featVec = [demandDelay; stateOfCharge; (demandNow); peakSoFar];
-if cfg.opt.knowCurrentDemandNow
-    nFeatures = cfg.fc.nLags + 3;
-else
-    nFeatures = cfg.fc.nLags + 2;
-end
-featVecs = zeros(nFeatures, nIdxs);
+chargeEnergy = zeros(1, nIdxs);
 
 
 %% Run through time series
-h = waitbar(0, 'Running mpcController');
+% h = waitbar(0, 'Running mpcController');
 
 for idx = 1:nIdxs;
-    waitbar(idx/nIdxs, h);
+    % waitbar(idx/nIdxs, h);
     demandNow = demand(idx);
-    
-    if isfield(runControl, 'randomizeInterval')
-        if mod(idx, runControl.randomizeInterval) == 0
-            battery.randomReset();
-        end
-    end
     
     if runControl.godCast
         forecast = godCast(idx, :)';
         titleString = 'godCast';
         
-    elseif isfield(runControl, 'NB') && runControl.NB
-        forecast = zeros(size(godCast(idx, :)'));
-        titleString = 'NB';
-        
-    elseif isfield(runControl, 'modelCast') && runControl.modelCast
-        forecast = godCast(idx, :)';
-        titleString = 'modelCast';
-        
     elseif runControl.naivePeriodic
-        forecast = demandDelays((end-cfg.sim.horizon+1):end);
+        forecast = demandDelays((end-cfg.fc.season+1):...
+            (end-cfg.fc.season+cfg.sim.horizon));
+        
         titleString = 'NP';
         
     elseif runControl.setPoint
@@ -119,10 +91,13 @@ for idx = 1:nIdxs;
     end
     
     forecastUsed(:, idx) = forecast;
-    
     cfg.opt.setPoint = runControl.setPoint;
     
-    %% STD. FORECAST-BASED OR SP CONTROLLER:
+    if runControl.skipRun
+        continue;
+    end
+    
+    %% STD. FORECAST-BASED OR SP-based CONTROLLER:
     [energyToBattery, exitFlag(idx)] = controllerOptimizer(cfg, ...
         forecast, demandNow, battery, peakSoFar);
     
@@ -130,24 +105,22 @@ for idx = 1:nIdxs;
         peakSoFar]);
     
     energyToBatteryNow = energyToBattery(1);
-    b0_raw = energyToBatteryNow;
-    
     
     % Implement set point recourse, if selected
-    if cfg.opt.SPrecourse
+    if cfg.opt.setPointRecourse
         
         % Check if opt action combined with actual demand exceeds expected
         % peak, & rectify if so:
         if (demandNow + energyToBatteryNow) > peakForecastEnergy
             energyToBatteryNow = peakForecastEnergy - demandNow;
+            
+            % SP recourse has been applied; need to re-apply battery
+            % constraints
+            energyToBatteryNow = battery.limitCharge(energyToBatteryNow);
         end
-        
-        % SP recourse has been applied; need to re-apply battery
-        % constraints
-        energyToBatteryNow = battery.limitCharge(energyToBatteryNow);
     end
     
-    %% Plot first horizon to assis with debugging
+    %% Plot first horizon to assist with debugging
     if ~cfg.opt.suppressOutput && idx == 1
         figure();
         plot([forecast, godCast(idx, :)', ...
@@ -173,11 +146,7 @@ for idx = 1:nIdxs;
     %% Apply control action to plant
     % (subject to rate and state of charnge constraints)
     battery.chargeBy(energyToBatteryNow);
-    respVecs(1, idx) = energyToBatteryNow;
-    
-    if cfg.opt.SPrecourse
-        respVecs(2, idx) = peakForecastEnergy;
-    end
+    chargeEnergy(1, idx) = energyToBatteryNow;
     
     % Compute running peak for saving:
     peakSoFar = max(peakSoFar, demandNow + energyToBatteryNow);
@@ -188,7 +157,7 @@ for idx = 1:nIdxs;
         daysPassed = daysPassed + 1;
     end
     
-    % If we've reached end of billing period, resent the peak tracker
+    % If we've reached end of billing period, reset the peak tracker
     if daysPassed == cfg.opt.billingPeriodDays
         daysPassed = 0;
         
@@ -206,8 +175,8 @@ end
 %% Plot time-series behavior for debugging
 if ~cfg.opt.suppressOutput
     figure();
-    plot([godCast(:, 1), cumsum(respVecs(1,:)') + battery.capacity/2, ...
-        respVecs(1,:)', godCast(:, 1) + respVecs(1,:)', runningPeak]);
+    plot([godCast(:, 1), cumsum(chargeEnergy(1,:)') + battery.capacity/2, ...
+        chargeEnergy(1,:)', godCast(:, 1) + chargeEnergy(1,:)', runningPeak]);
     
     hline = refline(0, battery.capacity); hline.LineWidth = 2;
     hline.Color = 'c';
@@ -220,6 +189,6 @@ if ~cfg.opt.suppressOutput
     title(['All horizons, ' titleString]);
 end
 
-delete(h);
+% delete(h);
 
 end

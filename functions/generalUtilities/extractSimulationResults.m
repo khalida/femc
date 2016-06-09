@@ -1,11 +1,20 @@
-function [ peakReductionRatio ] = extractSimulationResults( ...
-    gridPower, demandValues, billingIntervals)
+function [ peakReductionRatio ] = extractSimulationResults(gridPower,...
+    demandValues, billingIntervals)
 
 % extractSimulationResults: Extract peak reduction from simulation data
+
+% INPUTS:
+% gridPower:            time-series of grid import energies
+% demandValues:         time-series of local demand
+% billingIntervals:     No. of intervals in a billing period
+
+% OUTPUTS:
+% peakReductionRatio:   Mean peak reduction ratio over billing period
 
 if ~isequal(size(gridPower), size(demandValues))
     warning('gridPower and demandValues should have the same size');
 end
+
 nPeriods = floor(length(gridPower)/billingIntervals)*billingIntervals;
 gridPower = gridPower(1:nPeriods);
 demandValues = demandValues(1:nPeriods);
