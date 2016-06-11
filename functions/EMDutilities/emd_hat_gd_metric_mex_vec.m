@@ -18,7 +18,7 @@ if size(Q, 1) ~= N
 end
 
 % Create ground-distance matrix
-threshold = max(3, floor(N/10));              % TODO: need to play with this!
+threshold = max(10, floor(N/10));              % TODO: need to play with this!
 D = ones(N,N).*threshold;
 for i = 1:N
     for j = max([1 i-threshold+1]):min([N i+threshold-1])

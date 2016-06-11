@@ -28,7 +28,7 @@ testOutput_response = outputNet(testInput);
 testPassed = max(abs(testOutput_response-testOutput)) < 1e-4;
 
 if testPassed
-    disp('trainFfnn test PASSED!');
+    disp('test_trainFfnn test PASSED!');
 else
-    error('trainFfnn test FAILED!');
+    error('test_trainFfnn test FAILED!');
 end

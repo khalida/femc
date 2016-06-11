@@ -66,7 +66,7 @@ pass7 = isequal(expectedAll, pfemAll);
 
 %% SUMMARY:
 if pass1 && pass2 && pass3 && pass4 && pass5 && pass6 && pass7
-    disp('lossPfem test PASSED');
+    disp('test_lossPfem test PASSED!');
 else
     error('lossPfem test FAILED');
 end

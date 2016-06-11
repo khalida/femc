@@ -18,6 +18,6 @@ end
 
 % if k ~= 48; warning('Forecast doesnt have 48 steps'); end
 
-loss = mean(abs(t-y)./(t+eps), 1);
+loss = mean(abs((t-y)./(t+eps)), 1);
 
 end
