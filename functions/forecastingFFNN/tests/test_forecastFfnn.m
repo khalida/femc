@@ -1,4 +1,5 @@
 %% Check that it works for a simple forecasting problem
+clearvars;
 
 % Running options:
 periodLength = 48;

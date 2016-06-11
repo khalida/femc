@@ -1,5 +1,5 @@
 %% Test by trying a few random vectors, and confirming result
-
+clearvars;
 testLength = 10;
 
 %% 1) Test with a horizon length of 1:

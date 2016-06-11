@@ -1,18 +1,20 @@
 %% Train and test 'R forecast' and plot performance VS NP forecast
+% Sanity check unit test, not exhaustive.
 
-clearvars; close all; clc;
+clearvars;
 
 % Start the clock!
-tic;
+thisTic = tic;
 
 % === RUNNING OPTIONS ===
-nCustomers = [1, 10];
-nAggregates = 2;
-dataFile = '../../../data/demand_3639.csv';
+nCustomers = 100;
+nAggregates = 1;
+% dataFile = '../../../data/demand_3639.csv';       % When call locally
+dataFile = '../data/demand_3639.csv';               % When call from main
 S = 48*1;
 h = 48;
-nIndTrain = 48*200;
-nIndFcast = 48*7*4;
+nIndTrain = S*200;
+nIndFcast = S*2;
 trainControl.minimiseOverFirst = h;
 trainControl.season = S;
 
@@ -72,9 +74,9 @@ for ii =  1:length(nCustomers)
             MSEs_NP(eachHorizon) = mean((actual - NP).^2);
             MSEs_Rets(eachHorizon) = mean((actual - fcastRets).^2);
             
-            MAPEs_NP(eachHorizon) = mean(((actual-NP)./actual).*100);
-            MAPEs_Rets(eachHorizon) = mean(((actual-fcastRets)...
-                ./actual).*100);
+            MAPEs_NP(eachHorizon) = mean(abs((actual-NP)./actual));
+            MAPEs_Rets(eachHorizon) = mean(abs((actual-fcastRets)...
+                ./actual));
             
             if (eachHorizon==1)
                 
@@ -125,8 +127,7 @@ disp(MAPE_NP);
 disp('MAPE_Rets');
 disp(MAPE_Rets);
 
-
-% Print MAPE of automated forecast method and NP over aggregation level:
+% Plot MAPE of automated forecast method and NP over aggregation level:
 MAPE_NP_mean = mean(MAPE_NP, 2);
 MAPE_NP_std = std(MAPE_NP, [], 2);
 
@@ -154,4 +155,13 @@ legend('NP', 'Rets');
 ylabel('MAPE [%]');
 hold off;
 
-toc;
+disp('time for test_getAutomatedForecastR_onDemand: '); disp(toc(thisTic));
+
+%% Determine pass/fail of test:
+if mean(MSEs_Rets) < mean(MSEs_NP)
+    disp('test_getAutomatedForecastR_onDemand PASSED!');
+else
+    error('test_getAutomatedForecastR_onDemand FAILED');
+end
+
+close all;

@@ -1,4 +1,5 @@
 %% Test lossMape by doing some simple numerical examples:
+clearvars;
 
 %% Allowable relative error:
 relTol = 1e-6;

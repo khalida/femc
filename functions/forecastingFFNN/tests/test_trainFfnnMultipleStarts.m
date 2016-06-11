@@ -1,9 +1,12 @@
 % Test using a simple sinusoidal prediction problem, and confirm
 % performance is improved by running multiple models
+clearvars;
 
+rng(42);
+noiseLvl = 0.5;
 cfg.fc.suppressOutput = false;
 cfg.fc.nHidden = 15;
-cfg.fc.mseEpochs = 6;
+cfg.fc.mseEpochs = 8;
 cfg.fc.minimiseOverFirst = 1;
 cfg.fc.maxTime = 20;
 cfg.fc.maxEpochs = 3;
@@ -22,10 +25,10 @@ timeIndexesTrain = linspace(0, 2*pi*testMultiplier,...
 timeIndexesTest = max(timeIndexesTrain) + timeIndexesTrain;
 
 trainTimeSeries = sin(timeIndexesTrain) + ...
-    rand(size(timeIndexesTrain)).*0.5;
+    rand(size(timeIndexesTrain)).*noiseLvl;
 
 testTimeSeries = sin(timeIndexesTest) + ...
-    rand(size(timeIndexesTrain)).*0.5;
+    rand(size(timeIndexesTrain)).*noiseLvl;
 
 lossType = @lossMse;
 

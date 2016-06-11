@@ -1,5 +1,6 @@
 %% Test lossEmd by doing some simple numerical examples:
 % Not an exhaustive unit test, but better than nothing
+clearvars;
 
 %% Allowable relative error:
 relTol = 1e-5;

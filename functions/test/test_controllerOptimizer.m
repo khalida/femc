@@ -1,5 +1,6 @@
 %% Test by producing a simple case with a perfect forecast, and confirm
 % Optimal solution is found:
+clearvars;
 
 %% Set-up a simple problem:
 cfg.opt.clipNegativeFcast = false;

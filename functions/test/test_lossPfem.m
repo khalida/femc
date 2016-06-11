@@ -1,6 +1,6 @@
 %% Test lossPfem by doing some simple numerical examples:
 % Not an exhaustive unit test, but better than nothing
-
+clearvars;
 tTest1 = ones(10,1);
 yTest1 = ones(10,1);
 parameters = [1, 1, 1, 0];

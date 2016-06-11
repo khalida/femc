@@ -1,13 +1,14 @@
 %% Train and test 'R forecast' and plot performance VS NP forecast
-% for a simple periodic profile
+% for a simple periodic profile (not exhaustive/thorough).
 
-clearvars; close all; clc;
-tic;
+clearvars;
+
+thisTic = tic;
 
 % === RUNNING OPTIONS ===
 period = 48;
-dataLengthTrain = period*50;
-dataLengthTest = period*5;
+dataLengthTrain = period*20;
+dataLengthTest = period*2;
 dataLenthTotal = dataLengthTrain + dataLengthTest;
 
 % === Train Control Structure: ===
@@ -82,3 +83,14 @@ disp('mean(MAPEs_NP)'); disp(mean(MAPEs_NP));
 disp('mean(MAPEs_Rets)'); disp(mean(MAPEs_Rets));
 
 disp('Time taken: '); disp(toc);
+
+disp('time for test_getAutomatedForecastR_simple: '); disp(toc(thisTic));
+
+%% Determine pass/fail of test:
+if mean(MSEs_Rets) < mean(MSEs_NP)
+    disp('test_getAutomatedForecastR_simple PASSED!');
+else
+    error('test_getAutomatedForecastR_simple FAILED');
+end
+
+close all;

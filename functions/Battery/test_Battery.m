@@ -1,5 +1,6 @@
 %% Script to run some simple tests on the Battery class
 % Not exhaustive, but useful as a sanity check.
+clearvars;
 
 % Create new 10kWh battery, with 10kW (dis)charge rate:
 cfg.sim.batteryChargingFactor = 1;

@@ -1,4 +1,5 @@
 %% Test with a few simple examples to confirm expected behaviour
+clearvars;
 
 TestControlIn.value1 = 1;
 TestControlIn.value2 = 2;
@@ -21,7 +22,7 @@ testPassed = testPassed && TestControlOut.value2 == 2;
 testPassed = testPassed && TestControlOut.value3 == 3;
 
 if testPassed
-    disp('setDefualtValues test PASSED!');
+    disp('test_setDefualtValues PASSED!');
 else
-    error('setDefualtValues test FAILED!');
+    error('test_setDefualtValues FAILED');
 end

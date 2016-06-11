@@ -1,7 +1,9 @@
 %% Test by checking the performance against a given time-series for which
 % SARMA(3,0)x(1,0) performs well.
 
-% NB: this effectively also tests the 'lossSarma' function
+% NB: this effectively also tests the 'lossSarma' function, and associated
+% MEX functions.
+clearvars;
 
 %% Running options
 doPlots = true;
@@ -14,49 +16,55 @@ demand = demand + 10;
 
 cfg.fc.suppressOutput = suppressOutput;
 cfg.fc.useHyndmanModel = true;
+cfg.fc.season = periodLength;
+cfg.sim.horizon = periodLength;
 cfg.fc.minimiseOverFirst = periodLength;
 cfg.fc.nDaysPreviousTrainSarma = 20;
-cfg.fc.performanceDifferenceThreshold = 0.02;
-cfg.fc.nBestToCompare = 3;
+cfg.fc.perfDiffThresh = 0.02;
+cfg.fc.nStart = 3;
+cfg.fc.nMaxSarmaStarts = 20;
 cfg.fc.nLags = periodLength;
+
+cfg.sim.stepsPerDay = periodLength;
 
 demandTrain = demand(1:(end-periodLength));
 demandTest = demand((end-periodLength+1):end);
 
 
 %% Test Hyndman model:
-tic;
+thisTic = tic;
 [ parametersHyndman ] = trainSarma( cfg, demandTrain, @lossMse);
-hyndmanTrainTime = toc;
+hyndmanTrainTime = toc(thisTic);
 forecastHyndman = forecastSarma(cfg, parametersHyndman, demandTrain);
 
 %% Numerical pass-fail:
-absolutePercentageErrorsHyndman = abs(forecastHyndman(:) - ...
-    demandTest) ./ abs(demandTest);
+absolutePercentageErrorsHyndman = abs((forecastHyndman(:) - ...
+    demandTest) ./ demandTest);
 
 if max(absolutePercentageErrorsHyndman) < percentThreshold
-    disp('trainSarma hyndman-type test PASSED!');
+    disp('test_trainSarma Hyndman-type test PASSED!');
 else
-    error('trainSarma hyndman-type test FAILED!');
+    error('test_trainSarma Hyndman-type test FAILED!');
 end
-disp(['hyndman training time [s] = ' num2str(hyndmanTrainTime)]);
+disp(['Hyndman-type training time [s] = ' num2str(hyndmanTrainTime)]);
 
-%% Test Sevlian et. al model:
+%% Test Sevlian et. al type model:
 trainControl.useHyndmanModel = false;
-tic;
+thisTic = tic;
 [ parametersSevlian ] = trainSarma(cfg, demandTrain, @lossMse);
-sevlianTrainTime = toc;
+sevlianTrainTime = toc(thisTic);
 forecastSevlian = forecastSarma(cfg, parametersSevlian, demandTrain);
-absolutePercentageErrorsSevlian = abs(forecastSevlian(:) - ...
-    demandTest) ./ abs(demandTest);
+
+absolutePercentageErrorsSevlian = abs((forecastSevlian(:) - ...
+    demandTest) ./ demandTest);
 
 % Numerical pass-fail:
 if (max(absolutePercentageErrorsSevlian) < percentThreshold)
-    disp('forecastSarma sevlian-type test PASSED!');
+    disp('test_trainSarma Sevlian-type test PASSED!');
 else
-    error('forecastSarma sevlian-type test FAILED!');
+    error('test_trainSarma sevlian-type test FAILED!');
 end
-disp(['sevlian training time [s] = ' num2str(sevlianTrainTime)]);
+disp(['Sevlian training time [s] = ' num2str(sevlianTrainTime)]);
 
 %% Do some plotting:
 if doPlots
@@ -64,7 +72,7 @@ if doPlots
     plot(1:length(demand), demand, length(demand) + (1:periodLength), ...
         forecastHyndman);
     xlabel('Index');
-    ylabel('Forecast from hyndman-type model (coefficents from Matlab)');
+    ylabel('Forecast from Hyndman-type model (coefficents from Matlab)');
     grid on;
     
     figure();
@@ -90,3 +98,5 @@ if doPlots
     hold on;
     refline(1, 0);
 end
+
+close all;

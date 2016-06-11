@@ -1,5 +1,6 @@
 % Test using a simple (XOR) logical function, and confirm adequate
 % performance:
+clearvars;
 
 trainControl.suppressOutput = false;
 trainControl.nHidden = 10;
