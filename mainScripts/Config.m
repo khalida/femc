@@ -29,7 +29,7 @@ mkdir(cfg.sav.resultsDir);
 
 %% Instances
 cfg.sim.nCustomers = [1, 5, 25, 125];   % [1, 5, 25, 125];
-cfg.sim.nAggregates = 6;
+cfg.sim.nAggregates = 4;
 cfg.sim.nInstances = length(cfg.sim.nCustomers) * cfg.sim.nAggregates;
 cfg.sim.nProc = min(cfg.sim.nInstances, 4);
 
@@ -52,12 +52,12 @@ cfg.fc.season = 48;                     % No. of intervals in a season
 cfg.fc.nHidden = 50;                    % Nodes in hidden layer
 cfg.fc.suppressOutput = true;
 cfg.fc.perfDiffThresh = 0.05;           % [%] Before warnings displayed
-cfg.fc.nStart = 2;                      % No. random initializations
+cfg.fc.nStart = 3;                      % No. random initializations
 cfg.fc.nMaxSarmaStarts = 20;            % If best nStart not within thresh
-cfg.fc.nDaysPreviousTrainSarma = 10;
+cfg.fc.nDaysPreviousTrainSarma = 14;
 cfg.fc.useHyndmanModel = false;
 cfg.fc.mseEpochs = 1000;                % No. of MSE (pre-train) epochs
-cfg.fc.minimiseOverFirst = 1;          % No. fcast intervals to min. over
+cfg.fc.minimiseOverFirst = 48;          % No. fcast intervals to min. over
 % cfg.fc.batchSize = 1000;              % Optional, No. data-point in batch
 cfg.fc.maxTime = 45;                    % Max train time [min]
 cfg.fc.maxEpochs = 1000;                % Max No. of train epochs
@@ -67,13 +67,13 @@ cfg.fc.nLags = cfg.fc.season;           % No. of univariate lags
 % PFEM Parameter Gridsearch points
 cfg.fc.Pfem.alphas = [1, 2];        % 2
 cfg.fc.Pfem.betas =  2;              % 2
-cfg.fc.Pfem.gammas = 2; %[1, 4];        % 2
-cfg.fc.Pfem.deltas = 1; %[0, 1];        % 1
+cfg.fc.Pfem.gammas = [1, 4];        % 2
+cfg.fc.Pfem.deltas = [0, 1];        % 1
 
 % EMD Parameter Gridsearch points
 cfg.fc.Pemd.as = [10, 50];       	% 10
-cfg.fc.Pemd.bs = 0.5; %[0.5, 1];          % 0.5  a*b must be >= d
-cfg.fc.Pemd.cs = 0.5; %[0.5, 1];          % 0.5
+cfg.fc.Pemd.bs = [0.5, 1];          % 0.5  a*b must be >= d
+cfg.fc.Pemd.cs = [0.5, 1];          % 0.5
 cfg.fc.Pemd.ds = 4;                 % 4
 
 % Other loss functions to consider, and additional control methods:
