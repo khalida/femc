@@ -1,4 +1,5 @@
-% Unit test using a typical example
+%% Single Unit test using a simple example (not exhaustive)
+clearvars;
 
 timeSeries = 1:10;
 nLags = 4;
@@ -12,7 +13,6 @@ isFeatureVectorCorrect = isequal(featureVectors,...
     3, 4, 5, 6;
     4, 5, 6, 7]');
 
-
 isResponseVectorCorrect = isequal(responseVectors,...
     [5, 6, 7;
     6, 7, 8;
@@ -20,7 +20,7 @@ isResponseVectorCorrect = isequal(responseVectors,...
     8, 9, 10]');
 
 if isFeatureVectorCorrect && isResponseVectorCorrect
-    disp('computeFetureResponseVectors TEST PASSED!');
+    disp('test_computeFetureResponseVectors PASSED!');
 else
-    error('computeFetureResponseVectors TEST FAILED!');
+    error('test_computeFetureResponseVectors FAILED');
 end

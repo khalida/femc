@@ -29,7 +29,7 @@ mkdir(cfg.sav.resultsDir);
 
 %% Instances
 cfg.sim.nCustomers =  [1, 10, 100, 1000];
-cfg.sim.nAggregates = ;
+cfg.sim.nAggregates = 6;
 cfg.sim.nInstances = length(cfg.sim.nCustomers) * cfg.sim.nAggregates;
 cfg.sim.nProc = min(cfg.sim.nInstances, 4);
 
@@ -66,13 +66,13 @@ cfg.fc.nLags = cfg.fc.season;           % No. of univariate lags
 
 % PFEM Parameter Gridsearch points
 cfg.fc.Pfem.alphas = [1, 2];        % 2
-cfg.fc.Pfem.betas =  [1, 2];              % 2
-cfg.fc.Pfem.gammas = [1, 4]; %[1, 4];        % 2
-cfg.fc.Pfem.deltas = [0, 1]; %[0, 1];        % 1
+cfg.fc.Pfem.betas =  2;              % 2
+cfg.fc.Pfem.gammas = [1, 4];        % 2
+cfg.fc.Pfem.deltas = [0, 1];        % 1
 
 % EMD Parameter Gridsearch points
-cfg.fc.Pemd.as = 10; %[10, 50];       	% 10
-cfg.fc.Pemd.bs = 0.5; %[0.5, 1];          % 0.5  a*b must be >= d
+cfg.fc.Pemd.as = [10, 50];       	% 10
+cfg.fc.Pemd.bs = [0.5, 1];          % 0.5  a*b must be >= d
 cfg.fc.Pemd.cs = 0.5; %[0.5, 1];          % 0.5
 cfg.fc.Pemd.ds = 4;                 % 4
 
@@ -99,7 +99,7 @@ cfg.updateMex = false;
 cfg.makeForecast = true;
 rng(42);                            % Seed for repeatability
 cfg.plt.savePlots = true;
-cfg.sim.eps = 1e-8;                % Small No. to avoid rounding issues
+cfg.sim.eps = 1e-6;                % Small No. to avoid rounding issues
 
 
 %% Produce Derived values (no new settings below this line)

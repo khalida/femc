@@ -1,5 +1,5 @@
 function [ runningPeak, exitFlag, forecastUsed] = mpcController(cfg,...
-    trainedModel, godCast, demand,demandDelays, battery, runControl)
+    trainedModel, godCast, demand, demandDelays, battery, runControl)
 
 % mpcController: Simulate time series behaviour of MPC controller with a
 % given forecast model.
@@ -21,12 +21,6 @@ function [ runningPeak, exitFlag, forecastUsed] = mpcController(cfg,...
 
 %% Initializations
 battery.reset();
-
-% Create zero-size battery for case of simulation with no battery
-% if isfield(runControl, 'NB') && runControl.NB
-%     battery = Battery(cfg, 0.0);
-% end
-
 nIdxs = size(godCast, 1);
 daysPassed = 0;
 

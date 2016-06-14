@@ -1,7 +1,7 @@
 function [ trainControlOut ] = setDefaultValues( trainControlIn, ...
     fieldValuePairs)
 
-% setDefaultValues Set default values of strcutre, and issue warnings as
+% setDefaultValues: Set default values of structure, and issue warnings as
 % required
 
 nFields = length(fieldValuePairs)/2;

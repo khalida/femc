@@ -1,5 +1,5 @@
 function [coefficients, meanForecast] = ...
-    getAutoArimaModelCoefficientsAndForecast(dataValues, trainControl, ...
+    getAutoArimaModelCoefficientsAndForecast(cfg, dataValues, ...
     order, seasonalOrder)
 
 %% Create temprary directory for storing temporary files (and move into it)
@@ -14,8 +14,8 @@ cd(tmpName);
 
 %% Write historic (& other info) as columns
 csvwrite('historicData.csv', dataValues(:));
-csvwrite('seasonality.csv', trainControl.season);
-csvwrite('intervalsToForecast.csv', trainControl.horizon);
+csvwrite('seasonality.csv', cfg.fc.season);
+csvwrite('intervalsToForecast.csv', cfg.sim.horizon);
 csvwrite('order.csv', order(:));
 csvwrite('seasonalOrder.csv', seasonalOrder(:));
 

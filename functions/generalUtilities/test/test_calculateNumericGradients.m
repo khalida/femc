@@ -1,4 +1,5 @@
 %% Test by computing gradients for which an analytic solution exists:
+clearvars;
 
 functionHandle = @(x) x(1,:).^2 + x(2,:).^3 + x(3, :).^4;
 x0 = rand(3, 100) + 1;
@@ -18,7 +19,7 @@ oneSidedErrorOk = max(oneSidedPercentageError(:)) < 1e-5;
 twoSidedErrorOk = max(twoSidedPercentageError(:)) < 1e-6;
 
 if oneSidedErrorOk && twoSidedErrorOk
-    disp('calculateNumericGradients test PASSED!');
+    disp('test_calculateNumericGradients test PASSED!');
 else
-    error('calculateNumericGradients test FAILED!');
+    error('test_calculateNumericGradients test FAILED');
 end

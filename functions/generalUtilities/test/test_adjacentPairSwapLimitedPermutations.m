@@ -1,6 +1,7 @@
 %% Test using some simple examples for which results are known:
-% Not an exhaustive unit test
+clearvars;
 
+% Not an exhaustive unit test
 test1 = adjacentPairSwapLimitedPermutations(4, 0);
 expectedResult1 = [1; 2; 3; 4];
 pass1 = isequal(test1, expectedResult1);
@@ -13,7 +14,7 @@ expectedResult2 = [ 1  2  1  1  ;
 % NB: in result above the permuations of the columns don't matter:
 nColumns = size(expectedResult2, 2);
 if nColumns ~= size(test2, 2)
-    error('adjacentPairSwapLimitedPermutations test FAILED!');
+    error('test_adjacentPairSwapLimitedPermutations FAILED!');
 end
 
 nColumnsFound = 0;
@@ -36,7 +37,7 @@ expectedResult3 = [ 1  2  1  1  2  2  3  1  1 ;
 % NB: in result above the permuations of the columns don't matter:
 nColumns = size(expectedResult3, 2);
 if nColumns ~= size(test3, 2)
-    error('adjacentPairSwapLimitedPermutations test FAILED!');
+    error('test_adjacentPairSwapLimitedPermutations FAILED!');
 end
 
 nColumnsFound = 0;
@@ -50,7 +51,7 @@ end
 pass3 = nColumnsFound == nColumns;
 
 if pass1 && pass2 && pass3
-    disp('adjacentPairSwapLimitedPermutations test PASSED!');
+    disp('test_adjacentPairSwapLimitedPermutations PASSED!');
 else
-    error('adjacentPairSwapLimitedPermutations test FAILED!');
+    error('test_adjacentPairSwapLimitedPermutations FAILED');
 end

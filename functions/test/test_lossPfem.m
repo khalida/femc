@@ -1,6 +1,6 @@
 %% Test lossPfem by doing some simple numerical examples:
 % Not an exhaustive unit test, but better than nothing
-
+clearvars;
 tTest1 = ones(10,1);
 yTest1 = ones(10,1);
 parameters = [1, 1, 1, 0];
@@ -66,7 +66,7 @@ pass7 = isequal(expectedAll, pfemAll);
 
 %% SUMMARY:
 if pass1 && pass2 && pass3 && pass4 && pass5 && pass6 && pass7
-    disp('lossPfem test PASSED');
+    disp('test_lossPfem test PASSED!');
 else
     error('lossPfem test FAILED');
 end
