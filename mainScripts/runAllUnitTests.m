@@ -6,7 +6,7 @@
 clearvars; close all; clc;
 tic;
 LoadFunctions;
-compileMexes;
+% compileMexes;
 
 %% Call all of the test scripts in turn (will output results to screen)
 test_controllerOptimizer;

@@ -13,7 +13,7 @@ cfg.opt.chargeWhenCan = false;
 cfg.opt.secondWeight = 0;
 cfg.opt.rewardMargin = true;
 cfg.opt.iterationFactor = 1.0;
-cfg.sim.eps = 1e-8;                % Small No. to avoid rounding issues
+cfg.sim.eps = 1e-7;                % Small No. to avoid rounding issues
 cfg.opt.suppressOutput = false;
 cfg.opt.billingPeriodDays = 2;
 
@@ -45,13 +45,14 @@ battery = Battery(cfg, 1000);               % 1000kWh bat charged to 500kWh
 
 % Check for obvious solution, and success exitFlag from optimiser
 if ~closeEnough(max(runningPeak), mean(demand), cfg.sim.eps)
-    disp('runningPeak:'); disp(runningPeak);
+    disp('max(runningPeak):'); disp(max(runningPeak));
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 1a failed, wrong answer');
+    disp('mean(demand):'); disp(mean(demand));
+    error('test_mpcController 1a FAILED, wrong answer');
 elseif min(exitFlag) ~= 1
     disp('runningPeak:'); disp(runningPeak);
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 1a failed, wrong exitFlag');
+    error('test_mpcController 1a FAILED, wrong exitFlag');
 else
     disp('test_mpcController TEST 1a PASSED!');
 end
@@ -66,13 +67,14 @@ battery = Battery(cfg, 1000);               % 1000kWh bat charged to 500kWh
 
 % Check for obvious solution, and success exitFlag from optimiser
 if ~closeEnough(max(runningPeak), 0.0, cfg.sim.eps)
-    disp('runningPeak:'); disp(runningPeak);
+    disp('max(runningPeak):'); disp(max(runningPeak));
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 1b failed, wrong answer');
+    disp('0.0):'); disp(0.0);
+    error('test_mpcController 1b FAILED, wrong answer');
 elseif min(exitFlag) ~= 1
     disp('runningPeak:'); disp(runningPeak);
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 1b failed, wrong exitFlag');
+    error('test_mpcController 1b FAILED, wrong exitFlag');
 else
     disp('test_mpcController TEST 1b PASSED!');
 end
@@ -88,13 +90,14 @@ expectedPeak = mean([mean(demand), max(demand)]);
 
 % Check for obvious solution, and success exitFlag from optimiser
 if ~closeEnough(max(runningPeak), expectedPeak, cfg.sim.eps)
-    disp('runningPeak:'); disp(runningPeak);
+    disp('max(runningPeak):'); disp(max(runningPeak));
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 2a failed, wrong answer');
+    disp('expectedPeak:'); disp(expectedPeak);
+    error('test_mpcController 2a FAILED, wrong answer');
 elseif min(exitFlag) ~= 1
     disp('runningPeak:'); disp(runningPeak);
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 2a failed, wrong exitFlag');
+    error('test_mpcController 2a FAILED, wrong exitFlag');
 else
     disp('test_mpcController TEST 2a PASSED!');
 end
@@ -109,15 +112,16 @@ expectedPeak = max(expectedPeak, max(demand)-battery.maxChargeEnergy);
 
 % Check for obvious solution, and success exitFlag from optimiser
 if ~closeEnough(max(runningPeak), expectedPeak, cfg.sim.eps)
-    disp('runningPeak:'); disp(runningPeak);
+    disp('max(runningPeak):'); disp(max(runningPeak));
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 2b failed, wrong answer');
+    disp('expectedPeak:'); disp(expectedPeak);
+    error('test_mpcController 2b FAILED, wrong answer');
 elseif min(exitFlag) ~= 1
     disp('runningPeak:'); disp(runningPeak);
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 2b failed, wrong exitFlag');
+    error('test_mpcController 2b FAILED, wrong exitFlag');
 else
-    disp('test_mpcController TEST 2b PASSED!');
+    disp('test_mpcController 2b PASSED!');
 end
 
 %% Test 3a Set-point Controller
@@ -131,15 +135,16 @@ battery = Battery(cfg, sizeForReductionToMean);
 
 % Check for obvious solution, and success exitFlag from optimiser
 if ~closeEnough(max(runningPeak), 1.5, cfg.sim.eps)
-    disp('runningPeak:'); disp(runningPeak);
+    disp('max(runningPeak):'); disp(max(runningPeak));
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 3a failed, wrong answer');
+    disp('1.5:'); disp(1.5);
+    error('test_mpcController 3a FAILED, wrong answer');
 elseif min(exitFlag) ~= 1
     disp('runningPeak:'); disp(runningPeak);
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 3a failed, wrong exitFlag');
+    error('test_mpcController 3a FAILED, wrong exitFlag');
 else
-    disp('test_mpcController TEST 3a PASSED!');
+    disp('test_mpcController 3a PASSED!');
 end
 
 %% Test 3b Set-point Controller, with battery capacity limit
@@ -152,15 +157,16 @@ expectedPeak = mean([mean(demand), max(demand)]);
 
 % Check for obvious solution, and success exitFlag from optimiser
 if ~closeEnough(max(runningPeak), expectedPeak, cfg.sim.eps)
-    disp('runningPeak:'); disp(runningPeak);
+    disp('max(runningPeak):'); disp(max(runningPeak));
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 3b failed, wrong answer');
+    disp('expectedPeak:'); disp(expectedPeak);
+    error('test_mpcController 3b FAILED, wrong answer');
 elseif min(exitFlag) ~= 1
     disp('runningPeak:'); disp(runningPeak);
     disp('exitFlag:'); disp(exitFlag);
-    error('battery test 3b failed, wrong exitFlag');
+    error('test_mpcController 3b FAILED, wrong exitFlag');
 else
-    disp('test_mpcController TEST 3b PASSED!');
+    disp('test_mpcController 3b PASSED!');
 end
 
 close all;
