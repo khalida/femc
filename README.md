@@ -21,7 +21,7 @@ This compiles the MEX files (required if running simulations on another platform
 This loads all of the required functions/scripts into the matlab PATH so that they can be called.
 
 5) `runAllUnitTests.m`
-This runs a series of unit tests on the various functions/utilities to confirm everything is installed corrected. It should take about 10 minutes or so to run on a modern desktop (Intel CORE i7). Again this script required R to be installed and have the relevant libraries loaded; if this is not the case the tests of the R forecasting scripts, `test_getAutomatedForecastR_simple` and `test_getAutomatedForecastR_onDemand`, can be commented out.
+This runs a series of unit tests on the various functions/utilities to confirm everything is installed corrected. It should take about 10 minutes or so to run on a modern desktop (Intel CORE i7). Again this script required R to be installed and have the relevant libraries loaded; if this is not the case the tests of the R forecasting scripts, `test_getAutomatedForecastR_simple`, `test_getAutomatedForecastR_onDemand` and `test_forecastSarma` can be commented out.
 
 In addition to these main scripts there are many functions in the folder `./functions`; which are called from these scripts.
 

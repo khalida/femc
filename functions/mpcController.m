@@ -120,12 +120,9 @@ for idx = 1:nIdxs;
         plot([forecast, godCast(idx, :)', ...
             cumsum(energyToBattery(:)) + battery.SoC, ...
             energyToBattery(:), forecast + energyToBattery(:)]);
-        
-        hline = refline(0, peakSoFar); hline.LineWidth = 2;
-        hline.Color = 'k';
-        
-        hline = refline(0, battery.capacity); hline.LineWidth = 2;
-        hline.Color = 'c';
+	hold on;
+        refline(0, peakSoFar);
+	refline(0, battery.capacity);
         
         grid on;
         legend('Forecast [kWh/interval]', 'GodCast [kWh/interval]', ...
@@ -172,9 +169,8 @@ if ~cfg.opt.suppressOutput
     plot([godCast(:, 1), cumsum(chargeEnergy(1,:)') + battery.capacity/2, ...
         chargeEnergy(1,:)', godCast(:, 1) + chargeEnergy(1,:)', runningPeak]);
     
-    hline = refline(0, battery.capacity); hline.LineWidth = 2;
-    hline.Color = 'c';
-    
+    hold on;
+    refline(0, battery.capacity);
     grid on;
     legend('Local Demand [kWh/interval]', 'SoC [kWh]',...
         'Energy to Batt [kWh/interval]', 'Grid Demand [kWh/interval]',...

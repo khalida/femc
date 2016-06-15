@@ -47,7 +47,7 @@ cfg.sim.horizon = 48;                   % Forecast/control horizon
 cfg.sim.visiblePlots = 'on';
 
 %% Forecast training options
-cfg.fc.forecastModels = 'FFNN';         % 'SARMA', 'FFNN'
+cfg.fc.forecastModels = 'SARMA';        % 'SARMA', 'FFNN'
 cfg.fc.season = 48;                     % No. of intervals in a season
 cfg.fc.nHidden = 50;                    % Nodes in hidden layer
 cfg.fc.suppressOutput = true;
@@ -95,7 +95,7 @@ cfg.opt.suppressOutput = cfg.fc.suppressOutput;
 
 
 %% Misc.
-cfg.updateMex = false;
+cfg.updateMex = true;
 cfg.makeForecast = true;
 rng(42);                            % Seed for repeatability
 cfg.plt.savePlots = true;

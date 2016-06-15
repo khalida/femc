@@ -56,7 +56,7 @@ ylabel(['Mean PRR, ' num2str(nDaysTrain) '-day train, '...
     num2str(nDaysTest) '-day test']);
 
 legend([allMethodStrings, {'Some intervals not solved to optimality'}],...
-    'Location', 'best','Interpreter', 'none');
+    'Interpreter', 'none');
 hold off;
 
 % Relative peak reduction ratios
@@ -85,7 +85,7 @@ ylabel(['Mean PRR relative to Perfect Forecast, ' num2str(nDaysTrain)...
     num2str(nDaysTest) '-day test']);
 
 legend([allMethodStrings, {'Some intervals not solved to optimality'}],...
-    'Location', 'best', 'Orientation', 'vertical', 'Interpreter', 'none');
+    'Orientation', 'vertical', 'Interpreter', 'none');
 
 hold off;
 print(fig_1, '-dpdf', [cfg.sav.resultsDir filesep 'allPrrResults.pdf']);
@@ -114,7 +114,7 @@ errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
 xlabel('Mean Load [kWh/interval]');
 ylabel('Mean PRR, with +/- 1.0 std. dev.');
 legend(selectedForecastLabels, 'Interpreter', 'none',...
-    'Location', 'best', 'Orientation', 'vertical');
+    'Orientation', 'vertical');
 grid on;
 hold off;
 
@@ -142,7 +142,7 @@ errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
 xlabel('Mean Load [kWh/interval]');
 ylabel('Mean relative PRR, with +/- 1.0 std. dev.');
 legend(selectedForecastLabels, 'Interpreter', 'none',...
-    'Location', 'best', 'Orientation', 'vertical');
+    'Orientation', 'vertical');
 
 grid on;
 hold off;
@@ -266,7 +266,7 @@ for eachMetricIdxIdx = 1:length(metricsToPlotIdx)
     
     grid on;
     legend(allMethodStrings(selectedForecasts), 'Interpreter', 'none',...
-        'Location', 'best', 'Orientation', 'vertical');
+        'Orientation', 'vertical');
     
     xlabel('Mean Load [kWh/interval]');
     ylabel('Forecast Error Metric +/- 1.0 std. dev.');
