@@ -16,9 +16,10 @@ function [ emd_column ] = emd_hat_gd_metric_mex_vec_par( P, Q, pars )
 
 a = pars(1); b = pars(2); c = pars(3); d = pars(4);
 
-if a*b < d
+if (a*b) < d
     error(['a*b must be >= d to ensure charging for energy' ...
-    'added/removed is correct']);
+    'added/removed is correct. a:' num2str(a) ', b:' num2str(b) ...
+    ', c:' num2str(c) ', d:' num2str(d) '.']);
 end
 
 nHorzn = size(P, 1);

@@ -1,9 +1,3 @@
-%% Tidy Up
-clearvars; close all; clc;
-
-%% Load Running Configuration
-cfg = Config(pwd);
-
 %% Load Functions
 LoadFunctions;
 
@@ -60,13 +54,13 @@ end
 disp('======= FORECAST SELECTION / TESTING =======');
 [ cfg, results ] = testAllForecasts( cfg, pars, allDemandValues);
 
-%% Do Plotting
-disp('======= PLOTTING =======');
-plotAllResultsMetricSelect(cfg, results);
-
 %% Save Results
 disp('======= SAVING =======');
 save(cfg.sav.finalFileName, '-v7.3');
+
+%% Do Plotting
+disp('======= PLOTTING =======');
+plotAllResultsMetricSelect(cfg, results);
 
 overAllTime = toc;
 disp('Total Time Taken: ');

@@ -23,6 +23,10 @@ This loads all of the required functions/scripts into the matlab PATH so that th
 5) `runAllUnitTests.m`
 This runs a series of unit tests on the various functions/utilities to confirm everything is installed corrected. It should take about 10 minutes or so to run on a modern desktop (Intel CORE i7). Again this script required R to be installed and have the relevant libraries loaded; if this is not the case the tests of the R forecasting scripts, `test_getAutomatedForecastR_simple`, `test_getAutomatedForecastR_onDemand` and `test_forecastSarma` can be commented out.
 
+6) There are two additional functions to help facilitate parralelizing, `metSelMainNcust.m` is a function which just packages the `metricSelectMain.m` script, so that it can be called more easily on different problem instances. `recombineResults.m` allows plotting and saving files from multiple `metricSelectMain.m` runs.
+
+
+
 In addition to these main scripts there are many functions in the folder `./functions`; which are called from these scripts.
 
 Whilst all the results presented in the paper are using FFNN forecasts for the parameterized forecasts, more recent testing has shown that this approach is effective even when using the 4-parameter SARMA forecast.

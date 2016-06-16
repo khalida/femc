@@ -1,9 +1,14 @@
 %% TODO: look at options of doing this with a function rather than script
 
 %% Remove any compiled mex files
-mexFileNames = dir([commonFunctionFolder filesep '*.mex*']);
-for item = 1:length(mexFileNames);
-    delete([commonFunctionFolder filesep mexFileNames(item).name]);
+allFileNames = getAllFiles(commonFunctionFolder);
+for idx = 1:length(allFileNames)
+    thisFile = allFileNames{idx};
+    strIdxs = strfind(thisFile, '.mex');
+    if ~isempty(strIdxs)
+        delete(thisFile);
+        disp('Mex file deleted');
+    end
 end
 
 

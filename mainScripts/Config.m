@@ -7,7 +7,7 @@
 % cfg.plt:  for plotting settings
 % cfg.sav:  for saving settings
 
-function cfg = Config(pwd)
+function cfg = Config(pwd, nCust)
 
 %% Input Data file
 [parentFold, ~, ~] = fileparts(pwd);
@@ -28,7 +28,10 @@ cfg.sav.resultsDir = [parentFold filesep 'results' filesep timeString];
 mkdir(cfg.sav.resultsDir);
 
 %% Instances
-cfg.sim.nCustomers =  [1, 10];
+if (~exist('nCust', 'var'))
+        nCust = [1, 10];
+end
+cfg.sim.nCustomers = nCust(:)';
 cfg.sim.nAggregates = 1;
 cfg.sim.nInstances = length(cfg.sim.nCustomers) * cfg.sim.nAggregates;
 cfg.sim.nProc = min(cfg.sim.nInstances, 4);
@@ -95,7 +98,7 @@ cfg.opt.suppressOutput = cfg.fc.suppressOutput;
 
 
 %% Misc.
-cfg.updateMex = true;
+cfg.updateMex = false;
 cfg.makeForecast = true;
 rng(42);                            % Seed for repeatability
 cfg.plt.savePlots = true;
