@@ -1,6 +1,12 @@
 %% Load Functions
 LoadFunctions;
 
+%% Load Config if not already done:
+if ~exist('cfg', 'var')
+    cfg = Config(pwd);
+    doPlot = true;
+end
+
 %% Delete old and compile new mex files
 if cfg.updateMex, compileMexes; end;
 % cfg.makeForecast = false;
@@ -59,8 +65,10 @@ disp('======= SAVING =======');
 save(cfg.sav.finalFileName, '-v7.3');
 
 %% Do Plotting
-disp('======= PLOTTING =======');
-plotAllResultsMetricSelect(cfg, results);
+if doPlot
+    disp('======= PLOTTING =======');
+    plotAllResultsMetricSelect(cfg, results);
+end
 
 overAllTime = toc;
 disp('Total Time Taken: ');

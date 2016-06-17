@@ -40,6 +40,7 @@ fig_1 = figure();
 % Absolute Peak Reduction Ratios
 subplot(1, 2, 1);
 plot(meanKWhs(:), peakReductionsTrialFlattened', '.', 'markers', 20);
+set(gca, 'xscale', 'log');    
 hold on;
 % Plot warning circles about optimality
 warnPeakReductions = peakReductionsTrialFlattened(smallestExitFlag < 1);
@@ -71,6 +72,7 @@ peakReductionsRelativeTrialFlattened = reshape(peakReductionsRelative,...
     [nMethods, nInstances]);
 
 plot(meanKWhs(:), peakReductionsRelativeTrialFlattened', '.', 'markers', 20)
+set(gca, 'xscale', 'log');    
 hold on
 % Plot warning circles about optimality
 warnPeakReductions = peakReductionsRelativeTrialFlattened(...
@@ -92,17 +94,16 @@ print(fig_1, '-dpdf', [cfg.sav.resultsDir filesep 'allPrrResults.pdf']);
 plotAsTikz([cfg.sav.resultsDir filesep 'allPrrResults.tikz']);
 
 
+selectedForecasts = setdiff(1:nMethods, [cfg.fc.Pfem.range, ...
+    cfg.fc.Pemd.range]);
+
+selectedForecastLabels = allMethodStrings(selectedForecasts);
+    meanPeakReductions = ...    % nCustomers X forecastTypes
+    squeeze(mean(peakReductions(selectedForecasts, :, :), 2));
 
 %% 2) Plot Absolute PRR against aggregation size (as means +/- error bars)
 if length(cfg.sim.nCustomers) > 1
     fig_2 = figure();
-    
-    selectedForecasts = setdiff(1:nMethods, [cfg.fc.Pfem.range, ...
-        cfg.fc.Pemd.range]);
-    
-    selectedForecastLabels = allMethodStrings(selectedForecasts);
-    meanPeakReductions = ...    % nCustomers X forecastTypes
-        squeeze(mean(peakReductions(selectedForecasts, :, :), 2));
     
     stdPeakReductions = ...
         squeeze(std(peakReductions(selectedForecasts, :, :),[], 2));
@@ -110,7 +111,9 @@ if length(cfg.sim.nCustomers) > 1
     meanKWhs = mean(meanKWhs, 1); % nCustomers X 1
     errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
         meanPeakReductions',stdPeakReductions','.-', 'markers', 20);
-    
+
+    set(gca, 'xscale', 'log');    
+
     xlabel('Mean Load [kWh/interval]');
     ylabel('Mean PRR, with +/- 1.0 std. dev.');
     legend(selectedForecastLabels, 'Interpreter', 'none',...
@@ -138,7 +141,9 @@ if length(cfg.sim.nCustomers) > 1
     errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
         meanPeakReductionsRelative',stdPeakReductionsRelative','.-',...
         'markers', 20);
-    
+
+    set(gca, 'xscale', 'log');    
+
     xlabel('Mean Load [kWh/interval]');
     ylabel('Mean relative PRR, with +/- 1.0 std. dev.');
     legend(selectedForecastLabels, 'Interpreter', 'none',...
@@ -265,7 +270,10 @@ if length(cfg.sim.nCustomers) > 1
             squeeze(lossTestResultsMeanOverTrials(selectedForecasts, :, ...
             eachMetricIdx))', squeeze(lossTestResultsStdOverTrials(...
             selectedForecasts, :, eachMetricIdx))','.-', 'markers', 20);
+
+	set(gca, 'xscale', 'log');    
         
+
         grid on;
         legend(allMethodStrings(selectedForecasts), 'Interpreter', 'none',...
             'Orientation', 'vertical');
