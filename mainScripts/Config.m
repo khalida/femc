@@ -102,7 +102,7 @@ cfg.updateMex = false;
 cfg.makeForecast = true;
 rng(42);                            % Seed for repeatability
 cfg.plt.savePlots = true;
-cfg.sim.eps = 1e-5;                % Small No. to avoid rounding issues
+cfg.sim.eps = 1e-3;                % Small No. to avoid rounding issues
 
 
 %% Produce Derived values (no new settings below this line)
