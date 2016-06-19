@@ -5,6 +5,8 @@ LoadFunctions;
 if ~exist('cfg', 'var')
     cfg = Config(pwd);
     doPlot = true;
+else
+    doPlot = false;
 end
 
 %% Delete old and compile new mex files
