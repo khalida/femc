@@ -216,7 +216,10 @@ cfg.fc.allMethodStrings = [cfg.fc.lossTypesStrings, ...
 cfg.fc.nTrainMethods = length(cfg.fc.lossTypes);
 cfg.fc.nMethods = length(cfg.fc.allMethodStrings);
 
-% Save a copy of this Config file to results directory
-copyfile([pwd filesep 'Config.m'], [cfg.sav.resultsDir filesep ...
-    'thisConfig.m']);
+% Save a copy of this Config file to results directory (if not already exists)
+if ~exist([cfg.sav.resultsDir filesep 'thisConfig.m'])
+    copyfile([pwd filesep 'Config.m'], [cfg.sav.resultsDir filesep ...
+	'thisConfig.m']);
+end
+
 end
