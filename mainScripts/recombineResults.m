@@ -106,6 +106,9 @@ clearvars cfgAll resultsAll;
 disp('======= SAVING =======');
 save(outFile, '-v7.3');
 
+%% Change results dir to suit location of files passed in:
+[cfg.sav.resultsDir,~,~] = fileparts(outFile);
+
 %% Finally plot the combined results:
 disp('======= PLOTTING =======');
 plotAllResultsMetricSelect(cfg, results);
