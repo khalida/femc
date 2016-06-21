@@ -226,7 +226,7 @@ end
 
 % Plot mean
 % b = blue, g = green, r = red, c = cyan, m = magenta, y = yellow, k = black
-colors = {'r'; 'g'; 'm'; 'y'};
+% colors = {'r'; 'g'; 'm'; 'y'};
 for j = 1:d
     plot(xPosns(:,j), allMeans(:,j), markers{j},...
         'MarkerFaceColor',colors{j, 1},'MarkerSize',10,...
