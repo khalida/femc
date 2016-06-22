@@ -69,7 +69,7 @@ save(cfg.sav.finalFileName, '-v7.3');
 %% Do Plotting
 if doPlot
     disp('======= PLOTTING =======');
-    plotAllResultsMetricSelect(cfg, results);
+    plotAllResultsMetricSelect(cfg, results, allDemandValues);
 end
 
 overAllTime = toc;
