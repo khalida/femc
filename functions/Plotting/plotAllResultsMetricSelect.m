@@ -1,11 +1,12 @@
-function plotAllResultsMetricSelect(cfg, results)
+function plotAllResultsMetricSelect(cfg, results, allDemandValues)
 
 % plotAllResultsMetricSelect: Plot outputs from 'trainAllForecasts' and
 % 'testAllFcasts' functions.
 
 % INPUTS:
-% cfg:      structure of running options
-% results:  structure of results from simulations
+% cfg:              structure of running options
+% results:          structure of results from simulations
+% allDemandValues:  (optional) cellAray containing the original demand data
 
 % OUTPUTS:
 % none - plot to screen, and saving of plots only.
@@ -19,9 +20,6 @@ lossTestResults = results.lossTestResults;
 
 bestPfemForecast = results.bestPfemForecast;
 bestPemdForecast = results.bestPemdForecast;
-
-bestPfemForecastArray = results.bestPfemForecastArray;
-bestPemdForecastArray = results.bestPemdForecastArray;
 
 
 nDaysTrain = cfg.sim.nDaysTrain;
@@ -336,16 +334,43 @@ disp(prrRelativeToMse);
 
 %% Get average values of the forecast parameters over aggregation levels
 pfemParsVsNcust = zeros(length(nCustomers), size(cfg.fc.Pfem.allValues, 2));
+pfemParsVsNcustAll = zeros(nInstances, 1+size(cfg.fc.Pfem.allValues, 2));
 pemdParsVsNcust = zeros(length(nCustomers), size(cfg.fc.Pemd.allValues, 2));
+pemdParsVsNcustAll = zeros(nInstances, 1+size(cfg.fc.Pemd.allValues, 2));
 for nCustIdx = 1:length(nCustomers)
+    % PFEM Parameters
     pfemParsVsNcust(nCustIdx, :) = median(cfg.fc.Pfem.allValues(...
         results.bestPfemForecastArray(:, nCustIdx) + 1 - ...
         min(cfg.fc.Pfem.range), :), 1);
     
+    pfemParsVsNcustAll(((nCustIdx-1)*nAggregates+1):(nCustIdx*nAggregates), ...
+        1) = nCustomers(nCustIdx);
+    
+    pfemParsVsNcustAll(((nCustIdx-1)*nAggregates+1):(nCustIdx*nAggregates), ...
+        2:end) = cfg.fc.Pfem.allValues( results.bestPfemForecastArray(:,...
+        nCustIdx) + 1 - min(cfg.fc.Pfem.range), :);
+    
+    % PEMD Parameters
     pemdParsVsNcust(nCustIdx, :) = median(cfg.fc.Pemd.allValues(...
         results.bestPemdForecastArray(:, nCustIdx) + 1 - ...
         min(cfg.fc.Pemd.range), :), 1);
+    
+    pemdParsVsNcustAll(((nCustIdx-1)*nAggregates+1):(nCustIdx*nAggregates), ...
+        1) = nCustomers(nCustIdx);
+    
+    pemdParsVsNcustAll(((nCustIdx-1)*nAggregates+1):(nCustIdx*nAggregates), ...
+        2:end) = cfg.fc.Pemd.allValues( results.bestPemdForecastArray(:,...
+        nCustIdx) + 1 - min(cfg.fc.Pemd.range), :);
 end
+
+% Perform bivariate plot of PEMD, PFEM parameters:
+figure();
+gplotmatrix(pfemParsVsNcustAll, [], pfemParsVsNcustAll(:, 1));
+title('PFEM Parameter-selection scatter plot, colored by nCustomer');
+
+figure();
+title('PEMD Parameter-selection scatter plot, colored by nCustomer');
+gplotmatrix(pemdParsVsNcustAll, [], pemdParsVsNcustAll(:, 1));
 
 disp('pfemParsVsNcust');
 disp(pfemParsVsNcust);
@@ -353,5 +378,67 @@ disp(pfemParsVsNcust);
 disp('pemdParsVsNcust');
 disp(pemdParsVsNcust);
 
+%% Plot raw data (primarily for debugging/reference):
+if exist('allDemandValues', 'var')
+    figure();
+    hold on;
+    index = 0;
+    for eachNcust = 1:length(nCustomers)
+        for eachAgg = 1:nAggregates
+            index = index + 1;
+            subplot(length(nCustomers), nAggregates, index);
+            hold on;
+            plot(cfg.sim.trainIdxs, ...
+                allDemandValues{index}(cfg.sim.trainIdxs));
+            
+            plot(cfg.sim.forecastSelectionIdxs, ...
+                allDemandValues{index}(cfg.sim.forecastSelectionIdxs));
+            
+            plot(cfg.sim.testIdxs, ...
+                allDemandValues{index}(cfg.sim.testIdxs));
+        end
+    end
+    legend('Train Data', 'Forecast Selection Data', 'Test Data');
+end
+
+%% Scatter plot of properties of demand signals VS parameter choices made
+if exist('allDemandValues', 'var')
+    % Feature vector: [mean demand, max demand, min demand, max/mean, std]
+    demanSignalFeatures = zeros(nInstances, 5);
+    index = 0;
+    for eachNcust = 1:length(nCustomers)
+        for eachAgg = 1:nAggregates
+            index = index + 1;
+            thisDemand = allDemandValues{index};
+            demanSignalFeatures(index, 1) = mean(thisDemand);
+            demanSignalFeatures(index, 2) = max(thisDemand);
+            demanSignalFeatures(index, 3) = min(thisDemand);
+            demanSignalFeatures(index, 4) = max(thisDemand)/...
+                mean(thisDemand);
+            
+            demanSignalFeatures(index, 5) = std(thisDemand);
+        end
+    end
+    
+    % Plot pair-wise scatter of these dimensions, and colour by each
+    % parameter (4 subplot per PFEM, PEMD):
+    for eachPar = 1:4
+        figure();
+        gplotmatrix(demanSignalFeatures, [], ...
+            pfemParsVsNcustAll(:, 1+eachPar));
+        
+        title(['PFEM Demand Sgl Propoerty scatter, colored by par '...
+            'selection. ' num2str(eachPar)]);
+    end
+    
+    for eachPar = 1:4
+        figure();
+        gplotmatrix(demanSignalFeatures, [], ...
+            pemdParsVsNcustAll(:, 1+eachPar));
+        
+        title(['PEMD Demand Sgl Propoerty scatter, colored by par '...
+            'selection. ' num2str(eachPar)]);
+    end
+end
 
 end
