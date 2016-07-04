@@ -12,7 +12,7 @@ function plotAllResultsMetricSelect(cfg, results, allDemandValues)
 % none - plot to screen, and saving of plots only.
 
 %% Etract results variables
-meanKWhs = results.meanKWhs;
+meanWhs = results.meanKWhs.*1e3;
 peakReductionsTrialFlattened = results.peakReductionsTrialFlattened;
 smallestExitFlag = results.smallestExitFlag;
 peakReductions = results.peakReductions;
@@ -41,19 +41,19 @@ fig_1 = figure();
 
 % Absolute Peak Reduction Ratios
 subplot(1, 2, 1);
-plot(meanKWhs(:), peakReductionsTrialFlattened', '.', 'markers', 20);
+plot(meanWhs(:), peakReductionsTrialFlattened', '.', 'markers', 20);
 set(gca, 'xscale', 'log');
 hold on;
 % Plot warning circles about optimality
 warnPeakReductions = peakReductionsTrialFlattened(smallestExitFlag < 1);
-extendedKWhs = repmat(meanKWhs(:)', [nMethods, 1]);
-warnkWhs = extendedKWhs(smallestExitFlag < 1);
-if (isempty(warnkWhs))
-    warnkWhs = -1;
+extendedWhs = repmat(meanWhs(:)', [nMethods, 1]);
+warnWhs = extendedWhs(smallestExitFlag < 1);
+if (isempty(warnWhs))
+    warnWhs = -1;
     warnPeakReductions = -1;
 end
-plot(warnkWhs, warnPeakReductions, 'ro', 'markers', 20);
-xlabel('Mean Load [kWh/interval]');
+plot(warnWhs, warnPeakReductions, 'ro', 'markers', 20);
+xlabel('Mean Load [Wh/interval]');
 ylabel(['Mean PRR, ' num2str(nDaysTrain) '-day train, '...
     num2str(nDaysSelect) '-day parameter selection, ' ...
     num2str(nDaysTest) '-day test']);
@@ -73,7 +73,7 @@ peakReductionsRelative = peakReductions./repmat(...
 peakReductionsRelativeTrialFlattened = reshape(peakReductionsRelative,...
     [nMethods, nInstances]);
 
-plot(meanKWhs(:), peakReductionsRelativeTrialFlattened', '.', 'markers', 20)
+plot(meanWhs(:), peakReductionsRelativeTrialFlattened', '.', 'markers', 20)
 set(gca, 'xscale', 'log');
 hold on
 % Plot warning circles about optimality
@@ -82,8 +82,8 @@ warnPeakReductions = peakReductionsRelativeTrialFlattened(...
 if (isempty(warnPeakReductions))
     warnPeakReductions = -1;
 end
-plot(warnkWhs, warnPeakReductions, 'ro', 'markers', 20);
-xlabel('Mean Load [kWh/interval]');
+plot(warnWhs, warnPeakReductions, 'ro', 'markers', 20);
+xlabel('Mean Load [Wh/interval]');
 ylabel(['Mean PRR relative to Perfect Forecast, ' num2str(nDaysTrain)...
     '-day train, ' num2str(nDaysSelect) '-day parameter selection, '...
     num2str(nDaysTest) '-day test']);
@@ -110,13 +110,13 @@ if length(cfg.sim.nCustomers) > 1
     stdPeakReductions = ...
         squeeze(std(peakReductions(selectedForecasts, :, :),[], 2));
     
-    meanKWhs = mean(meanKWhs, 1); % nCustomers X 1
-    errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
+    meanWhs = mean(meanWhs, 1); % nCustomers X 1
+    errorbar(repmat(meanWhs, [length(selectedForecasts), 1])', ...
         meanPeakReductions',stdPeakReductions','.-', 'markers', 20);
     
     set(gca, 'xscale', 'log');
     
-    xlabel('Mean Load [kWh/interval]');
+    xlabel('Mean Load [Wh/interval]');
     ylabel('Mean PRR, with +/- 1.0 std. dev.');
     legend(selectedForecastLabels, 'Interpreter', 'none',...
         'Orientation', 'vertical');
@@ -140,13 +140,13 @@ if length(cfg.sim.nCustomers) > 1
     stdPeakReductionsRelative = ...
         squeeze(std(peakReductionsRelative(selectedForecasts, :, :),[], 2));
     
-    errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
+    errorbar(repmat(meanWhs, [length(selectedForecasts), 1])', ...
         meanPeakReductionsRelative',stdPeakReductionsRelative','.-',...
         'markers', 20);
     
     set(gca, 'xscale', 'log');
     
-    xlabel('Mean Load [kWh/interval]');
+    xlabel('Mean Load [Wh/interval]');
     ylabel('Mean relative PRR, with +/- 1.0 std. dev.');
     legend(selectedForecastLabels, 'Interpreter', 'none',...
         'Orientation', 'vertical');
@@ -268,7 +268,7 @@ if length(cfg.sim.nCustomers) > 1
         eachMetricIdx = metricsToPlotIdx(eachMetricIdxIdx);
         subplot(1, length(metricsToPlotIdx), eachMetricIdxIdx);
         
-        errorbar(repmat(meanKWhs, [length(selectedForecasts), 1])', ...
+        errorbar(repmat(meanWhs, [length(selectedForecasts), 1])', ...
             squeeze(lossTestResultsMeanOverTrials(selectedForecasts, :, ...
             eachMetricIdx))', squeeze(lossTestResultsStdOverTrials(...
             selectedForecasts, :, eachMetricIdx))','.-', 'markers', 20);
@@ -280,7 +280,7 @@ if length(cfg.sim.nCustomers) > 1
         legend(allMethodStrings(selectedForecasts), 'Interpreter', 'none',...
             'Orientation', 'vertical');
         
-        xlabel('Mean Load [kWh/interval]');
+        xlabel('Mean Load [Wh/interval]');
         ylabel('Forecast Error Metric +/- 1.0 std. dev.');
         title(metricsToPlotStrings{eachMetricIdxIdx}, 'Interpreter', 'none');
     end
@@ -293,7 +293,7 @@ if length(cfg.sim.nCustomers) > 1
 end
 
 
-%% Wilcoxon signed rank test for mediam PFEM, PEMD being larger than MSE:
+%% Wilcoxon signed rank test for median PFEM, PEMD being larger than MSE:
 % (with paired observations):
 lossMseIdx = strcmp(allMethodStrings, 'lossMse');
 lossPfemIdx = strcmp(allMethodStrings, 'bestPfemSelected');
