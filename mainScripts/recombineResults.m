@@ -9,6 +9,8 @@ function [ AOK ] = recombineResults( inFileNames, outFile )
 % OUTPUTS:
 % AOK:          Boolean returns true if all goes well
 
+LoadFunctions;
+
 %% LOAD in DATA; assume that each nCustomer will only appear in one file
 % and that all files will have the same cfg.sim.nAggregates (check for
 % this)

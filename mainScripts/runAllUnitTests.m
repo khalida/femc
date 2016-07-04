@@ -1,4 +1,4 @@
-%% Stand-along script which runs all of the units tests
+%% Stand-alone script which runs all of the units tests
 % Note that the unit tests are not comprehensive, but should catch obvious
 % bugs, or issues with installation / Matlab version compatibility
 

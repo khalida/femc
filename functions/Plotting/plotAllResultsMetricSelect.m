@@ -301,7 +301,15 @@ lossPemdIdx = strcmp(allMethodStrings, 'bestPemdSelected');
 
 % Each row for different nCustomer, 1st column Pfem, 2nd columnd Pemd:
 pValuesBetterThanMse = zeros(length(nCustomers), 2);
+pValuesBetterThanMseAll = zeros(1, 2);
 prrRelativeToMse = zeros(length(nCustomers), nAggregates, 2);
+
+pValuesBetterThanMseAll(1) = signrank(peakReductions(lossMseIdx, :), ...
+    peakReductions(lossPfemIdx, :), 'tail', 'left', 'method', 'exact');
+
+pValuesBetterThanMseAll(2) = signrank(peakReductions(lossMseIdx, :), ...
+    peakReductions(lossPemdIdx, :), 'tail', 'left', 'method', 'exact');
+
 
 for nCustIdx = 1:length(nCustomers)
     thesePeakReductions = squeeze(peakReductions(:, :, nCustIdx));
@@ -328,8 +336,15 @@ end
 disp('pValuesBetterThanMse');
 disp(pValuesBetterThanMse);
 
+disp('pValuesBetterThanMseAll');
+disp(pValuesBetterThanMseAll);
+
 disp('prrRelativeToMse');
 disp(prrRelativeToMse);
+
+disp('prrRelativeToMse_trialAvgd');
+disp(squeeze(mean(prrRelativeToMse, 2)));
+
 
 
 %% Get average values of the forecast parameters over aggregation levels
@@ -339,7 +354,7 @@ pemdParsVsNcust = zeros(length(nCustomers), size(cfg.fc.Pemd.allValues, 2));
 pemdParsVsNcustAll = zeros(nInstances, 1+size(cfg.fc.Pemd.allValues, 2));
 for nCustIdx = 1:length(nCustomers)
     % PFEM Parameters
-    pfemParsVsNcust(nCustIdx, :) = median(cfg.fc.Pfem.allValues(...
+    pfemParsVsNcust(nCustIdx, :) = mean(cfg.fc.Pfem.allValues(...
         results.bestPfemForecastArray(:, nCustIdx) + 1 - ...
         min(cfg.fc.Pfem.range), :), 1);
     
@@ -351,7 +366,7 @@ for nCustIdx = 1:length(nCustomers)
         nCustIdx) + 1 - min(cfg.fc.Pfem.range), :);
     
     % PEMD Parameters
-    pemdParsVsNcust(nCustIdx, :) = median(cfg.fc.Pemd.allValues(...
+    pemdParsVsNcust(nCustIdx, :) = mean(cfg.fc.Pemd.allValues(...
         results.bestPemdForecastArray(:, nCustIdx) + 1 - ...
         min(cfg.fc.Pemd.range), :), 1);
     

@@ -6,11 +6,11 @@ function [ cfg, pars ] = trainAllForecasts( cfg, allDemandValues)
 
 % INPUT:
 % cfg:              stuct containing all running options
-% allDemandValues:  cellarray {nInstances,1}, with column vectors of demand
+% allDemandValues:  cellArray {nInstances,1}, w/ column vectors of demand
 
 % OUTPUT:
 % cfg:              struct with some updated fields
-% pars:             parameters of trained models
+% pars:             parameters of trained models (in cell array)
 
 tic;
 
