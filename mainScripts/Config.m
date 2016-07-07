@@ -29,10 +29,10 @@ mkdir(cfg.sav.resultsDir);
 
 %% Instances
 if (~exist('nCust', 'var'))
-        nCust = [1, 10, 100, 1000];
+        nCust = [1, 10]; %, 100, 1000];
 end
 cfg.sim.nCustomers = nCust(:)';
-cfg.sim.nAggregates = 6;
+cfg.sim.nAggregates = 2; %6;
 cfg.sim.nInstances = length(cfg.sim.nCustomers) * cfg.sim.nAggregates;
 cfg.sim.nProc = min(cfg.sim.nInstances, 4);
 
@@ -68,13 +68,13 @@ cfg.fc.trainRatio = 0.8;                % rest for early-stopping
 cfg.fc.nLags = cfg.fc.season;           % No. of univariate lags
 
 % PFEM Parameter Gridsearch points
-cfg.fc.Pfem.alphas = [1, 2, 4];         % 2
+cfg.fc.Pfem.alphas = [1, 2]; %, 4];         % 2
 cfg.fc.Pfem.betas =  [1, 2];            % 2
 cfg.fc.Pfem.gammas = [1, 4];            % 2
 cfg.fc.Pfem.deltas = [0, 1];            % 1
 
 % EMD Parameter Gridsearch points
-cfg.fc.Pemd.as = [10, 50, 100];       	% 10
+cfg.fc.Pemd.as = [10, 50]; % 100];       	% 10
 cfg.fc.Pemd.bs = [0.5, 1];              % 0.5  a*b must be >= d
 cfg.fc.Pemd.cs = [0.5, 1];              % 0.5
 cfg.fc.Pemd.ds = [2, 4];                % 4
@@ -98,7 +98,7 @@ cfg.opt.suppressOutput = cfg.fc.suppressOutput;
 
 
 %% Misc.
-cfg.updateMex = false;
+cfg.updateMex = true;
 cfg.makeForecast = true;
 rng(42);                            % Seed for repeatability
 cfg.plt.savePlots = true;

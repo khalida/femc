@@ -6,16 +6,16 @@
 % ver: Extended to import all data and extract only residential customers
 
 clearvars; close all; clc;
+doPlots = true;
 tic;
 
 %% Data settings
 fileStrings = {'File1.txt', 'File2.txt', 'File3.txt', 'File4.txt',...
     'File5.txt', 'File6.txt'};
 
-formatSpec = '%d %d %f';
-
 % Get all row lengths
-nLines = zeros(length(fileStrings), 1);
+nLinesPerFile = zeros(length(fileStrings), 1);
+disp('=== Get size of each file ===');
 for fileStringIdx = 1:length(fileStrings)
     fileID = fopen(fileStrings{fileStringIdx});
     %% Ascertain number of lines:
@@ -23,135 +23,125 @@ for fileStringIdx = 1:length(fileStrings)
     fseek(fileID, 0, 'eof');
     fileSize = ftell(fileID);
     frewind(fileID);
-    %# Read the whole file.
-    data = fread(fileID, fileSize, 'uint8');
-    %# Count number of line-feeds and increase by one.
-    nLines(fileStringIdx) = sum(data == 10) + 1;
-    clear data
+    
+    %# Read the whole file, as bytes (ASCI characters)
+    tempdata = fread(fileID, fileSize, 'uint8');
+    
+    %# Count number of line-feeds, to get nRows
+    % (assumes there is blank line at end of file, as was the case)
+    nLinesPerFile(fileStringIdx) = sum(tempdata == 10);
+    
+    clear tempdata
     fclose(fileID);
 end
-totalNumRows = sum(nLines);
+totalLines = sum(nLinesPerFile);
 
-data = cell(1,3);
-data{1} = zeros(totalNumRows,1,'int32');
-data{2} = zeros(totalNumRows,1,'int32');
-data{3} = zeros(totalNumRows,1,'double');
+% Pre-allocate cellarray to hold all of the data:
+data = cell(3, 1);
+data{1} = zeros(totalLines,1,'int32');
+data{2} = zeros(totalLines,1,'int32');
+data{3} = zeros(totalLines,1,'double');
 
-fromRow = 1;
+% Read in values as integer (meter_ID), integer (day-time code), kWh used.
+formatSpec = '%d %d %f';
+
+disp('=== Read raw data ===');
+fromLine = 1;
 for fileStringIdx = 1:length(fileStrings)
     fileID = fopen(fileStrings{fileStringIdx});
     
     % The below results in struct, with:
     % tempdata{1} having meter_ID
     % tampdata{2} having time_index
-    % tempdata{3} having kWh in that 0.5-hour step
-    tempdata = textscan(fileID,formatSpec,nLines,'Delimiter','\n');
+    % tempdata{3} having kWh in that 0.5-hour interval
+    tempdata = textscan(fileID,formatSpec,nLinesPerFile(fileStringIdx),...
+        'Delimiter','\n');
+    
     for colNum = 1:3
-        data{colNum}(fromRow:(fromRow+nLines(fileStringIdx)-2)) = ...
-            tempdata{colNum};
+        data{colNum}(fromLine:(fromLine+nLinesPerFile(fileStringIdx)-1))...
+            = tempdata{colNum};
     end
+    
     clear tempdata;
-    fromRow = fromRow + nLines(fileStringIdx);
+    fromLine = fromLine + nLinesPerFile(fileStringIdx);
     fclose(fileID);
 end
 toc;
 
-for fileStringIdx = 1:length(fileStrings)
-    
-    fileID = fopen(fileString(fileStringIdx));
-    
-    %% Ascertain number of lines:
-    %# Get file size.
-    fseek(fileID, 0, 'eof');
-    fileSize = ftell(fileID);
-    frewind(fileID);
-    %# Read the whole file.
-    data = fread(fileID, fileSize, 'uint8');
-    %# Count number of line-feeds and increase by one.
-    nLines = sum(data == 10) + 1;
-    clear data
-    
-    % Re-set to start of file
-    frewind(fileID);
-    
-    % The below results in struct, with:
-    % data{.}{1} having meter_ID
-    % data{.}{2} having time_index
-    % data{.}{3} having kWh in that 0.5-hour step
-    data{fileStringIdx} = ...
-        textscan(fileID,formatSpec,nLines,'Delimiter','\n');
-end
-toc;
-
-% Extract list of unique meter numbers and number of reads for each:
+disp('=== Get No. of reads from each meter ===');
 uniqueMeters = unique(data{1});
-meterHistoricReads = zeros(length(uniqueMeters), 2);
-for i = 1:length(uniqueMeters)
-    meterHistoricReads(i, 1) = uniqueMeters(i);
-    meterHistoricReads(i, 2) = sum(data{1} == uniqueMeters(i));
+meterHistoricReads = zeros(length(uniqueMeters), 1);
+for ii = 1:length(uniqueMeters)
+    meterHistoricReads(ii) = sum(data{1} == uniqueMeters(ii));
 end
-
-% Close the file again
-fclose(fileID);
 
 % Extract data for the all meters which have 25730 records (the
 % most common large number of historic reads); corresponds to over 1 year
 longReadLength = 25730;
-uniqueMeteresLongRead = meterHistoricReads(meterHistoricReads(:, 2) ==...
-    longReadLength, 1);
 
-% Extract the first N
-% nMeters = 50;
-% uniqueMeteresLongRead = uniqueMeteresLongRead(1:nMeters);
+uniqueMetersLongRead = uniqueMeters(meterHistoricReads == ...
+    longReadLength);
+
+% Extract only residential data:
+residentialIDs = getResidentialMeterIDs();
+
+% Get indexes to keep (residential and of correct length):
+rowsToKeep = ismember(data{1}, residentialIDs) & ...
+    ismember(data{1}, uniqueMetersLongRead);
+
+disp('=== Extract data for residential meters, with large No. reads ===');
+data{1} = data{1}(rowsToKeep);
+data{2} = data{2}(rowsToKeep);
+data{3} = data{3}(rowsToKeep);
+
+% Update list of unique meters, to include only residential ones:
+uniqueMetersLongRead = unique(data{1});
 
 % NB: it is necessary to cast type to double to prevent kWh float being
 % cast to integers
-demandData = [double(data{1}), double(data{2}), data{3}];
-demandData = demandData(ismember(demandData(:, 1), ...
-    uniqueMeteresLongRead), :);
+demandData = [double(data{1}), double(data{2}), double(data{3})];
 
 % Remove old data file to free up memory
 clear data;
 
 % Extract each meter reading into separate page of 3-d matrix, and sort
 % into time order
-meterReads = zeros(longReadLength, 3,  length(uniqueMeteresLongRead));
-for i = 1:length(uniqueMeteresLongRead)
-   meterReads(:, :, i) = demandData(demandData(:, 1) == ...
-       uniqueMeteresLongRead(i), :);
-   meterReads(:, :, i) = sortrows(meterReads(:, :, i), 2);
+disp('=== Colect data by meter ID ===');
+meterReads = zeros(longReadLength, 3,  length(uniqueMetersLongRead));
+for ii = 1:length(uniqueMetersLongRead)
+    meterReads(:, :, ii) = demandData(demandData(:, 1) == ...
+        uniqueMetersLongRead(ii), :);
+    meterReads(:, :, ii) = sortrows(meterReads(:, :, ii), 2);
 end
 
-% Plot a series for each meter
-figure(1);
-plot(squeeze(meterReads(:, 3, :)));
-xlabel('Time [daycode-hrcode]');
-ylabel('Energy Use by Meter [kWh/time-step]');
+disp('=== Plotting ===');
+if doPlots
+    % Plot a series for each meter
+    figure(1); %#ok<*UNRCH>
+    plot(squeeze(meterReads(:, 3, :)));
+    xlabel('Time [daycode-hrcode]');
+    ylabel('Energy Use by Meter [kWh/time-step]');
+    
+    % sum together all these meters
+    sumMeterReads = sum(meterReads(:, 3, :), 3);
+    
+    % Plot this sum
+    figure(2);
+    plot(sumMeterReads);
+    xlabel('Time [daycode-hrcode]');
+    ylabel('Total Energy Use [kWh/time-step]');
+    
+end
 
-% sum together all these meters
-sumMeterReads = sum(meterReads(:, 3, :), 3);
+disp('=== Format data into [nMeters x nReads] matrix ===');
+disp('nMeters: '); disp(length(uniqueMetersLongRead));
+disp('nReads: '); disp(longReadLength);
 
-% Plot this sum
-figure(2);
-plot(sumMeterReads);
-xlabel('Time [daycode-hrcode]');
-ylabel('Average Energy Use [kWh/time-step]');
-
-% Create a time vector, and cast sumMeterReads to a t-series variable:
-stepsPerDay = 48;
-nDays = ceil(length(sumMeterReads)/stepsPerDay);
-t = 0:(1/stepsPerDay):(nDays-(1/stepsPerDay));
-t = t(1:length(sumMeterReads));
-sumMeterReadsTimeSeries = timeseries(sumMeterReads, t');
-sumMeterReadsTimeSeries.TimeInfo.Units = 'days';
-
-% Create a multivariate timeseries object woth individual meter readings:
-demandDataTimeSeries = timeseries(squeeze(meterReads(:, 3, :)), t');
-demandDataTimeSeries.TimeInfo.Units = 'days';
+demandData = squeeze(meterReads(:, 3, :));
 
 %% Save demandData variable:
 % Filename is so labelled because the above analysis should result in
 % 3,639 meters being extracted from the original data set
-save('demand_3639.mat', demandData);
+save('demand_3639.mat', 'demandData', '-v7.3');
 
 toc;
