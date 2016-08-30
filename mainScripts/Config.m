@@ -29,10 +29,10 @@ mkdir(cfg.sav.resultsDir);
 
 %% Instances
 if (~exist('nCust', 'var'))
-        nCust = [1, 10]; %, 100, 1000];
+        nCust = [1, 10, 100, 1000];
 end
 cfg.sim.nCustomers = nCust(:)';
-cfg.sim.nAggregates = 2; %6;
+cfg.sim.nAggregates = 6;
 cfg.sim.nInstances = length(cfg.sim.nCustomers) * cfg.sim.nAggregates;
 cfg.sim.nProc = min(cfg.sim.nInstances, 4);
 

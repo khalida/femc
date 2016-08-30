@@ -68,7 +68,7 @@ pars = cell(1, cfg.sim.nInstances);
 forecastValues = cell(cfg.sim.nInstances, 1);
 allMetrics = cell(cfg.sim.nInstances, 1);
 for instance = 1:cfg.sim.nInstances
-    pars{instance} = cell(length(trainingHandles));
+    pars{instance} = cell(length(trainingHandles), 1);
     forecastValues{instance} = zeros(nMethods, nTests, testLength);
     allMetrics{instance} = zeros(nMethods, length(forecastMetrics));
 end
