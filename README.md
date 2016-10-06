@@ -1,7 +1,7 @@
 # femc
 Last Updated: 4th July 2016
 
-Repository for the MATLAB code for forecast error metric customization paper.
+Repository for the MATLAB code for forecast error metric customization paper. Full-text available for 50 days from publication from here: http://authors.elsevier.com/a/1TpCf,rUrFQTNo, DOI link (available permanently but sub-scription required): http://dx.doi.org/10.1016/j.est.2016.09.005
 
 All of the main files are in the folder `./mainScripts` which contains the following scripts:
 
